@@ -4,7 +4,7 @@ using Serilog.Sinks.PeriodicBatching;
 using Serilog.Templates.Themes;
 using SerilogTracing.Expressions;
 
-namespace AzureStorageEmulator.NET.Periodic_Logger
+namespace PeriodicLogger
 {
     public class PeriodicLoggerSink : IBatchedLogEventSink
     {

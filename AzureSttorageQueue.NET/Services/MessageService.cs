@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using AzureStorageEmulator.NET.Models;
+using AzureStorageQueue.NET.Models;
 
-namespace AzureStorageEmulator.NET.Services
+namespace AzureStorageQueue.NET.Services
 {
     public interface IMessageService
     {
@@ -35,6 +35,7 @@ namespace AzureStorageEmulator.NET.Services
             output.Append("</Queues>");
             output.Append("<NextMarker/>");
             output.Append("</EnumerationResults>");
+            output.Append("</QueueMessagesList>");
             return output.ToString();
         }
 

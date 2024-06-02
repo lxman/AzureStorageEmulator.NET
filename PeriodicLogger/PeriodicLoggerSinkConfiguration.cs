@@ -2,7 +2,7 @@
 using Serilog.Configuration;
 using Serilog.Sinks.PeriodicBatching;
 
-namespace AzureStorageEmulator.NET.Periodic_Logger
+namespace PeriodicLogger
 {
     public static class PeriodicLoggerSinkConfiguration
     {

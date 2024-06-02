@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace AzureStorageEmulator.NET.Models
+namespace AzureStorageQueue.NET.Models
 {
     public static class MessageListExtensions
     {

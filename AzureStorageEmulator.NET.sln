@@ -7,14 +7,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageTable.NET", "Az
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueue.NET", "AzureSttorageQueue.NET\AzureStorageQueue.NET.csproj", "{97D743BD-BF8B-4168-861A-3DCDC26DEBCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageBlob.NET", "AzureStorageBlob.NET\AzureStorageBlob.NET.csproj", "{1519D436-6DA5-47EE-87A3-0807CB06F08E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageBlob.NET", "AzureStorageBlob.NET\AzureStorageBlob.NET.csproj", "{1519D436-6DA5-47EE-87A3-0807CB06F08E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BC6D3D20-121B-4553-9B85-00D86427CAED}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logging", "Logging\Logging.csproj", "{81A6C8AB-B9BA-4487-BE57-D7316BBDC668}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeriodicLogger", "PeriodicLogger\PeriodicLogger.csproj", "{81A6C8AB-B9BA-4487-BE57-D7316BBDC668}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageEmulatorTests", "AzureStorageEmulatorTests\AzureStorageEmulatorTests.csproj", "{D27419C3-A1F7-4792-AB6A-525A40D168BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,14 @@ Global
 		{81A6C8AB-B9BA-4487-BE57-D7316BBDC668}.Release|Any CPU.Build.0 = Release|Any CPU
 		{81A6C8AB-B9BA-4487-BE57-D7316BBDC668}.Release|x64.ActiveCfg = Release|Any CPU
 		{81A6C8AB-B9BA-4487-BE57-D7316BBDC668}.Release|x64.Build.0 = Release|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

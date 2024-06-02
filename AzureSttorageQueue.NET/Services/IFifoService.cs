@@ -1,6 +1,6 @@
-﻿using AzureStorageEmulator.NET.Models;
+﻿using AzureStorageQueue.NET.Models;
 
-namespace AzureStorageEmulator.NET.Services
+namespace AzureStorageQueue.NET.Services
 {
     public interface IFifoService
     {

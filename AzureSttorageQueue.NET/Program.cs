@@ -1,5 +1,5 @@
-using AzureStorageEmulator.NET.Periodic_Logger;
-using AzureStorageEmulator.NET.Services;
+using AzureStorageQueue.NET.Services;
+using PeriodicLogger;
 using Serilog;
 using Serilog.Events;
 using SerilogTracing;
@@ -7,7 +7,7 @@ using SerilogTracing;
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162 // Unreachable code detected
 
-namespace AzureStorageEmulator.NET
+namespace AzureStorageQueue.NET
 {
     public static class Program
     {
