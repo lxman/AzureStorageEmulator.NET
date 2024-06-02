@@ -1,0 +1,1 @@
+# AzureStorageEmulator.NET
