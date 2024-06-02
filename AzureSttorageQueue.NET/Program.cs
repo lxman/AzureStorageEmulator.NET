@@ -1,5 +1,5 @@
 using AzureStorageEmulator.NET.Periodic_Logger;
-using AzureStorageEmulator.NET.Queue.Services;
+using AzureStorageEmulator.NET.Services;
 using Serilog;
 using Serilog.Events;
 using SerilogTracing;
@@ -208,6 +208,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddSingleton<IFifoService, BlockingCollectionService>();
                 builder.Services.AddScoped<IMessageService, MessageService>();
                 builder.Services.AddSingleton<IQueueSettings>(settings);
+                builder.Services.AddCors();
 
                 WebApplication app = builder.Build();
 

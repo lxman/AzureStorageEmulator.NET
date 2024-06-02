@@ -1,5 +1,5 @@
-﻿using AzureStorageEmulator.NET.Queue.Models;
-using AzureStorageEmulator.NET.Queue.Services;
+﻿using AzureStorageEmulator.NET.Models;
+using AzureStorageEmulator.NET.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -7,6 +7,7 @@ namespace AzureStorageEmulator.NET.Controllers
 {
     [Route("devstoreaccount1")]
     [ApiController]
+    [Host("*:10001")]
     public class QueueController(IMessageService messageService, IQueueSettings settings) : ControllerBase
     {
         [HttpGet]
