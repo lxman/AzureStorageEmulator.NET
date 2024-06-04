@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeriodicLogger", "PeriodicL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulatorTests", "AzureStorageEmulatorTests\AzureStorageEmulatorTests.csproj", "{D27419C3-A1F7-4792-AB6A-525A40D168BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlTransformer", "XmlTransformer\XmlTransformer.csproj", "{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlTransformer", "XmlTransformer\XmlTransformer.csproj", "{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageEmulator.NET", "AzureStorageEmulator.NET\AzureStorageEmulator.NET.csproj", "{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,14 @@ Global
 		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|x64.ActiveCfg = Release|Any CPU
 		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|x64.Build.0 = Release|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Debug|x64.Build.0 = Debug|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Release|x64.ActiveCfg = Release|Any CPU
+		{C041A04A-C399-4A02-B4C4-BBC410BDE8B1}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
