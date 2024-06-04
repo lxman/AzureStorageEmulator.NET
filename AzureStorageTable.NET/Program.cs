@@ -1,4 +1,3 @@
-
 namespace AzureStorageTable.NET
 {
     public class Program
@@ -26,7 +25,6 @@ namespace AzureStorageTable.NET
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

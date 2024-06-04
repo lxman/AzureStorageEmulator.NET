@@ -10,6 +10,11 @@ namespace AzureStorageQueue.NET.Controllers
     [Host("*:10001")]
     public class QueueController(IMessageService messageService, IQueueSettings settings) : ControllerBase
     {
+        /// <summary>
+        /// List the queues in the storage account.
+        /// </summary>
+        /// <param name="comp"></param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult ListQueues([FromQuery] string comp)
         {

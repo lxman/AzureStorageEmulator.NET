@@ -1,4 +1,3 @@
-
 namespace AzureStorageBlob.NET
 {
     public class Program
@@ -24,7 +23,6 @@ namespace AzureStorageBlob.NET
             }
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
