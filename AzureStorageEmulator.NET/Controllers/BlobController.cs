@@ -13,19 +13,48 @@ namespace AzureStorageEmulator.NET.Controllers
         /// List the queues in the storage account.
         /// </summary>
         /// <param name="comp"></param>
+        /// <param name="restype"></param>
+        /// <param name="include"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult ListQueues([FromQuery] string comp)
+        public IActionResult ListQueues([FromQuery] string comp, [FromQuery] string? restype = null, [FromQuery] string? include = null, [FromQuery] int? timeout = null)
         {
-            Log.Information($"ListBlobs comp = {comp}");
-            if (comp != "list") return new StatusCodeResult(400);
-            string result = blobService.GetBlobs();
-            return new ContentResult
+            Log.Information($"ListBlobs comp = {comp}, restype = {restype}, include = {include}, timeout = {timeout}");
+            if (comp != "list" && comp != "properties") return new StatusCodeResult(400);
+            switch (comp)
             {
-                Content = result,
-                ContentType = "application/xml",
-                StatusCode = 200
-            };
+                case "properties" when restype == "account":
+                    return Ok();
+                case "list" when include == "metadata" && timeout is not null:
+                    return Ok();
+                default:
+                    {
+                        string result = blobService.GetBlobs();
+                        return new ContentResult
+                        {
+                            Content = result,
+                            ContentType = "application/xml",
+                            StatusCode = 200
+                        };
+                    }
+            }
+        }
+
+        [HttpGet]
+        [Route("$logs")]
+        public IActionResult? GetBlob([FromQuery] string? restype)
+        {
+            if (restype == "container") return NotFound();
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("$blobchangefeed")]
+        public IActionResult? GetBlobChangeFeed([FromQuery] string? restype)
+        {
+            if (restype == "container") return NotFound();
+            return Ok();
         }
     }
 }

@@ -1,3 +1,4 @@
+using AzureStorageEmulator.NET.Blob;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Services;
 using PeriodicLogger;
@@ -207,6 +208,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSingleton<IFifoService, BlockingCollectionService>();
                 builder.Services.AddScoped<IMessageService, MessageService>();
+                builder.Services.AddScoped<IBlobService, BlobService>();
                 builder.Services.AddSingleton<IQueueSettings>(settings);
                 builder.Services.AddCors();
 
@@ -241,7 +243,7 @@ namespace AzureStorageEmulator.NET
 
         private static void SetupQueues(WebApplication app)
         {
-            var fifoService = app.Services.GetRequiredService<IFifoService>();
+            IFifoService fifoService = app.Services.GetRequiredService<IFifoService>();
             foreach (string queue in Queues)
             {
                 fifoService.AddQueue(queue);
