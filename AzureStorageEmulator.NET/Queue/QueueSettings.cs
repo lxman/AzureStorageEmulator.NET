@@ -1,4 +1,4 @@
-﻿namespace AzureStorageQueue.NET
+﻿namespace AzureStorageEmulator.NET.Queue
 {
     public interface IQueueSettings
     {

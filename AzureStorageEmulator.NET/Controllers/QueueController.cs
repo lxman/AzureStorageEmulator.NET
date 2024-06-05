@@ -1,9 +1,10 @@
-﻿using AzureStorageQueue.NET.Models;
-using AzureStorageQueue.NET.Services;
+﻿using AzureStorageEmulator.NET.Queue;
+using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
-namespace AzureStorageQueue.NET.Controllers
+namespace AzureStorageEmulator.NET.Controllers
 {
     [Route("devstoreaccount1")]
     [ApiController]

@@ -1,7 +1,7 @@
-﻿using AzureStorageQueue.NET;
-using AzureStorageQueue.NET.Controllers;
-using AzureStorageQueue.NET.Models;
-using AzureStorageQueue.NET.Services;
+﻿using AzureStorageEmulator.NET.Controllers;
+using AzureStorageEmulator.NET.Queue;
+using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 

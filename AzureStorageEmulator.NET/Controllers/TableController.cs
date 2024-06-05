@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace AzureStorageTable.NET.Controllers
+namespace AzureStorageEmulator.NET.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("devstoreaccount1")]
     [ApiController]
     [Host("*:10002")]
     public class TableController : ControllerBase

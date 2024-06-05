@@ -33,9 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AzureStorageBlob.NET\AzureStorageBlob.NET.csproj" />
-    <ProjectReference Include="..\AzureStorageTable.NET\AzureStorageTable.NET.csproj" />
-    <ProjectReference Include="..\AzureSttorageQueue.NET\AzureStorageQueue.NET.csproj" />
+    <ProjectReference Include="..\AzureStorageEmulator.NET\AzureStorageEmulator.NET.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,8 @@
-﻿using AzureStorageBlob.NET.Services;
+﻿using AzureStorageEmulator.NET.Blob;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
-namespace AzureStorageBlob.NET.Controllers
+namespace AzureStorageEmulator.NET.Controllers
 {
     [Route("devstoreaccount1")]
     [ApiController]

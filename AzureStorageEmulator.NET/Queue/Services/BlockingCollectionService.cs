@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using AzureStorageQueue.NET.Models;
+using AzureStorageEmulator.NET.Queue.Models;
 using Serilog;
 
-namespace AzureStorageQueue.NET.Services
+namespace AzureStorageEmulator.NET.Queue.Services
 {
     public class BlockingCollectionService : IFifoService
     {

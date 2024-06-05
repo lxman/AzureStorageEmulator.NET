@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace AzureStorageQueue.NET.Models
+namespace AzureStorageEmulator.NET.Queue.Models
 {
     [XmlType(TypeName = "QueueMessage")]
     public class PostQueueMessage

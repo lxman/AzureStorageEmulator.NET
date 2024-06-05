@@ -1,4 +1,4 @@
-﻿namespace AzureStorageQueue.NET.Models
+﻿namespace AzureStorageEmulator.NET.Queue.Models
 {
     public class QueueMessage
     {
