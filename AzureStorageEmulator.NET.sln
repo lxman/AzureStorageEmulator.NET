@@ -15,7 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulatorTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlTransformer", "XmlTransformer\XmlTransformer.csproj", "{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageEmulator.NET", "AzureStorageEmulator.NET\AzureStorageEmulator.NET.csproj", "{331168C1-A49B-4D18-83A8-CDCDA1B7500D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulator.NET", "AzureStorageEmulator.NET\AzureStorageEmulator.NET.csproj", "{331168C1-A49B-4D18-83A8-CDCDA1B7500D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzuriteCreateQueues", "AzuriteCreateQueues\AzuriteCreateQueues.csproj", "{24DBEEF9-6764-459A-A586-73D837336390}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppliedQueueList", "AppliedQueueList\AppliedQueueList.csproj", "{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzuriteListQueues", "AzuriteListQueues\AzuriteListQueues.csproj", "{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +63,30 @@ Global
 		{331168C1-A49B-4D18-83A8-CDCDA1B7500D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{331168C1-A49B-4D18-83A8-CDCDA1B7500D}.Release|x64.ActiveCfg = Release|Any CPU
 		{331168C1-A49B-4D18-83A8-CDCDA1B7500D}.Release|x64.Build.0 = Release|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Debug|x64.Build.0 = Debug|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Release|x64.ActiveCfg = Release|Any CPU
+		{24DBEEF9-6764-459A-A586-73D837336390}.Release|x64.Build.0 = Release|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Debug|x64.Build.0 = Debug|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Release|x64.ActiveCfg = Release|Any CPU
+		{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}.Release|x64.Build.0 = Release|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Debug|x64.Build.0 = Debug|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|x64.ActiveCfg = Release|Any CPU
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

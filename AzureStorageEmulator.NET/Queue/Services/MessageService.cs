@@ -26,7 +26,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             List<string> list = fifoService.GetQueues();
             StringBuilder output = new();
-            output.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><QueueMessagesList>");
+            output.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
             output.Append("<EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\">");
             output.Append("<Prefix/>");
             output.Append("<MaxResults>5000</MaxResults>");
@@ -35,7 +35,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             output.Append("</Queues>");
             output.Append("<NextMarker/>");
             output.Append("</EnumerationResults>");
-            output.Append("</QueueMessagesList>");
             return output.ToString();
         }
 
