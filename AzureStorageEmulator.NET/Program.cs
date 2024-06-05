@@ -205,7 +205,6 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddControllers().AddXmlSerializerFormatters();
                 builder.Services.AddSerilog();
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();
                 builder.Services.AddSingleton<IFifoService, BlockingCollectionService>();
                 builder.Services.AddScoped<IMessageService, MessageService>();
                 builder.Services.AddSingleton<IQueueSettings>(settings);
@@ -214,12 +213,6 @@ namespace AzureStorageEmulator.NET
                 WebApplication app = builder.Build();
 
                 // Configure the HTTP request pipeline.
-                if (app.Environment.IsDevelopment())
-                {
-                    app.UseSwagger();
-                    app.UseSwaggerUI();
-                }
-
                 app.UseHttpsRedirection();
 
                 app.UseAuthorization();
