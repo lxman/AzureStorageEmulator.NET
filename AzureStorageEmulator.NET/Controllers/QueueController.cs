@@ -20,6 +20,7 @@ namespace AzureStorageEmulator.NET.Controllers
         public IActionResult ListQueues([FromQuery] string comp)
         {
             Log.Information($"ListQueues comp = {comp}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             if (comp != "list") return new StatusCodeResult(400);
             string result = messageService.GetQueues();
             return new ContentResult
@@ -41,6 +42,7 @@ namespace AzureStorageEmulator.NET.Controllers
         public async Task<IActionResult> GetMessages(string queueName, [FromQuery] int numOfMessages)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}, numOfMessages = {numOfMessages}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             MessageList result = messageService.GetMessages(queueName, numOfMessages);
             await Task.Delay(settings.Delay);
             return new ContentResult
@@ -68,6 +70,7 @@ namespace AzureStorageEmulator.NET.Controllers
             [FromQuery] int messageTtl = 0)
         {
             Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             MessageList msg = messageService.AddMessage(queueName, message, visibilityTimeout, messageTtl);
             await Task.Delay(settings.Delay);
             return new ContentResult
@@ -90,6 +93,7 @@ namespace AzureStorageEmulator.NET.Controllers
         public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, [FromQuery] string popReceipt)
         {
             Log.Information($"DeleteMessage queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             _ = await messageService.DeleteMessage(queueName, messageId, popReceipt);
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(204);
@@ -105,6 +109,7 @@ namespace AzureStorageEmulator.NET.Controllers
         public async Task<IActionResult> CreateQueue(string queueName)
         {
             Log.Information($"CreateQueue queueName = {queueName}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(messageService.AddQueue(queueName) ? 201 : 204);
         }

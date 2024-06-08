@@ -1,10 +1,13 @@
 ﻿using System.Text;
+using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IMessageService
     {
+        bool Authenticate(HttpRequest request);
+
         string GetQueues();
 
         bool AddQueue(string queueName);
@@ -20,8 +23,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
         Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt);
     }
 
-    public class MessageService(IFifoService fifoService) : IMessageService
+    public class MessageService(IFifoService fifoService, IAuthenticator authenticator) : IMessageService
     {
+        public bool Authenticate(HttpRequest request)
+        {
+            return authenticator.Authenticate(request);
+        }
+
         public string GetQueues()
         {
             List<string> list = fifoService.GetQueues();
@@ -42,15 +50,15 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             if (numOfMessages == 0) numOfMessages = 1;
             List<QueueMessage?>? result = fifoService.GetMessages(queueName, numOfMessages);
-            var queueMessageList = new MessageList();
+            MessageList queueMessageList = new();
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
             return queueMessageList;
         }
 
         public MessageList AddMessage(string queueName, PostQueueMessage message, int visibilityTimeout, int messageTtl)
         {
-            var queueMessageList = new MessageList();
-            var queueMessage = new QueueMessage();
+            MessageList queueMessageList = new();
+            QueueMessage queueMessage = new();
             queueMessageList.QueueMessagesList.Add(queueMessage);
             queueMessage.DequeueCount = 0;
             queueMessage.ExpirationTime = DateTime.UtcNow.AddDays(7);

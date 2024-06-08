@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppliedQueueList", "Applied
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteListQueues", "AzuriteListQueues\AzuriteListQueues.csproj", "{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication", "Authentication\Authentication.csproj", "{0B310948-6E40-486F-BDE9-4C32F5BBB59A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,14 +87,6 @@ Global
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|Any CPU.Build.0 = Release|Any CPU
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|x64.ActiveCfg = Release|Any CPU
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|x64.Build.0 = Release|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|x64.Build.0 = Debug|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|x64.ActiveCfg = Release|Any CPU
-		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

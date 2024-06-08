@@ -1,4 +1,5 @@
 using AppliedQueueList;
+using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.Blob;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Services;
@@ -56,11 +57,13 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddControllers().AddXmlSerializerFormatters();
                 builder.Services.AddSerilog();
                 builder.Services.AddEndpointsApiExplorer();
+
                 builder.Services.AddSingleton<IFifoService, BlockingCollectionService>();
+                builder.Services.AddSingleton<IQueueSettings>(settings);
+
                 builder.Services.AddScoped<IMessageService, MessageService>();
                 builder.Services.AddScoped<IBlobService, BlobService>();
-                builder.Services.AddSingleton<IQueueSettings>(settings);
-                builder.Services.AddCors();
+                builder.Services.AddScoped<IAuthenticator, QueueSharedKeyAuthenticator>();
 
                 WebApplication app = builder.Build();
 
