@@ -1,0 +1,12 @@
+'GET\n\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:43be7d18-0bdd-4538-ae78-1e1312f1c612\nx-ms-date:Sat, 08 Jun 2024 14:51:31 GMT\nx-ms-version:2019-07-07\n'
+GET\n\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:ade59e2c-c08e-450f-8916-b9485942c3f2\nx-ms-date:Sat, 08 Jun 2024 14:56:50 GMT\nx-ms-version:2019-07-07\n/devstoreaccount1/devstoreaccount1\ncomp:list\ninclude:metadata\ntimeout:30
+GET\n\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:116c3198-6b5c-4655-87ee-b0c5c3271810\nx-ms-date:Sat, 08 Jun 2024 16:05:53 GMT\nx-ms-version:2019-07-07\n/devstoreaccount1/devstoreaccount1\ncomp:list\ninclude:metadata\ntimeout:30
+GET\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:ea0c9914-d676-4129-990e-5e9fa6676e94\nx-ms-date:Sat, 08 Jun 2024 21:29:27 GMT\nx-ms-version:2019-07-07\n/devstoreaccount1/devstoreaccount1\ncomp:list\ninclude:metadata\ntimeout:30
+
+17, 188, 188, 189, 211, 52, 219, 19, 78, 114, 161, 101, 169, 76, 9, 60, 185, 102, 18, 217, 66, 13, 114, 117, 57, 76, 197, 79, 157, 46, 73, 22, 122, 32, 91, 46, 22, 173, 148, 84, 74, 194, 207, 130, 58, 182, 175, 202, 213, 38, 69, 61, 51, 173, 175, 242, 129, 28, 23, 164, 178, 129, 140, 27
+17, 188, 188, 189, 211, 52, 219, 19, 78, 114, 161, 101, 169, 76, 9, 60, 185, 102, 18, 217, 66, 13, 114, 117, 57, 76, 197, 79, 157, 46, 73, 22, 122, 32, 91, 46, 22, 173, 148, 84, 74, 194, 207, 130, 58, 182, 175, 202, 213, 38, 69, 61, 51, 173, 175, 242, 129, 28, 23, 164, 178, 129, 140, 27
+
+PUT\n\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:f6bb49bc-248a-46e9-948b-809ee6876a47\nx-ms-date:Sat, 08 Jun 2024 21:19:06 GMT\nx-ms-version:2019-07-07\n/devstoreaccount1/devstoreaccount1/aaa\ntimeout:30
+PUT\n\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:e48d44ca-a2c3-4eea-a459-e3ed2d98d30d\nx-ms-date:Sat, 08 Jun 2024 21:25:14 GMT\nx-ms-version:2019-07-07\n/devstoreaccount1/devstoreaccount1/aaa\ntimeout:30
+
+GET\n\n\n\n\n\n\n\n\n\n\n\nx-ms-client-request-id:59560ede-b8ac-432a-92b7-d299b29953f7\nx-ms-date:Sat, 08 Jun 2024 21:20:47 GMT\nx-ms-version:2019-07-07\n/devstoreaccount1/devstoreaccount1/aaa/messages\nnumofmessages:32\npeekonly:true\ntimeout:30

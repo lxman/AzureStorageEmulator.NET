@@ -12,6 +12,21 @@ namespace AzureStorageEmulator.NET.Controllers
     public class QueueController(IMessageService messageService, IQueueSettings settings) : ControllerBase
     {
         /// <summary>
+        /// Create a new queue.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns>201 if created, 204 if already exists</returns>
+        [HttpPut]
+        [Route("{queueName}")]
+        public async Task<IActionResult> CreateQueue(string queueName)
+        {
+            Log.Information($"CreateQueue queueName = {queueName}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            await Task.Delay(settings.Delay);
+            return new StatusCodeResult(messageService.AddQueue(queueName) ? 201 : 204);
+        }
+
+        /// <summary>
         /// List the queues in the storage account.
         /// </summary>
         /// <param name="comp"></param>
@@ -29,6 +44,21 @@ namespace AzureStorageEmulator.NET.Controllers
                 ContentType = "application/xml",
                 StatusCode = 200
             };
+        }
+
+        /// <summary>
+        /// Delete a queue.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("{queueName}")]
+        public IActionResult DeleteQueue(string queueName)
+        {
+            Log.Information($"DeleteQueue name = {queueName}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            messageService.DeleteQueue(queueName);
+            return new StatusCodeResult(204);
         }
 
         /// <summary>
@@ -97,21 +127,6 @@ namespace AzureStorageEmulator.NET.Controllers
             _ = await messageService.DeleteMessage(queueName, messageId, popReceipt);
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(204);
-        }
-
-        /// <summary>
-        /// Create a new queue.
-        /// </summary>
-        /// <param name="queueName"></param>
-        /// <returns>201 if created, 204 if already exists</returns>
-        [HttpPut]
-        [Route("{queueName}")]
-        public async Task<IActionResult> CreateQueue(string queueName)
-        {
-            Log.Information($"CreateQueue queueName = {queueName}");
-            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
-            await Task.Delay(settings.Delay);
-            return new StatusCodeResult(messageService.AddQueue(queueName) ? 201 : 204);
         }
     }
 }

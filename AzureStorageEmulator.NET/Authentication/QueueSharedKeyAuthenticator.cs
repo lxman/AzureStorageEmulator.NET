@@ -35,7 +35,7 @@ namespace AzureStorageEmulator.NET.Authentication
                 [
                     "Content-Encoding",
                     "Content-Language",
-                    "Content-Length",
+                    "",//"Content-Length",
                     "Content-MD5",
                     "Content-Type",
                     "Date",
