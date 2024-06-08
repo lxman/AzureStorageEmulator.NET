@@ -2,6 +2,7 @@
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -18,24 +19,26 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         public async Task CreateQueue_ShouldReturn201_WhenQueueIsCreated()
         {
             MockMessageService.Setup(service => service.AddQueue(It.IsAny<string>())).Returns(true);
+            MockMessageService.Setup(service => service.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 
             IActionResult result = await _controller.CreateQueue(QueueName);
 
-            var statusCodeResult = Assert.IsType<StatusCodeResult>(result);
+            StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(201, statusCodeResult.StatusCode);
         }
 
         [Fact]
         public async Task PostMessage_ShouldReturn201_WhenMessageIsPosted()
         {
-            var message = new PostQueueMessage { MessageText = "testMessage" };
+            PostQueueMessage message = new() { MessageText = "testMessage" };
             MockMessageService
                 .Setup(ms => ms.AddMessage(QueueName, It.IsAny<PostQueueMessage>(), It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new MessageList());
+            MockMessageService.Setup(service => service.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 
             IActionResult result = await _controller.PostMessage(QueueName, message);
 
-            var contentResult = Assert.IsType<ContentResult>(result);
+            ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(201, contentResult.StatusCode);
         }
 

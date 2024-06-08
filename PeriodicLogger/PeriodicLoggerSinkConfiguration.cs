@@ -8,9 +8,9 @@ namespace PeriodicLogger
     {
         public static LoggerConfiguration PeriodicLoggerSink(this LoggerSinkConfiguration loggerConfiguration, int period)
         {
-            var sink = new PeriodicLoggerSink();
+            PeriodicLoggerSink? sink = new();
 
-            var batchingOptions = new PeriodicBatchingSinkOptions
+            PeriodicBatchingSinkOptions? batchingOptions = new()
             {
                 BatchSizeLimit = 100,
                 Period = TimeSpan.FromSeconds(period),
@@ -18,7 +18,7 @@ namespace PeriodicLogger
                 QueueLimit = 10000
             };
 
-            var periodicBatchingSink = new PeriodicBatchingSink(sink, batchingOptions);
+            PeriodicBatchingSink? periodicBatchingSink = new(sink, batchingOptions);
 
             return loggerConfiguration.Sink(periodicBatchingSink);
         }

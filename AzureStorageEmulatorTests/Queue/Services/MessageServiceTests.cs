@@ -1,6 +1,7 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
+using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace AzureStorageEmulatorTests.Queue.Services
@@ -34,7 +35,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public void AddMessage_ShouldAddMessageToQueue()
         {
-            var message = new PostQueueMessage { MessageText = "testMessage" };
+            PostQueueMessage message = new() { MessageText = "testMessage" };
 
             MessageList result = _messageService.AddMessage(QueueName, message, 0, 0);
 
@@ -45,8 +46,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task DeleteMessage_ShouldDeleteMessageFromQueue()
         {
-            var messageId = Guid.NewGuid();
-            var popReceipt = Guid.NewGuid().ToString();
+            Guid messageId = Guid.NewGuid();
+            string popReceipt = Guid.NewGuid().ToString();
 
             await _messageService.DeleteMessage(QueueName, messageId, popReceipt);
 
@@ -58,11 +59,12 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             List<string> queues = ["queue1", "queue2", "queue3"];
             MockFifoService.Setup(service => service.GetQueues()).Returns(queues);
+            MockAuthenticator.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 
             string result = _messageService.GetQueues();
 
             Assert.Equal(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><QueueMessagesList><EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\"><Prefix/><MaxResults>5000</MaxResults><Queues><Queue><Name>queue1</Name><Metadata/></Queue><Queue><Name>queue2</Name><Metadata/></Queue><Queue><Name>queue3</Name><Metadata/></Queue></Queues><NextMarker/></EnumerationResults></QueueMessagesList>",
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\"><Prefix/><MaxResults>5000</MaxResults><Queues><Queue><Name>queue1</Name><Metadata/></Queue><Queue><Name>queue2</Name><Metadata/></Queue><Queue><Name>queue3</Name><Metadata/></Queue></Queues><NextMarker/></EnumerationResults>",
                 result);
             MockFifoService.Verify(service => service.GetQueues(), Times.Once);
         }
@@ -82,7 +84,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public void GetMessage_ShouldReturnMessage()
         {
-            var message = new QueueMessage
+            QueueMessage message = new()
             {
                 MessageId = Guid.NewGuid(),
                 InsertionTime = DateTime.UtcNow,

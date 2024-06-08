@@ -31,7 +31,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public void AddMessage_ShouldAddMessageToQueue()
         {
             _service.AddQueue(QueueName);
-            var message = new QueueMessage { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
+            QueueMessage? message = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
 
             _service.AddMessage(QueueName, message);
 
@@ -45,7 +45,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public void GetMessage_ShouldReturnMessageFromQueue()
         {
             _service.AddQueue(QueueName);
-            var message = new QueueMessage { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
+            QueueMessage? message = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
             _service.AddMessage(QueueName, message);
 
             QueueMessage? result = _service.GetMessage(QueueName);
@@ -58,7 +58,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task DeleteMessage_ShouldDeleteMessageFromQueue()
         {
             _service.AddQueue(QueueName);
-            var message = new QueueMessage { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
+            QueueMessage? message = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
             _service.AddMessage(QueueName, message);
 
             QueueMessage? deletedMessage = await _service.DeleteMessage(QueueName, message.MessageId, message.PopReceipt);
@@ -83,8 +83,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public void GetMessages_ShouldReturnListOfMessagesFromQueue()
         {
             _service.AddQueue(QueueName);
-            var message1 = new QueueMessage { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt1" };
-            var message2 = new QueueMessage { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt2" };
+            QueueMessage? message1 = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt1" };
+            QueueMessage? message2 = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt2" };
             _service.AddMessage(QueueName, message1);
             _service.AddMessage(QueueName, message2);
 
