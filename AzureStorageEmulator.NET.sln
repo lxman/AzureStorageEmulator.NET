@@ -17,11 +17,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlTransformer", "XmlTransf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulator.NET", "AzureStorageEmulator.NET\AzureStorageEmulator.NET.csproj", "{331168C1-A49B-4D18-83A8-CDCDA1B7500D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzuriteCreateQueues", "AzuriteCreateQueues\AzuriteCreateQueues.csproj", "{24DBEEF9-6764-459A-A586-73D837336390}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteCreateQueues", "AzuriteCreateQueues\AzuriteCreateQueues.csproj", "{24DBEEF9-6764-459A-A586-73D837336390}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppliedQueueList", "AppliedQueueList\AppliedQueueList.csproj", "{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppliedQueueList", "AppliedQueueList\AppliedQueueList.csproj", "{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzuriteListQueues", "AzuriteListQueues\AzuriteListQueues.csproj", "{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteListQueues", "AzuriteListQueues\AzuriteListQueues.csproj", "{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication", "Authentication\Authentication.csproj", "{0B310948-6E40-486F-BDE9-4C32F5BBB59A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +89,14 @@ Global
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|Any CPU.Build.0 = Release|Any CPU
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|x64.ActiveCfg = Release|Any CPU
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}.Release|x64.Build.0 = Release|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Debug|x64.Build.0 = Debug|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|x64.ActiveCfg = Release|Any CPU
+		{0B310948-6E40-486F-BDE9-4C32F5BBB59A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
