@@ -26,8 +26,10 @@ namespace AzureStorageEmulator.NET.Controllers
             {
                 case "properties" when restype == "account":
                     return Ok();
+
                 case "list" when include == "metadata" && timeout is not null:
                     return Ok();
+
                 default:
                     {
                         string result = blobService.GetBlobs();
@@ -43,7 +45,7 @@ namespace AzureStorageEmulator.NET.Controllers
 
         [HttpGet]
         [Route("$logs")]
-        public IActionResult? GetBlob([FromQuery] string? restype)
+        public IActionResult GetBlob([FromQuery] string? restype)
         {
             if (restype == "container") return NotFound();
             return Ok();
@@ -51,7 +53,7 @@ namespace AzureStorageEmulator.NET.Controllers
 
         [HttpGet]
         [Route("$blobchangefeed")]
-        public IActionResult? GetBlobChangeFeed([FromQuery] string? restype)
+        public IActionResult GetBlobChangeFeed([FromQuery] string? restype)
         {
             if (restype == "container") return NotFound();
             return Ok();

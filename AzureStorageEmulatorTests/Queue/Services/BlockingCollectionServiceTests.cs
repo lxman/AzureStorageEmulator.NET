@@ -38,7 +38,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             List<QueueMessage?>? messages = _service.GetMessages(QueueName, 1);
             Assert.NotNull(messages);
             Assert.Single(messages);
-            Assert.Equal(message.MessageId, messages.First().MessageId);
+            Assert.Equal(message.MessageId, messages.First()!.MessageId);
         }
 
         [Fact]

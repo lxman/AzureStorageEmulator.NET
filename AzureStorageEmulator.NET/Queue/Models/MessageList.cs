@@ -2,6 +2,6 @@
 {
     public class MessageList
     {
-        public List<QueueMessage?> QueueMessagesList { get; set; } = new();
+        public List<QueueMessage?> QueueMessagesList { get; set; } = [];
     }
 }

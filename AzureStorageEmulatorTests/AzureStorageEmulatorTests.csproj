@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Folder Include="Blob\" />
+    <Folder Include="Authentication\" />
     <Folder Include="Table\" />
   </ItemGroup>
 

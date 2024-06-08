@@ -8,6 +8,19 @@ namespace AzureStorageEmulator.NET.Authentication
     {
         public bool Authenticate(HttpRequest request)
         {
+            if (!request.Headers.ContainsKey("Authorization"))
+            {
+                return false;
+            }
+            if (request.Headers.Authorization == StringValues.Empty)
+            {
+                return false;
+            }
+            if (string.IsNullOrEmpty(request.Method) || string.IsNullOrEmpty(request.Path.Value) || string.IsNullOrEmpty(request.QueryString.Value))
+            {
+                return false;
+            }
+
             byte[] key =
                 Convert.FromBase64String(
                     "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
@@ -20,7 +33,7 @@ namespace AzureStorageEmulator.NET.Authentication
             return calculatedSignature == providedSignature;
         }
 
-        private string Sign(byte[] key, string toEncode)
+        private static string Sign(byte[] key, string toEncode)
         {
             using HMACSHA256 hmac = new(key);
             byte[] hashValue = hmac.ComputeHash(Encoding.UTF8.GetBytes(toEncode));
