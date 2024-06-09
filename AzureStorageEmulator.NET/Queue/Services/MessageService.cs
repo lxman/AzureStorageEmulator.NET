@@ -1,5 +1,4 @@
-﻿using System.Text;
-using AzureStorageEmulator.NET.Authentication;
+﻿using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.Queue.Models;
 using XmlTransformer.Queue.Models;
 
@@ -9,7 +8,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         bool Authenticate(HttpRequest request);
 
-        string GetQueues();
+        List<string> GetQueues();
 
         bool AddQueue(string queueName);
 
@@ -33,20 +32,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return authenticator.Authenticate(request);
         }
 
-        public string GetQueues()
+        public List<string> GetQueues()
         {
-            List<string> list = fifoService.GetQueues();
-            StringBuilder output = new();
-            output.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
-            output.Append("<EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\">");
-            output.Append("<Prefix/>");
-            output.Append("<MaxResults>5000</MaxResults>");
-            output.Append("<Queues>");
-            list.ForEach(queueName => output.Append($"<Queue><Name>{queueName}</Name><Metadata/></Queue>"));
-            output.Append("</Queues>");
-            output.Append("<NextMarker/>");
-            output.Append("</EnumerationResults>");
-            return output.ToString();
+            return fifoService.GetQueues();
         }
 
         public MessageList GetMessages(string queueName, int numOfMessages)

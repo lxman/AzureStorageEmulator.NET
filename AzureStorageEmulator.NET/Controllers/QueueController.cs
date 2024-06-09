@@ -3,8 +3,10 @@ using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using XmlTransformer;
 using XmlTransformer.Queue.Models;
 using XmlTransformer.Queue.Transformers;
+#pragma warning disable CA1859
 
 namespace AzureStorageEmulator.NET.Controllers
 {
@@ -13,6 +15,8 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10001")]
     public class QueueController(IMessageService messageService, IQueueSettings settings) : ControllerBase
     {
+        private readonly IXmlTransformer _transformer = new QueueXmlTransformer();
+
         /// <summary>
         /// Create a new queue.
         /// </summary>
@@ -39,10 +43,10 @@ namespace AzureStorageEmulator.NET.Controllers
             Log.Information($"ListQueues comp = {comp}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             if (comp != "list") return new StatusCodeResult(400);
-            string result = messageService.GetQueues();
+            List<string> result = messageService.GetQueues();
             return new ContentResult
             {
-                Content = result,
+                Content = _transformer.ToXml(result),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
@@ -79,7 +83,7 @@ namespace AzureStorageEmulator.NET.Controllers
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
-                Content = result.ToXml(true),
+                Content = _transformer.ToXml(result, true),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
@@ -107,7 +111,7 @@ namespace AzureStorageEmulator.NET.Controllers
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
-                Content = msg.ToXml(),
+                Content = _transformer.ToXml(msg),
                 ContentType = "application/xml",
                 StatusCode = 201
             };

@@ -4,6 +4,7 @@ using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using XmlTransformer.Queue.Models;
+using XmlTransformer.Queue.Transformers;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
@@ -12,7 +13,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private const string QueueName = "testQueue";
         private static readonly Mock<IFifoService> MockFifoService = new();
         private static readonly Mock<IAuthenticator> MockAuthenticator = new();
-        private readonly MessageService _messageService = new MessageService(MockFifoService.Object, MockAuthenticator.Object);
+        private readonly MessageService _messageService = new(MockFifoService.Object, MockAuthenticator.Object);
+        private readonly QueueXmlTransformer _transformer = new();
 
         [Fact]
         public void AddQueue_ShouldAddQueueSuccessfully()
@@ -62,11 +64,11 @@ namespace AzureStorageEmulatorTests.Queue.Services
             MockFifoService.Setup(service => service.GetQueues()).Returns(queues);
             MockAuthenticator.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 
-            string result = _messageService.GetQueues();
+            List<string> result = _messageService.GetQueues();
 
             Assert.Equal(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\"><Prefix/><MaxResults>5000</MaxResults><Queues><Queue><Name>queue1</Name><Metadata/></Queue><Queue><Name>queue2</Name><Metadata/></Queue><Queue><Name>queue3</Name><Metadata/></Queue></Queues><NextMarker/></EnumerationResults>",
-                result);
+                _transformer.ToXml(result, true));
             MockFifoService.Verify(service => service.GetQueues(), Times.Once);
         }
 
