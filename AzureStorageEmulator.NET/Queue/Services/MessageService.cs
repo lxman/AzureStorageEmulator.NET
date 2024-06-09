@@ -21,6 +21,8 @@ namespace AzureStorageEmulator.NET.Queue.Services
         QueueMessage? GetMessage(string queueName);
 
         Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt);
+
+        void DeleteMessages(string queueName);
     }
 
     public class MessageService(IFifoService fifoService, IAuthenticator authenticator) : IMessageService
@@ -89,6 +91,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
         {
             return fifoService.DeleteMessage(queueName, messageId, popReceipt);
+        }
+
+        public void DeleteMessages(string queueName)
+        {
+            fifoService.DeleteMessages(queueName);
         }
     }
 }

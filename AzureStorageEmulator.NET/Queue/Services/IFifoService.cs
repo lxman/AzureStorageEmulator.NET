@@ -17,5 +17,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         QueueMessage? GetMessage(string queueName);
 
         Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt);
+
+        void DeleteMessages(string queueName);
     }
 }

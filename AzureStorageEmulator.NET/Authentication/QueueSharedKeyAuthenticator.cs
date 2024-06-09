@@ -48,7 +48,7 @@ namespace AzureStorageEmulator.NET.Authentication
                 [
                     "Content-Encoding",
                     "Content-Language",
-                    "",//"Content-Length",
+                    "Content-Length",
                     "Content-MD5",
                     "Content-Type",
                     "Date",
@@ -71,8 +71,16 @@ namespace AzureStorageEmulator.NET.Authentication
             string headerValues = string.Empty;
             headerNames.ForEach(h =>
             {
-                bool found = request.Headers.TryGetValue(h, out StringValues value);
-                headerValues += $"{(found ? $"{h}:{value.First()}" : string.Empty)}\n";
+                bool found = request.Headers.TryGetValue(h, out StringValues values);
+                headerValues +=
+                    $"{(
+                        found
+                            ? $"{(values != StringValues.Empty
+                                ? values.First() != "0"
+                                    ? string.Join(',', values!)
+                                    : string.Empty
+                                : string.Empty)}"
+                            : string.Empty)}\n";
             });
             result += headerValues;
             result += CanonicalizedHeaders(request);
@@ -94,7 +102,7 @@ namespace AzureStorageEmulator.NET.Authentication
             string resource = $"{request.Path.Value!}\n";
             string query = request.QueryString.Value!;
             query = query[1..];
-            List<string> queryList = [.. query.Split('&')];
+            List<string> queryList = [.. query.Split('&').Order()];
             List<string> queryResults = [];
             queryList.ForEach(q =>
             {

@@ -128,5 +128,15 @@ namespace AzureStorageEmulator.NET.Controllers
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(204);
         }
+
+        [HttpDelete]
+        [Route("{queueName}/messages")]
+        public IActionResult DeleteMessages(string queueName)
+        {
+            Log.Information($"DeleteMessages queueName = {queueName}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            messageService.DeleteMessages(queueName);
+            return new StatusCodeResult(204);
+        }
     }
 }

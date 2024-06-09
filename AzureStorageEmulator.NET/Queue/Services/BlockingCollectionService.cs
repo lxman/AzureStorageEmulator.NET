@@ -71,5 +71,15 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
             return msg;
         }
+
+        public void DeleteMessages(string queueName)
+        {
+            if (!_queues.TryGetValue(queueName, out BlockingCollection<QueueMessage?>? queue))
+            {
+                return;
+            }
+
+            while (queue.TryTake(out _)) { }
+        }
     }
 }
