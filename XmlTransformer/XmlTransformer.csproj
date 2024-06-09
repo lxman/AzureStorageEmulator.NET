@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Blob\" />
+    <Folder Include="Table\" />
+  </ItemGroup>
+
 </Project>

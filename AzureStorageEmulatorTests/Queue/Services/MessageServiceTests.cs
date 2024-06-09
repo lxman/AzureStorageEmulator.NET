@@ -3,6 +3,7 @@ using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {

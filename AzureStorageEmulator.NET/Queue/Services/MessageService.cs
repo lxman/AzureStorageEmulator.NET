@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.Queue.Models;
+using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {

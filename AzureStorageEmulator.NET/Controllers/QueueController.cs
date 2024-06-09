@@ -3,6 +3,8 @@ using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using XmlTransformer.Queue.Models;
+using XmlTransformer.Queue.Transformers;
 
 namespace AzureStorageEmulator.NET.Controllers
 {

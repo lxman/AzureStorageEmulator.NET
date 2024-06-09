@@ -1,6 +1,7 @@
 ﻿using System.Text;
+using XmlTransformer.Queue.Models;
 
-namespace AzureStorageEmulator.NET.Queue.Models
+namespace XmlTransformer.Queue.Transformers
 {
     public static class MessageListExtensions
     {

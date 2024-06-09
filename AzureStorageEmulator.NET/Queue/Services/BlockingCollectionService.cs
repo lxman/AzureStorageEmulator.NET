@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using AzureStorageEmulator.NET.Queue.Models;
 using Serilog;
+using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {

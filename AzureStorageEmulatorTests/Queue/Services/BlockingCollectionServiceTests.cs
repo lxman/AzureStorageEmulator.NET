@@ -1,5 +1,6 @@
 ﻿using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
+using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
