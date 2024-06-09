@@ -129,6 +129,11 @@ namespace AzureStorageEmulator.NET.Controllers
             return new StatusCodeResult(204);
         }
 
+        /// <summary>
+        /// Delete all messages from the queue.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
         [HttpDelete]
         [Route("{queueName}/messages")]
         public IActionResult DeleteMessages(string queueName)
