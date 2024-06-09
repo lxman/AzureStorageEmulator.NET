@@ -11,7 +11,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private const string QueueName = "testQueue";
         private static readonly Mock<IFifoService> MockFifoService = new();
         private static readonly Mock<IAuthenticator> MockAuthenticator = new();
-        private readonly IMessageService _messageService = new MessageService(MockFifoService.Object, MockAuthenticator.Object);
+        private readonly MessageService _messageService = new MessageService(MockFifoService.Object, MockAuthenticator.Object);
 
         [Fact]
         public void AddQueue_ShouldAddQueueSuccessfully()
