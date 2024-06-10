@@ -1,4 +1,4 @@
-﻿namespace XmlTransformer.Queue.Models
+﻿namespace XmlParsingTest.MessageList
 {
     public class QueueMessage
     {

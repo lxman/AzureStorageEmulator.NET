@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace XmlParsingTest
+namespace XmlParsingTest.StorageServiceProperties
 {
     [XmlType("StorageServiceProperties")]
     public class StorageServiceProperties_20130815

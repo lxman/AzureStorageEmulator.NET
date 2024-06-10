@@ -1,67 +1,74 @@
 ﻿using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using XmlParsingTest;
+using XmlParsingTest.MessageList;
 
-StorageServiceProperties_20130815 props = new()
+MessageList ml1 = new()
 {
-    Logging = new Logging
-    {
-        Version = "1.0",
-        Delete = true,
-        Read = true,
-        Write = true,
-        RetentionPolicy = new RetentionPolicy
+    QueueMessagesList =
+    [
+        new QueueMessage
         {
-            Enabled = true,
-            Days = 7
+            MessageId = Guid.NewGuid(),
+            InsertionTime = DateTime.Now,
+            ExpirationTime = DateTime.Now.AddHours(1),
+            PopReceipt = "pop",
+            TimeNextVisible = DateTime.Now.AddHours(2),
+            DequeueCount = 1,
+            MessageText = "Hello, World!"
         }
-    },
-    HourMetrics = new Metrics
-    {
-        Version = "1.0",
-        Enabled = true,
-        IncludeApis = true,
-        RetentionPolicy = new RetentionPolicy
-        {
-            Enabled = true,
-            Days = 7
-        }
-    },
-    MinuteMetrics = new Metrics
-    {
-        Version = "1.0",
-        Enabled = true,
-        IncludeApis = true,
-        RetentionPolicy = new RetentionPolicy
-        {
-            Enabled = true,
-            Days = 7
-        }
-    },
-    Cors = new Cors
-    {
-        CorsRule = new CorsRule
-        {
-            AllowedOrigins = "*",
-            AllowedMethods = "GET, PUT",
-            MaxAgeInSeconds = 500,
-            ExposedHeaders = "x-ms-meta-data*, x-ms-meta-target*",
-            AllowedHeaders = "x-ms-meta-abc, x-ms-meta-data*, x-ms-meta-target*"
-        }
-    }
+    ]
 };
 
-XmlSerializer serializer = new(typeof(StorageServiceProperties_20130815));
-
-XmlWriterSettings settings = new()
+MessageList ml2 = new()
 {
-    Indent = true,
-    IndentChars = "    ",
-    Encoding = Encoding.UTF8
+    QueueMessagesList =
+    [
+        new QueueMessage
+        {
+            MessageId = Guid.NewGuid(),
+            InsertionTime = DateTime.Now,
+            ExpirationTime = DateTime.Now.AddHours(1),
+            PopReceipt = "pop",
+            TimeNextVisible = DateTime.Now.AddHours(2)
+        }
+    ]
 };
-XmlWriter writer = XmlWriter.Create("output.xml", settings);
-writer.WriteStartDocument(true);
-XmlSerializerNamespaces ns = new();
-ns.Add("", "");
-serializer.Serialize(writer, props, ns);
+
+Write1();
+Write2();
+return;
+
+void Write1()
+{
+    XmlSerializer serializer = new(typeof(MessageList));
+
+    XmlWriterSettings settings = new()
+    {
+        Indent = true,
+        IndentChars = "    ",
+        Encoding = Encoding.UTF8
+    };
+    XmlWriter writer = XmlWriter.Create("output.xml", settings);
+    writer.WriteStartDocument(true);
+    XmlSerializerNamespaces ns = new();
+    ns.Add("", "");
+    serializer.Serialize(writer, ml1, ns);
+}
+
+void Write2()
+{
+    XmlSerializer serializer = new(typeof(MessageList));
+
+    XmlWriterSettings settings = new()
+    {
+        Indent = true,
+        IndentChars = "    ",
+        Encoding = Encoding.UTF8
+    };
+    XmlWriter writer = XmlWriter.Create("output2.xml", settings);
+    writer.WriteStartDocument(true);
+    XmlSerializerNamespaces ns = new();
+    ns.Add("", "");
+    serializer.Serialize(writer, ml2, ns);
+}
