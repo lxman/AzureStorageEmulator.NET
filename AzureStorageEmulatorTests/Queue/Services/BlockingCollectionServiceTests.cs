@@ -1,5 +1,4 @@
-﻿using AzureStorageEmulator.NET.Queue.Models;
-using AzureStorageEmulator.NET.Queue.Services;
+﻿using AzureStorageEmulator.NET.Queue.Services;
 using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulatorTests.Queue.Services
@@ -15,7 +14,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             bool result = _service.AddQueue(QueueName);
 
             Assert.True(result);
-            Assert.Contains(QueueName, _service.GetQueues());
+            Assert.Equal(QueueName, _service.GetQueues().First().Name);
         }
 
         [Fact]
@@ -25,7 +24,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
 
             _service.DeleteQueue(QueueName);
 
-            Assert.DoesNotContain(QueueName, _service.GetQueues());
+            Assert.DoesNotContain(new XmlTransformer.Queue.Models.Queue { Name = QueueName }, _service.GetQueues());
         }
 
         [Fact]
@@ -74,10 +73,10 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _service.AddQueue(QueueName);
 
-            List<string> queues = _service.GetQueues();
+            List<XmlTransformer.Queue.Models.Queue> queues = _service.GetQueues();
 
             Assert.NotNull(queues);
-            Assert.Contains(QueueName, queues);
+            Assert.Equal(QueueName, queues.First().Name);
         }
 
         [Fact]

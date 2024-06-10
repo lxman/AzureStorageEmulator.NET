@@ -1,6 +1,7 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.XmlSerialization;
 using XmlTransformer.Queue.Models;
+using EnumerationResults = AzureStorageEmulator.NET.Queue.Models.EnumerationResults;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
@@ -8,13 +9,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         bool Authenticate(HttpRequest request);
 
-        List<string> GetQueues();
+        string GetQueues();
 
         bool AddQueue(string queueName);
 
         void DeleteQueue(string queueName);
 
-        MessageList AddMessage(string queueName, PostQueueMessage message, int visibilityTimeout, int messageTtl);
+        MessageList AddMessage(string queueName, EnumerationResults message, int visibilityTimeout, int messageTtl);
 
         MessageList GetMessages(string queueName, int numOfMessages);
 
@@ -25,16 +26,21 @@ namespace AzureStorageEmulator.NET.Queue.Services
         void DeleteMessages(string queueName);
     }
 
-    public class MessageService(IFifoService fifoService, IAuthenticator authenticator) : IMessageService
+    public class MessageService(IFifoService fifoService,
+        IAuthenticator authenticator,
+        IXmlSerializer<XmlTransformer.Queue.Models.EnumerationResults> serializer) : IMessageService
     {
         public bool Authenticate(HttpRequest request)
         {
             return authenticator.Authenticate(request);
         }
 
-        public List<string> GetQueues()
+        public string GetQueues()
         {
-            return fifoService.GetQueues();
+            XmlTransformer.Queue.Models.EnumerationResults results = new();
+            results.Queues.AddRange(fifoService.GetQueues());
+            results.MaxResults = 5000;
+            return serializer.Serialize(results);
         }
 
         public MessageList GetMessages(string queueName, int numOfMessages)
@@ -46,7 +52,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return queueMessageList;
         }
 
-        public MessageList AddMessage(string queueName, PostQueueMessage message, int visibilityTimeout, int messageTtl)
+        public MessageList AddMessage(string queueName, EnumerationResults message, int visibilityTimeout, int messageTtl)
         {
             MessageList queueMessageList = new();
             QueueMessage queueMessage = new();

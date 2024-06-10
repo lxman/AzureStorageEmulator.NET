@@ -1,10 +1,11 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
+using AzureStorageEmulator.NET.XmlSerialization.Queue;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using XmlTransformer.Queue.Models;
 using XmlTransformer.Queue.Transformers;
+using EnumerationResults = AzureStorageEmulator.NET.Queue.Models.EnumerationResults;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
@@ -13,7 +14,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private const string QueueName = "testQueue";
         private static readonly Mock<IFifoService> MockFifoService = new();
         private static readonly Mock<IAuthenticator> MockAuthenticator = new();
-        private readonly MessageService _messageService = new(MockFifoService.Object, MockAuthenticator.Object);
+        private static readonly EnumerationResultsSerializer QueueSerializer = new();
+        private readonly MessageService _messageService = new(MockFifoService.Object, MockAuthenticator.Object, QueueSerializer);
         private readonly QueueXmlTransformer _transformer = new();
 
         [Fact]
@@ -38,7 +40,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public void AddMessage_ShouldAddMessageToQueue()
         {
-            PostQueueMessage message = new() { MessageText = "testMessage" };
+            EnumerationResults message = new() { MessageText = "testMessage" };
 
             MessageList result = _messageService.AddMessage(QueueName, message, 0, 0);
 
@@ -60,15 +62,20 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public void GetQueues_ShouldReturnListOfQueues()
         {
-            List<string> queues = ["queue1", "queue2", "queue3"];
+            List<XmlTransformer.Queue.Models.Queue> queues =
+                [
+                    new XmlTransformer.Queue.Models.Queue { Name = "queue1" },
+                    new XmlTransformer.Queue.Models.Queue { Name = "queue2" },
+                    new XmlTransformer.Queue.Models.Queue { Name = "queue3" }
+                ];
             MockFifoService.Setup(service => service.GetQueues()).Returns(queues);
             MockAuthenticator.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 
-            List<string> result = _messageService.GetQueues();
+            string result = _messageService.GetQueues();
 
             Assert.Equal(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\"><Prefix/><MaxResults>5000</MaxResults><Queues><Queue><Name>queue1</Name><Metadata/></Queue><Queue><Name>queue2</Name><Metadata/></Queue><Queue><Name>queue3</Name><Metadata/></Queue></Queues><NextMarker/></EnumerationResults>",
-                _transformer.ToXml(result, true));
+                "<?xml version=\"1.0\" encoding=\"utf-16\" standalone=\"yes\"?><EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\"><Prefix /><MaxResults>5000</MaxResults><Queues><Queue><Name>queue1</Name><Metadata /></Queue><Queue><Name>queue2</Name><Metadata /></Queue><Queue><Name>queue3</Name><Metadata /></Queue></Queues><NextMarker /></EnumerationResults>",
+                result);
             MockFifoService.Verify(service => service.GetQueues(), Times.Once);
         }
 

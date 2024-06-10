@@ -1,11 +1,12 @@
 ﻿using AzureStorageEmulator.NET.Queue;
-using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using XmlTransformer;
 using XmlTransformer.Queue.Models;
 using XmlTransformer.Queue.Transformers;
+using EnumerationResults = AzureStorageEmulator.NET.Queue.Models.EnumerationResults;
+
 #pragma warning disable CA1859
 
 namespace AzureStorageEmulator.NET.Controllers
@@ -43,10 +44,9 @@ namespace AzureStorageEmulator.NET.Controllers
             Log.Information($"ListQueues comp = {comp}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             if (comp != "list") return new StatusCodeResult(400);
-            List<string> result = messageService.GetQueues();
             return new ContentResult
             {
-                Content = _transformer.ToXml(result),
+                Content = messageService.GetQueues(),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
@@ -101,7 +101,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}/messages")]
         public async Task<IActionResult> PostMessage(
             string queueName,
-            [FromBody] PostQueueMessage message,
+            [FromBody] EnumerationResults message,
             [FromQuery] int visibilityTimeout = 0,
             [FromQuery] int messageTtl = 0)
         {

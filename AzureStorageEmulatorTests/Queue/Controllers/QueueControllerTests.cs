@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using XmlTransformer.Queue.Models;
+using EnumerationResults = AzureStorageEmulator.NET.Queue.Models.EnumerationResults;
 
 namespace AzureStorageEmulatorTests.Queue.Controllers
 {
@@ -31,9 +32,9 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task PostMessage_ShouldReturn201_WhenMessageIsPosted()
         {
-            PostQueueMessage message = new() { MessageText = "testMessage" };
+            EnumerationResults message = new() { MessageText = "testMessage" };
             MockMessageService
-                .Setup(ms => ms.AddMessage(QueueName, It.IsAny<PostQueueMessage>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Setup(ms => ms.AddMessage(QueueName, It.IsAny<EnumerationResults>(), It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new MessageList());
             MockMessageService.Setup(service => service.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 

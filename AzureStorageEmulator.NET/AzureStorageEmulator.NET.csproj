@@ -24,6 +24,8 @@
 
     <ItemGroup>
       <Folder Include="Table\" />
+      <Folder Include="XmlSerialization\Blob\" />
+      <Folder Include="XmlSerialization\Table\" />
     </ItemGroup>
 
 </Project>
