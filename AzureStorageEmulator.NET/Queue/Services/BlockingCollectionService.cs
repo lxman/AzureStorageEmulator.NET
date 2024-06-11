@@ -34,23 +34,17 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public List<QueueMessage?>? GetMessages(string queueName, int numOfMessages)
         {
-            if (!TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return null;
-            return queue!.Value.Value.Count == 0 ? null : queue.Value.Value.Take(numOfMessages).ToList();
+            return !TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+                ? null
+                : FilterMessagesByTime(queue!.Value.Value.Count == 0 ? null : queue.Value.Value.Take(numOfMessages).ToList());
         }
 
         public List<QueueMessage?>? GetAllMessages(string queueName)
         {
             return !TryGetQueue(queueName,
-                out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue) ? null : queue!.Value.Value.ToList();
-        }
-
-        public QueueMessage? GetMessage(string queueName)
-        {
-            return TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)
-                ? queue!.Value.Value.TryTake(out QueueMessage? result)
-                    ? result
-                    : null
-                : null;
+                out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+                ? null
+                : FilterMessagesByTime([.. queue!.Value.Value]);
         }
 
         public async Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
@@ -68,7 +62,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             }
 
             // Does the message exist?
-            QueueMessage? msg = queue.Value.Value.FirstOrDefault(m => m?.MessageId == messageId);
+            QueueMessage? msg = queue.Value.Value.FirstOrDefault(m => m?.MessageId == messageId && m.PopReceipt == popReceipt);
             if (msg is null) return null;
 
             // If so, reconstruct a new queue without the message
@@ -96,6 +90,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             queue = _queues.FirstOrDefault(q => q.Key.Name == queueName);
             return queue is not null;
+        }
+
+        private static List<QueueMessage?>? FilterMessagesByTime(List<QueueMessage?>? messages)
+        {
+            return messages?.Where(m => m?.TimeNextVisible >= DateTime.UtcNow).ToList();
         }
     }
 }

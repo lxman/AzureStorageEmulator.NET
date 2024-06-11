@@ -1,5 +1,6 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.XmlSerialization;
+using Microsoft.Extensions.Primitives;
 using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
@@ -20,16 +21,16 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         string GetAllMessages(string queueName);
 
-        QueueMessage? GetMessage(string queueName);
-
         Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt);
 
         void DeleteMessages(string queueName);
+
+        Dictionary<string, StringValues> QueryProcessor(HttpRequest request);
     }
 
     public class MessageService(IFifoService fifoService,
         IAuthenticator authenticator,
-        IXmlSerializer<XmlTransformer.Queue.Models.EnumerationResults> enumerationResultsSerializer,
+        IXmlSerializer<EnumerationResults> enumerationResultsSerializer,
         IXmlSerializer<MessageList> messageListSerializer) : IMessageService
     {
         public bool Authenticate(HttpRequest request)
@@ -39,7 +40,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public string GetQueues()
         {
-            XmlTransformer.Queue.Models.EnumerationResults results = new();
+            EnumerationResults results = new();
             results.Queues.AddRange(fifoService.GetQueues());
             results.MaxResults = 5000;
             return enumerationResultsSerializer.Serialize(results);
@@ -73,7 +74,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             queueMessage.MessageId = Guid.NewGuid();
             queueMessage.MessageText = message.MessageText;
             queueMessage.PopReceipt = Guid.NewGuid().ToString();
-            queueMessage.TimeNextVisible = DateTime.UtcNow.AddSeconds(messageTtl);
+            queueMessage.TimeNextVisible = DateTime.UtcNow.AddSeconds(visibilityTimeout);
             fifoService.AddMessage(queueName, queueMessage);
             return messageListSerializer.Serialize(queueMessageList);
         }
@@ -88,11 +89,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             fifoService.DeleteQueue(queueName);
         }
 
-        public QueueMessage? GetMessage(string queueName)
-        {
-            return fifoService.GetMessage(queueName);
-        }
-
         public Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
         {
             return fifoService.DeleteMessage(queueName, messageId, popReceipt);
@@ -101,6 +97,21 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public void DeleteMessages(string queueName)
         {
             fifoService.DeleteMessages(queueName);
+        }
+
+        public Dictionary<string, StringValues> QueryProcessor(HttpRequest request)
+        {
+            return request
+                .Query
+                .Keys
+                .ToDictionary(
+                    key => key,
+                    key => request
+                        .Query
+                        .TryGetValue(key, out StringValues values)
+                        ? values
+                        : []
+                );
         }
     }
 }

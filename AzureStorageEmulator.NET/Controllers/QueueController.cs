@@ -1,10 +1,12 @@
 ﻿using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Serilog;
 using XmlTransformer.Queue.Models;
 
-#pragma warning disable CA1859
+// ReSharper disable UnusedVariable
+#pragma warning disable IDE0059
 
 namespace AzureStorageEmulator.NET.Controllers
 {
@@ -19,11 +21,12 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns>201 if created, 204 if already exists</returns>
         [HttpPut]
-        [Route("{queueName}")]
+        [Route("{queueName:alpha}")]
         public async Task<IActionResult> CreateQueue(string queueName)
         {
             Log.Information($"CreateQueue queueName = {queueName}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(messageService.AddQueue(queueName) ? 201 : 204);
         }
@@ -31,14 +34,13 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <summary>
         /// List the queues in the storage account.
         /// </summary>
-        /// <param name="comp"></param>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult ListQueues([FromQuery] string comp)
+        public IActionResult ListQueues()
         {
-            Log.Information($"ListQueues comp = {comp}");
+            Log.Information("ListQueues");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
-            if (comp != "list") return new StatusCodeResult(400);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             return new ContentResult
             {
                 Content = messageService.GetQueues(),
@@ -53,11 +55,12 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("{queueName}")]
+        [Route("{queueName:alpha}")]
         public IActionResult DeleteQueue(string queueName)
         {
             Log.Information($"DeleteQueue name = {queueName}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             messageService.DeleteQueue(queueName);
             return new StatusCodeResult(204);
         }
@@ -69,11 +72,12 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="numOfMessages"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("{queueName}/messages")]
+        [Route("{queueName:alpha}/messages")]
         public async Task<IActionResult> GetMessages(string queueName, [FromQuery] int numOfMessages)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}, numOfMessages = {numOfMessages}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
@@ -87,24 +91,24 @@ namespace AzureStorageEmulator.NET.Controllers
         /// Get all messages from the queue.
         /// </summary>
         /// <param name="queueName"></param>
-        /// <param name="comp"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("{queueName}")]
-        public async Task<IActionResult> GetAllMessages(string queueName, [FromQuery] string comp = "", [FromQuery] int timeout = 0)
+        [Route("{queueName:alpha}")]
+        public async Task<IActionResult> GetAllMessages(string queueName)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
-                Content = messageService.GetMessages(queueName, 32),
+                Content = messageService.GetAllMessages(queueName),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
         }
 
+        // TODO: Inspect query string usage here
         /// <summary>
         /// Put a message in the queue.
         /// </summary>
@@ -115,7 +119,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("{queueName}/messages")]
+        [Route("{queueName:alpha}/messages")]
         public async Task<IActionResult> PostMessage(
             string queueName,
             [FromBody] QueueMessage message,
@@ -125,6 +129,7 @@ namespace AzureStorageEmulator.NET.Controllers
         {
             Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
@@ -142,11 +147,12 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="popReceipt"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("{queueName}/messages/{messageId:guid}")]
+        [Route("{queueName:alpha}/messages/{messageId:guid}")]
         public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, [FromQuery] string popReceipt)
         {
             Log.Information($"DeleteMessage queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor();
             _ = await messageService.DeleteMessage(queueName, messageId, popReceipt);
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(204);
@@ -158,13 +164,19 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("{queueName}/messages")]
+        [Route("{queueName:alpha}/messages")]
         public IActionResult DeleteMessages(string queueName)
         {
             Log.Information($"DeleteMessages queueName = {queueName}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
             messageService.DeleteMessages(queueName);
             return new StatusCodeResult(204);
+        }
+
+        private Dictionary<string, StringValues> QueryProcessor()
+        {
+            return messageService.QueryProcessor(Request);
         }
     }
 }

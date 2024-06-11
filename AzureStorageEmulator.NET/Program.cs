@@ -39,13 +39,11 @@ namespace AzureStorageEmulator.NET
                     .Instrument.AspNetCoreRequests()
                     .TraceToSharedLogger();
             }
-            else
-            {
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                    .WriteTo.PeriodicLoggerSink(BatchSeconds)
-                    .CreateLogger();
-            }
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .WriteTo.PeriodicLoggerSink(BatchSeconds)
+                .CreateLogger();
 
             Log.Information("Starting up");
 

@@ -1,12 +1,13 @@
 ﻿using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulator.NET.XmlSerialization.Queue
 {
-    public class EnumerationResultsSerializer : IXmlSerializer<XmlTransformer.Queue.Models.EnumerationResults>
+    public class EnumerationResultsSerializer : IXmlSerializer<EnumerationResults>
     {
-        private readonly XmlSerializer _serializer = new(typeof(XmlTransformer.Queue.Models.EnumerationResults));
+        private readonly XmlSerializer _serializer = new(typeof(EnumerationResults));
         private readonly XmlWriter _writer;
         private readonly StringBuilder _output = new();
         private readonly XmlSerializerNamespaces _ns = new();
@@ -22,14 +23,14 @@ namespace AzureStorageEmulator.NET.XmlSerialization.Queue
             _ns.Add("", "");
         }
 
-        public string Serialize(XmlTransformer.Queue.Models.EnumerationResults o)
+        public string Serialize(EnumerationResults o)
         {
             _serializer.Serialize(_writer, o, _ns);
             _writer.Flush();
             return _output.ToString();
         }
 
-        public XmlTransformer.Queue.Models.EnumerationResults Deserialize(string xml)
+        public EnumerationResults Deserialize(string xml)
         {
             throw new NotImplementedException();
         }

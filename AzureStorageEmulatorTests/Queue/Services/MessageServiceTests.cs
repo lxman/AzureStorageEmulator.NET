@@ -3,7 +3,6 @@ using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
@@ -90,27 +89,5 @@ namespace AzureStorageEmulatorTests.Queue.Services
         //    //Assert.Equal(2, result.QueueMessagesList.Count);
         //    MockFifoService.Verify(service => service.GetMessages(QueueName, 2), Times.Once);
         //}
-
-        [Fact]
-        public void GetMessage_ShouldReturnMessage()
-        {
-            QueueMessage message = new()
-            {
-                MessageId = Guid.NewGuid(),
-                InsertionTime = DateTime.UtcNow,
-                ExpirationTime = DateTime.UtcNow.AddDays(7),
-                PopReceipt = Guid.NewGuid().ToString(),
-                TimeNextVisible = DateTime.UtcNow.AddSeconds(10),
-                DequeueCount = 0,
-                MessageText = "testMessage"
-            };
-
-            MockFifoService.Setup(service => service.GetMessage(QueueName)).Returns(message);
-
-            QueueMessage result = _messageService.GetMessage(QueueName) ?? new QueueMessage();
-
-            Assert.Equal(message, result);
-            MockFifoService.Verify(service => service.GetMessage(QueueName), Times.Once);
-        }
     }
 }
