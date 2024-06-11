@@ -2,10 +2,7 @@
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using XmlTransformer;
 using XmlTransformer.Queue.Models;
-using XmlTransformer.Queue.Transformers;
-using EnumerationResults = AzureStorageEmulator.NET.Queue.Models.EnumerationResults;
 
 #pragma warning disable CA1859
 
@@ -16,8 +13,6 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10001")]
     public class QueueController(IMessageService messageService, IQueueSettings settings) : ControllerBase
     {
-        private readonly IXmlTransformer _transformer = new QueueXmlTransformer();
-
         /// <summary>
         /// Create a new queue.
         /// </summary>
@@ -79,11 +74,32 @@ namespace AzureStorageEmulator.NET.Controllers
         {
             if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}, numOfMessages = {numOfMessages}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
-            MessageList result = messageService.GetMessages(queueName, numOfMessages);
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
-                Content = _transformer.ToXml(result, true),
+                Content = messageService.GetMessages(queueName, numOfMessages),
+                ContentType = "application/xml",
+                StatusCode = 200
+            };
+        }
+
+        /// <summary>
+        /// Get all messages from the queue.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <param name="comp"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{queueName}")]
+        public async Task<IActionResult> GetAllMessages(string queueName, [FromQuery] string comp = "", [FromQuery] int timeout = 0)
+        {
+            if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}");
+            if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
+            await Task.Delay(settings.Delay);
+            return new ContentResult
+            {
+                Content = messageService.GetMessages(queueName, 32),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
@@ -96,22 +112,23 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="message"></param>
         /// <param name="visibilityTimeout"></param>
         /// <param name="messageTtl"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("{queueName}/messages")]
         public async Task<IActionResult> PostMessage(
             string queueName,
-            [FromBody] EnumerationResults message,
+            [FromBody] QueueMessage message,
             [FromQuery] int visibilityTimeout = 0,
-            [FromQuery] int messageTtl = 0)
+            [FromQuery] int messageTtl = 0,
+            [FromQuery] int timeout = 0)
         {
-            Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}");
+            Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
             if (!messageService.Authenticate(Request)) return new StatusCodeResult(403);
-            MessageList msg = messageService.AddMessage(queueName, message, visibilityTimeout, messageTtl);
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
-                Content = _transformer.ToXml(msg),
+                Content = messageService.AddMessage(queueName, message, visibilityTimeout, messageTtl, timeout),
                 ContentType = "application/xml",
                 StatusCode = 201
             };

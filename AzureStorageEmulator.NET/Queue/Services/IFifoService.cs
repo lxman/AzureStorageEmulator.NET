@@ -1,5 +1,4 @@
-﻿using AzureStorageEmulator.NET.Queue.Models;
-using XmlTransformer.Queue.Models;
+﻿using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
@@ -14,6 +13,8 @@ namespace AzureStorageEmulator.NET.Queue.Services
         void AddMessage(string queueName, QueueMessage message);
 
         List<QueueMessage?>? GetMessages(string queueName, int numOfMessages);
+
+        List<QueueMessage?>? GetAllMessages(string queueName);
 
         QueueMessage? GetMessage(string queueName);
 

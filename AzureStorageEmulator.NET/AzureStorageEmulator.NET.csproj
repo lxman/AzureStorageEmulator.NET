@@ -19,7 +19,6 @@
     <ItemGroup>
         <ProjectReference Include="..\AppliedQueueList\AppliedQueueList.csproj" />
         <ProjectReference Include="..\PeriodicLogger\PeriodicLogger.csproj" />
-        <ProjectReference Include="..\XmlTransformer\XmlTransformer.csproj" />
     </ItemGroup>
 
     <ItemGroup>

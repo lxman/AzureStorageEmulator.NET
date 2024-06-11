@@ -38,6 +38,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return queue!.Value.Value.Count == 0 ? null : queue.Value.Value.Take(numOfMessages).ToList();
         }
 
+        public List<QueueMessage?>? GetAllMessages(string queueName)
+        {
+            return !TryGetQueue(queueName,
+                out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue) ? null : queue!.Value.Value.ToList();
+        }
+
         public QueueMessage? GetMessage(string queueName)
         {
             return TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)

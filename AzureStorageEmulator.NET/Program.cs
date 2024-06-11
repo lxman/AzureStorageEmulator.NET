@@ -68,7 +68,8 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddScoped<IBlobService, BlobService>();
                 builder.Services.AddScoped<IAuthenticator, QueueSharedKeyAuthenticator>();
                 builder.Services
-                    .AddSingleton<IXmlSerializer<EnumerationResults>, EnumerationResultsSerializer>();
+                    .AddScoped<IXmlSerializer<EnumerationResults>, EnumerationResultsSerializer>();
+                builder.Services.AddScoped<IXmlSerializer<MessageList>, MessageListSerializer>();
 
                 WebApplication app = builder.Build();
 

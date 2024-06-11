@@ -1,7 +1,6 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
 using AzureStorageEmulator.NET.XmlSerialization;
 using XmlTransformer.Queue.Models;
-using EnumerationResults = AzureStorageEmulator.NET.Queue.Models.EnumerationResults;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
@@ -15,9 +14,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         void DeleteQueue(string queueName);
 
-        MessageList AddMessage(string queueName, EnumerationResults message, int visibilityTimeout, int messageTtl);
+        string AddMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout);
 
-        MessageList GetMessages(string queueName, int numOfMessages);
+        string GetMessages(string queueName, int numOfMessages);
+
+        string GetAllMessages(string queueName);
 
         QueueMessage? GetMessage(string queueName);
 
@@ -28,7 +29,8 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
     public class MessageService(IFifoService fifoService,
         IAuthenticator authenticator,
-        IXmlSerializer<XmlTransformer.Queue.Models.EnumerationResults> serializer) : IMessageService
+        IXmlSerializer<XmlTransformer.Queue.Models.EnumerationResults> enumerationResultsSerializer,
+        IXmlSerializer<MessageList> messageListSerializer) : IMessageService
     {
         public bool Authenticate(HttpRequest request)
         {
@@ -40,19 +42,27 @@ namespace AzureStorageEmulator.NET.Queue.Services
             XmlTransformer.Queue.Models.EnumerationResults results = new();
             results.Queues.AddRange(fifoService.GetQueues());
             results.MaxResults = 5000;
-            return serializer.Serialize(results);
+            return enumerationResultsSerializer.Serialize(results);
         }
 
-        public MessageList GetMessages(string queueName, int numOfMessages)
+        public string GetMessages(string queueName, int numOfMessages)
         {
             if (numOfMessages == 0) numOfMessages = 1;
             List<QueueMessage?>? result = fifoService.GetMessages(queueName, numOfMessages);
             MessageList queueMessageList = new();
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
-            return queueMessageList;
+            return messageListSerializer.Serialize(queueMessageList);
         }
 
-        public MessageList AddMessage(string queueName, EnumerationResults message, int visibilityTimeout, int messageTtl)
+        public string GetAllMessages(string queueName)
+        {
+            List<QueueMessage?>? result = fifoService.GetAllMessages(queueName);
+            MessageList queueMessageList = new();
+            if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
+            return messageListSerializer.Serialize(queueMessageList);
+        }
+
+        public string AddMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout)
         {
             MessageList queueMessageList = new();
             QueueMessage queueMessage = new();
@@ -65,7 +75,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             queueMessage.PopReceipt = Guid.NewGuid().ToString();
             queueMessage.TimeNextVisible = DateTime.UtcNow.AddSeconds(messageTtl);
             fifoService.AddMessage(queueName, queueMessage);
-            return queueMessageList;
+            return messageListSerializer.Serialize(queueMessageList);
         }
 
         public bool AddQueue(string queueName)

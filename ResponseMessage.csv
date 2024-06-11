@@ -1,0 +1,2 @@
+﻿QueueMessage,QueueMessage.MessageId,QueueMessage.InsertionTime,QueueMessage.ExpirationTime,QueueMessage.PopReceipt,QueueMessage.TimeNextVisible,QueueMessage.DequeueCount,QueueMessage.MessageText
+XmlTransformer.Queue.Models.QueueMessage,26323225-a41c-4a08-b8c4-b52a5aeeff41,"6/11/2024 1:36:06 AM","6/18/2024 1:36:06 AM",f349f115-892e-40aa-a85a-b3c53da15ae3,"6/18/2024 1:36:06 AM",0,SGVsbG8gdGhlcmUh

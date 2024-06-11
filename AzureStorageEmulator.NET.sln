@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeriodicLogger", "PeriodicL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulatorTests", "AzureStorageEmulatorTests\AzureStorageEmulatorTests.csproj", "{D27419C3-A1F7-4792-AB6A-525A40D168BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlTransformer", "XmlTransformer\XmlTransformer.csproj", "{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulator.NET", "AzureStorageEmulator.NET\AzureStorageEmulator.NET.csproj", "{331168C1-A49B-4D18-83A8-CDCDA1B7500D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteCreateQueues", "AzuriteCreateQueues\AzuriteCreateQueues.csproj", "{24DBEEF9-6764-459A-A586-73D837336390}"
@@ -24,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppliedQueueList", "Applied
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteListQueues", "AzuriteListQueues\AzuriteListQueues.csproj", "{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlParsingTest", "XmlParsingTest\XmlParsingTest.csproj", "{C52B1E70-9250-4A92-B2FF-B3286D7C7B75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlParsingTest", "XmlParsingTest\XmlParsingTest.csproj", "{C52B1E70-9250-4A92-B2FF-B3286D7C7B75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,14 +48,6 @@ Global
 		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|x64.ActiveCfg = Release|Any CPU
 		{D27419C3-A1F7-4792-AB6A-525A40D168BF}.Release|x64.Build.0 = Release|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Debug|x64.Build.0 = Debug|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|x64.ActiveCfg = Release|Any CPU
-		{FE08933E-2968-4D2D-94E2-CC1BAF6E4356}.Release|x64.Build.0 = Release|Any CPU
 		{331168C1-A49B-4D18-83A8-CDCDA1B7500D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{331168C1-A49B-4D18-83A8-CDCDA1B7500D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{331168C1-A49B-4D18-83A8-CDCDA1B7500D}.Debug|x64.ActiveCfg = Debug|Any CPU
