@@ -143,7 +143,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             _ = fifoService.DeleteMessage(queueName, messageId, popReceipt);
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(204);
-
         }
 
         public IActionResult DeleteMessages(string queueName, HttpRequest request)

@@ -16,12 +16,14 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private static readonly Mock<IQueueSettings> MockQueueSettings = new();
         private static readonly EnumerationResultsSerializer EnumerationResultsSerializer = new();
         private static readonly MessageListSerializer MessageListSerializer = new();
+
         private readonly MessageService _messageService = new(
             MockFifoService.Object,
             MockAuthenticator.Object,
             EnumerationResultsSerializer,
             MessageListSerializer,
             MockQueueSettings.Object);
+
         private readonly Mock<HttpRequest> _mockRequest = new();
 
         public MessageServiceTests()
