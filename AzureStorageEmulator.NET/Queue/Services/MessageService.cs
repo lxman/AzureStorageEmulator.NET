@@ -1,70 +1,101 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
+using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.XmlSerialization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using XmlTransformer.Queue.Models;
+using Serilog;
+
+// ReSharper disable UnusedVariable
+#pragma warning disable IDE0059
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IMessageService
     {
-        bool Authenticate(HttpRequest request);
+        IActionResult ListQueues(HttpRequest request);
 
-        string GetQueues();
+        Task<IActionResult> CreateQueue(string queueName, HttpRequest request);
 
-        bool AddQueue(string queueName);
+        IActionResult DeleteQueue(string queueName, HttpRequest request);
 
-        void DeleteQueue(string queueName);
+        Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpRequest request);
 
-        string AddMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout);
+        Task<IActionResult> GetMessages(string queueName, int numOfMessages, HttpRequest request);
 
-        string GetMessages(string queueName, int numOfMessages);
+        Task<IActionResult> GetAllMessages(string queueName, HttpRequest request);
 
-        string GetAllMessages(string queueName);
+        Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpRequest request);
 
-        Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt);
-
-        void DeleteMessages(string queueName);
-
-        Dictionary<string, StringValues> QueryProcessor(HttpRequest request);
+        IActionResult DeleteMessages(string queueName, HttpRequest request);
     }
 
     public class MessageService(IFifoService fifoService,
         IAuthenticator authenticator,
         IXmlSerializer<EnumerationResults> enumerationResultsSerializer,
-        IXmlSerializer<MessageList> messageListSerializer) : IMessageService
+        IXmlSerializer<MessageList> messageListSerializer,
+        IQueueSettings settings) : IMessageService
     {
         public bool Authenticate(HttpRequest request)
         {
             return authenticator.Authenticate(request);
         }
 
-        public string GetQueues()
+        public IActionResult ListQueues(HttpRequest request)
         {
+            Log.Information("ListQueues");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
             EnumerationResults results = new();
             results.Queues.AddRange(fifoService.GetQueues());
             results.MaxResults = 5000;
-            return enumerationResultsSerializer.Serialize(results);
+            return new ContentResult
+            {
+                Content = enumerationResultsSerializer.Serialize(results),
+                ContentType = "application/xml",
+                StatusCode = 200
+            };
         }
 
-        public string GetMessages(string queueName, int numOfMessages)
+        public async Task<IActionResult> GetMessages(string queueName, int numOfMessages, HttpRequest request)
         {
+            if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}, numOfMessages = {numOfMessages}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
             if (numOfMessages == 0) numOfMessages = 1;
             List<QueueMessage?>? result = fifoService.GetMessages(queueName, numOfMessages);
             MessageList queueMessageList = new();
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
-            return messageListSerializer.Serialize(queueMessageList);
+            await Task.Delay(settings.Delay);
+            return new ContentResult
+            {
+                Content = messageListSerializer.Serialize(queueMessageList),
+                ContentType = "application/xml",
+                StatusCode = 200
+            };
         }
 
-        public string GetAllMessages(string queueName)
+        public async Task<IActionResult> GetAllMessages(string queueName, HttpRequest request)
         {
+            if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
             List<QueueMessage?>? result = fifoService.GetAllMessages(queueName);
             MessageList queueMessageList = new();
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
-            return messageListSerializer.Serialize(queueMessageList);
+            await Task.Delay(settings.Delay);
+            return new ContentResult
+            {
+                Content = messageListSerializer.Serialize(queueMessageList),
+                ContentType = "application/xml",
+                StatusCode = 200
+            };
         }
 
-        public string AddMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout)
+        public async Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpRequest request)
         {
+            Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
             MessageList queueMessageList = new();
             QueueMessage queueMessage = new();
             queueMessageList.QueueMessagesList.Add(queueMessage);
@@ -76,27 +107,51 @@ namespace AzureStorageEmulator.NET.Queue.Services
             queueMessage.PopReceipt = Guid.NewGuid().ToString();
             queueMessage.TimeNextVisible = DateTime.UtcNow.AddSeconds(visibilityTimeout);
             fifoService.AddMessage(queueName, queueMessage);
-            return messageListSerializer.Serialize(queueMessageList);
+            await Task.Delay(settings.Delay);
+            return new ContentResult
+            {
+                Content = messageListSerializer.Serialize(queueMessageList),
+                ContentType = "application/xml",
+                StatusCode = 201
+            };
         }
 
-        public bool AddQueue(string queueName)
+        public async Task<IActionResult> CreateQueue(string queueName, HttpRequest request)
         {
-            return fifoService.AddQueue(queueName);
+            Log.Information($"CreateQueue queueName = {queueName}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            StatusCodeResult result = new StatusCodeResult(fifoService.AddQueue(queueName) ? 201 : 204);
+            await Task.Delay(settings.Delay);
+            return result;
         }
 
-        public void DeleteQueue(string queueName)
+        public IActionResult DeleteQueue(string queueName, HttpRequest request)
         {
+            Log.Information($"DeleteQueue name = {queueName}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
             fifoService.DeleteQueue(queueName);
+            return new StatusCodeResult(204);
         }
 
-        public Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
+        public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpRequest request)
         {
-            return fifoService.DeleteMessage(queueName, messageId, popReceipt);
+            Log.Information($"DeleteMessage queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            _ = fifoService.DeleteMessage(queueName, messageId, popReceipt);
+            await Task.Delay(settings.Delay);
+            return new StatusCodeResult(204);
+
         }
 
-        public void DeleteMessages(string queueName)
+        public IActionResult DeleteMessages(string queueName, HttpRequest request)
         {
+            Log.Information($"DeleteMessages queueName = {queueName}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
             fifoService.DeleteMessages(queueName);
+            return new StatusCodeResult(204);
         }
 
         public Dictionary<string, StringValues> QueryProcessor(HttpRequest request)

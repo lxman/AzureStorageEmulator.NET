@@ -1,10 +1,10 @@
-﻿using XmlTransformer.Queue.Models;
+﻿using AzureStorageEmulator.NET.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IFifoService
     {
-        List<XmlTransformer.Queue.Models.Queue> GetQueues();
+        List<Models.Queue> GetQueues();
 
         bool AddQueue(string queueName);
 

@@ -1,4 +1,4 @@
-﻿namespace AzureStorageEmulator.NET.Blob
+﻿namespace AzureStorageEmulator.NET.Blob.Services
 {
     public interface IBlobService
     {

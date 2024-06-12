@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteListQueues", "Azurit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlParsingTest", "XmlParsingTest\XmlParsingTest.csproj", "{C52B1E70-9250-4A92-B2FF-B3286D7C7B75}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{9AE6C192-D254-4ACA-B0E9-57E5DDA4DC11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{24DBEEF9-6764-459A-A586-73D837336390} = {9AE6C192-D254-4ACA-B0E9-57E5DDA4DC11}
+		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713} = {9AE6C192-D254-4ACA-B0E9-57E5DDA4DC11}
+		{C52B1E70-9250-4A92-B2FF-B3286D7C7B75} = {9AE6C192-D254-4ACA-B0E9-57E5DDA4DC11}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0132F3EC-FA34-4EF8-92EA-C3FDF8904D3A}

@@ -1,4 +1,4 @@
-﻿using AzureStorageEmulator.NET.Blob;
+﻿using AzureStorageEmulator.NET.Blob.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 

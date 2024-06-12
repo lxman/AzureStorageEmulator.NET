@@ -1,5 +1,5 @@
-﻿using AzureStorageEmulator.NET.Queue.Services;
-using XmlTransformer.Queue.Models;
+﻿using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Queue.Services;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
@@ -24,17 +24,17 @@ namespace AzureStorageEmulatorTests.Queue.Services
 
             _service.DeleteQueue(QueueName);
 
-            Assert.DoesNotContain(new XmlTransformer.Queue.Models.Queue { Name = QueueName }, _service.GetQueues());
+            Assert.DoesNotContain(new AzureStorageEmulator.NET.Queue.Models.Queue { Name = QueueName }, _service.GetQueues());
         }
 
         // TODO: Fix this test
         //[Fact]
         //public void AddMessage_ShouldAddMessageToQueue()
         //{
-        //    _service.AddQueue(QueueName);
+        //    _service.CreateQueue(QueueName);
         //    QueueMessage message = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
 
-        //    _service.AddMessage(QueueName, message);
+        //    _service.PostMessage(QueueName, message);
 
         //    List<QueueMessage?>? messages = _service.GetMessages(QueueName, 1);
         //    Assert.NotNull(messages);
@@ -61,7 +61,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _service.AddQueue(QueueName);
 
-            List<XmlTransformer.Queue.Models.Queue> queues = _service.GetQueues();
+            List<AzureStorageEmulator.NET.Queue.Models.Queue> queues = _service.GetQueues();
 
             Assert.NotNull(queues);
             Assert.Equal(QueueName, queues.First().Name);
@@ -71,11 +71,11 @@ namespace AzureStorageEmulatorTests.Queue.Services
         //[Fact]
         //public void GetMessages_ShouldReturnListOfMessagesFromQueue()
         //{
-        //    _service.AddQueue(QueueName);
+        //    _service.CreateQueue(QueueName);
         //    QueueMessage message1 = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt1" };
         //    QueueMessage message2 = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt2" };
-        //    _service.AddMessage(QueueName, message1);
-        //    _service.AddMessage(QueueName, message2);
+        //    _service.PostMessage(QueueName, message1);
+        //    _service.PostMessage(QueueName, message2);
 
         //    List<QueueMessage?>? messages = _service.GetMessages(QueueName, 2);
 

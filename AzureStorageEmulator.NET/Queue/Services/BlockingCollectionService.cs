@@ -1,14 +1,14 @@
 ﻿using System.Collections.Concurrent;
+using AzureStorageEmulator.NET.Queue.Models;
 using Serilog;
-using XmlTransformer.Queue.Models;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
     public class BlockingCollectionService : IFifoService
     {
-        private readonly Dictionary<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>> _queues = [];
+        private readonly Dictionary<Models.Queue, BlockingCollection<QueueMessage?>> _queues = [];
 
-        public List<XmlTransformer.Queue.Models.Queue> GetQueues()
+        public List<Models.Queue> GetQueues()
         {
             return [.. _queues.Keys];
         }
@@ -16,25 +16,25 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public bool AddQueue(string queueName)
         {
             if (QueueNames().Contains(queueName)) return false;
-            _queues.Add(new XmlTransformer.Queue.Models.Queue { Name = queueName }, []);
+            _queues.Add(new Models.Queue { Name = queueName }, []);
             return true;
         }
 
         public void DeleteQueue(string queueName)
         {
-            if (!TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return;
+            if (!TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return;
             _queues.Remove(queue!.Value.Key);
         }
 
         public void AddMessage(string queueName, QueueMessage message)
         {
-            _ = TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue);
+            _ = TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue);
             queue?.Value.Add(message);
         }
 
         public List<QueueMessage?>? GetMessages(string queueName, int numOfMessages)
         {
-            return !TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+            return !TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
                 ? null
                 : FilterMessagesByTime(queue!.Value.Value.Count == 0 ? null : queue.Value.Value.Take(numOfMessages).ToList());
         }
@@ -42,7 +42,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public List<QueueMessage?>? GetAllMessages(string queueName)
         {
             return !TryGetQueue(queueName,
-                out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+                out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
                 ? null
                 : FilterMessagesByTime([.. queue!.Value.Value]);
         }
@@ -50,7 +50,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
         {
             // Does the queue exist?
-            if (!TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return null;
+            if (!TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return null;
 
             // If so remove it from the queue dictionary
             _queues.Remove(queue!.Value.Key);
@@ -69,7 +69,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             List<QueueMessage?> msgList = queue.Value.Value.Where(m => m?.MessageId != messageId).ToList();
             BlockingCollection<QueueMessage?> newList = [];
             msgList.ForEach(newList.Add);
-            XmlTransformer.Queue.Models.Queue newQueue = new() { Name = queueName, Metadata = queue.Value.Key.Metadata };
+            Models.Queue newQueue = new() { Name = queueName, Metadata = queue.Value.Key.Metadata };
 
             _queues.Add(newQueue, newList);
 
@@ -78,7 +78,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public void DeleteMessages(string queueName)
         {
-            if (!TryGetQueue(queueName, out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return;
+            if (!TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return;
             while (queue!.Value.Value.TryTake(out _)) { }
         }
 
@@ -86,7 +86,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         private bool TryGetQueue(
             string queueName,
-            out KeyValuePair<XmlTransformer.Queue.Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+            out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
         {
             queue = _queues.FirstOrDefault(q => q.Key.Name == queueName);
             return queue is not null;

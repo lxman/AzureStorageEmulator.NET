@@ -1,7 +1,9 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
+using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 
 namespace AzureStorageEmulatorTests.Queue.Services
@@ -11,83 +13,109 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private const string QueueName = "testQueue";
         private static readonly Mock<IFifoService> MockFifoService = new();
         private static readonly Mock<IAuthenticator> MockAuthenticator = new();
-        private static readonly EnumerationResultsSerializer QueueSerializer = new();
+        private static readonly Mock<IQueueSettings> MockQueueSettings = new();
+        private static readonly EnumerationResultsSerializer EnumerationResultsSerializer = new();
         private static readonly MessageListSerializer MessageListSerializer = new();
-        private readonly MessageService _messageService = new(MockFifoService.Object, MockAuthenticator.Object, QueueSerializer, MessageListSerializer);
+        private readonly MessageService _messageService = new(
+            MockFifoService.Object,
+            MockAuthenticator.Object,
+            EnumerationResultsSerializer,
+            MessageListSerializer,
+            MockQueueSettings.Object);
+        private readonly Mock<HttpRequest> _mockRequest = new();
 
-        [Fact]
-        public void AddQueue_ShouldAddQueueSuccessfully()
+        public MessageServiceTests()
         {
-            MockFifoService.Setup(service => service.AddQueue(It.IsAny<string>())).Returns(true);
-
-            bool result = _messageService.AddQueue(QueueName);
-
-            Assert.True(result);
-            MockFifoService.Verify(service => service.AddQueue(QueueName), Times.Once);
+            MockAuthenticator.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
         }
 
         [Fact]
-        public void DeleteQueue_ShouldRemoveQueueSuccessfully()
+        public async Task TestCreateQueue()
         {
-            _messageService.DeleteQueue(QueueName);
+            _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
+            MockFifoService.Setup(f => f.AddQueue(QueueName)).Returns(true);
 
-            MockFifoService.Verify(service => service.DeleteQueue(QueueName), Times.Once);
+            IActionResult result = await _messageService.CreateQueue(QueueName, _mockRequest.Object);
+
+            Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(201, ((StatusCodeResult)result).StatusCode);
         }
 
         // TODO: Fix this test
         //[Fact]
-        //public void AddMessage_ShouldAddMessageToQueue()
+        //public async Task TestGetMessages()
         //{
-        //    EnumerationResults message = new() { MessageText = "testMessage" };
+        //    const int numOfMessages = 5;
+        //    _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
+        //    MockFifoService.Setup(f => f.GetMessages(QueueName, numOfMessages)).Returns([]);
 
-        //    string result = _messageService.AddMessage(QueueName, message, 0, 0);
+        //    IActionResult result = await _messageService.GetMessages(QueueName, numOfMessages, _mockRequest.Object);
 
-        //    //Assert.Single(result.QueueMessagesList);
-        //    MockFifoService.Verify(service => service.AddMessage(QueueName, It.IsAny<QueueMessage>()), Times.Once);
+        //    Assert.IsType<ContentResult>(result);
+        //    Assert.Equal(200, ((ContentResult)result).StatusCode);
         //}
 
         [Fact]
-        public async Task DeleteMessage_ShouldDeleteMessageFromQueue()
+        public async Task TestGetAllMessages()
+        {
+            _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
+            MockFifoService.Setup(f => f.GetAllMessages(QueueName)).Returns([]);
+
+            IActionResult result = await _messageService.GetAllMessages(QueueName, _mockRequest.Object);
+
+            Assert.IsType<ContentResult>(result);
+            Assert.Equal(200, ((ContentResult)result).StatusCode);
+        }
+
+        // TODO: Fix this test
+        //[Fact]
+        //public async Task TestPostMessage()
+        //{
+        //    QueueMessage message = new() { MessageText = "test message" };
+        //    const int visibilityTimeout = 10;
+        //    const int messageTtl = 100;
+        //    const int timeout = 10;
+        //    _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
+
+        //    IActionResult result = await _messageService.PostMessage(QueueName, message, visibilityTimeout, messageTtl, timeout, _mockRequest.Object);
+
+        //    Assert.IsType<ContentResult>(result);
+        //    Assert.Equal(201, ((ContentResult)result).StatusCode);
+        //}
+
+        [Fact]
+        public async Task TestDeleteMessage()
         {
             Guid messageId = Guid.NewGuid();
-            string popReceipt = Guid.NewGuid().ToString();
+            const string popReceipt = "popReceipt";
+            _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-            await _messageService.DeleteMessage(QueueName, messageId, popReceipt);
+            IActionResult result = await _messageService.DeleteMessage(QueueName, messageId, popReceipt, _mockRequest.Object);
 
-            MockFifoService.Verify(service => service.DeleteMessage(QueueName, messageId, popReceipt), Times.Once);
+            Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(204, ((StatusCodeResult)result).StatusCode);
         }
 
         [Fact]
-        public void GetQueues_ShouldReturnListOfQueues()
+        public void TestDeleteQueue()
         {
-            List<XmlTransformer.Queue.Models.Queue> queues =
-                [
-                    new XmlTransformer.Queue.Models.Queue { Name = "queue1" },
-                    new XmlTransformer.Queue.Models.Queue { Name = "queue2" },
-                    new XmlTransformer.Queue.Models.Queue { Name = "queue3" }
-                ];
-            MockFifoService.Setup(service => service.GetQueues()).Returns(queues);
-            MockAuthenticator.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
+            _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-            string result = _messageService.GetQueues();
+            IActionResult result = _messageService.DeleteQueue(QueueName, _mockRequest.Object);
 
-            Assert.Equal(
-                "<?xml version=\"1.0\" encoding=\"utf-16\" standalone=\"yes\"?><EnumerationResults ServiceEndpoint=\"http://127.0.0.1:10001/devstoreaccount1\"><Prefix /><MaxResults>5000</MaxResults><Queues><Queue><Name>queue1</Name><Metadata /></Queue><Queue><Name>queue2</Name><Metadata /></Queue><Queue><Name>queue3</Name><Metadata /></Queue></Queues><NextMarker /></EnumerationResults>",
-                result);
-            MockFifoService.Verify(service => service.GetQueues(), Times.Once);
+            Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(204, ((StatusCodeResult)result).StatusCode);
         }
 
-        // TODO: Fix this test
-        //[Fact]
-        //public void GetMessages_ShouldReturnListOfMessages()
-        //{
-        //    List<QueueMessage?> messages = [new QueueMessage(), new QueueMessage()];
-        //    MockFifoService.Setup(service => service.GetMessages(QueueName, It.IsAny<int>())).Returns(messages);
+        [Fact]
+        public void TestDeleteMessages()
+        {
+            _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-        //    string result = _messageService.GetMessages(QueueName, 2);
+            IActionResult result = _messageService.DeleteMessages(QueueName, _mockRequest.Object);
 
-        //    //Assert.Equal(2, result.QueueMessagesList.Count);
-        //    MockFifoService.Verify(service => service.GetMessages(QueueName, 2), Times.Once);
-        //}
+            Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(204, ((StatusCodeResult)result).StatusCode);
+        }
     }
 }

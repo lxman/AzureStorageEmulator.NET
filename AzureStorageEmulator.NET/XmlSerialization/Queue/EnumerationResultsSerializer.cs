@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using XmlTransformer.Queue.Models;
+using AzureStorageEmulator.NET.Queue.Models;
 
 namespace AzureStorageEmulator.NET.XmlSerialization.Queue
 {

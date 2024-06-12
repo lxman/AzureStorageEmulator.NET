@@ -22,7 +22,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Table\" />
+      <Folder Include="Blob\Models\" />
+      <Folder Include="Table\Models\" />
+      <Folder Include="Table\Services\" />
       <Folder Include="XmlSerialization\Blob\" />
       <Folder Include="XmlSerialization\Table\" />
     </ItemGroup>

@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace XmlTransformer.Queue.Models
+namespace AzureStorageEmulator.NET.Queue.Models
 {
     [XmlType(TypeName = "QueueMessagesList")]
     public class MessageList

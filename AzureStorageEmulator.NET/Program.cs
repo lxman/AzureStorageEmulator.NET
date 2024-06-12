@@ -1,7 +1,8 @@
 using AppliedQueueList;
 using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Blob;
+using AzureStorageEmulator.NET.Blob.Services;
 using AzureStorageEmulator.NET.Queue;
+using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.XmlSerialization;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
@@ -9,7 +10,6 @@ using PeriodicLogger;
 using Serilog;
 using Serilog.Events;
 using SerilogTracing;
-using XmlTransformer.Queue.Models;
 
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162 // Unreachable code detected
