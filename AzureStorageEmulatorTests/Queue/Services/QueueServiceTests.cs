@@ -8,7 +8,7 @@ using Moq;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
-    public class MessageServiceTests
+    public class QueueServiceTests
     {
         private const string QueueName = "testQueue";
         private static readonly Mock<IFifoService> MockFifoService = new();
@@ -17,7 +17,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private static readonly EnumerationResultsSerializer EnumerationResultsSerializer = new();
         private static readonly MessageListSerializer MessageListSerializer = new();
 
-        private readonly MessageService _messageService = new(
+        private readonly QueueService _queueService = new(
             MockFifoService.Object,
             MockAuthenticator.Object,
             EnumerationResultsSerializer,
@@ -26,7 +26,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
 
         private readonly Mock<HttpRequest> _mockRequest = new();
 
-        public MessageServiceTests()
+        public QueueServiceTests()
         {
             MockAuthenticator.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
         }
@@ -37,7 +37,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
             MockFifoService.Setup(f => f.AddQueue(QueueName)).Returns(true);
 
-            IActionResult result = await _messageService.CreateQueue(QueueName, _mockRequest.Object);
+            IActionResult result = await _queueService.CreateQueue(QueueName, _mockRequest.Object);
 
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(201, ((StatusCodeResult)result).StatusCode);
@@ -51,7 +51,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         //    _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
         //    MockFifoService.Setup(f => f.GetMessages(QueueName, numOfMessages)).Returns([]);
 
-        //    IActionResult result = await _messageService.GetMessages(QueueName, numOfMessages, _mockRequest.Object);
+        //    IActionResult result = await _queueService.GetMessages(QueueName, numOfMessages, _mockRequest.Object);
 
         //    Assert.IsType<ContentResult>(result);
         //    Assert.Equal(200, ((ContentResult)result).StatusCode);
@@ -63,7 +63,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
             MockFifoService.Setup(f => f.GetAllMessages(QueueName)).Returns([]);
 
-            IActionResult result = await _messageService.GetAllMessages(QueueName, _mockRequest.Object);
+            IActionResult result = await _queueService.GetAllMessages(QueueName, _mockRequest.Object);
 
             Assert.IsType<ContentResult>(result);
             Assert.Equal(200, ((ContentResult)result).StatusCode);
@@ -79,7 +79,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         //    const int timeout = 10;
         //    _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-        //    IActionResult result = await _messageService.PostMessage(QueueName, message, visibilityTimeout, messageTtl, timeout, _mockRequest.Object);
+        //    IActionResult result = await _queueService.PostMessage(QueueName, message, visibilityTimeout, messageTtl, timeout, _mockRequest.Object);
 
         //    Assert.IsType<ContentResult>(result);
         //    Assert.Equal(201, ((ContentResult)result).StatusCode);
@@ -92,7 +92,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             const string popReceipt = "popReceipt";
             _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-            IActionResult result = await _messageService.DeleteMessage(QueueName, messageId, popReceipt, _mockRequest.Object);
+            IActionResult result = await _queueService.DeleteMessage(QueueName, messageId, popReceipt, _mockRequest.Object);
 
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, ((StatusCodeResult)result).StatusCode);
@@ -103,7 +103,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-            IActionResult result = _messageService.DeleteQueue(QueueName, _mockRequest.Object);
+            IActionResult result = _queueService.DeleteQueue(QueueName, _mockRequest.Object);
 
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, ((StatusCodeResult)result).StatusCode);
@@ -114,7 +114,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _mockRequest.Setup(r => r.Query).Returns(new QueryCollection());
 
-            IActionResult result = _messageService.DeleteMessages(QueueName, _mockRequest.Object);
+            IActionResult result = _queueService.DeleteMessages(QueueName, _mockRequest.Object);
 
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, ((StatusCodeResult)result).StatusCode);

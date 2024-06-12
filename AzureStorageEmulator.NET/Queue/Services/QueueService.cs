@@ -10,7 +10,7 @@ using Serilog;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
-    public interface IMessageService
+    public interface IQueueService
     {
         IActionResult ListQueues(HttpRequest request);
 
@@ -27,13 +27,15 @@ namespace AzureStorageEmulator.NET.Queue.Services
         Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpRequest request);
 
         IActionResult DeleteMessages(string queueName, HttpRequest request);
+
+        IActionResult MessageCount(string queueName, HttpRequest request);
     }
 
-    public class MessageService(IFifoService fifoService,
+    public class QueueService(IFifoService fifoService,
         IAuthenticator authenticator,
         IXmlSerializer<EnumerationResults> enumerationResultsSerializer,
         IXmlSerializer<MessageList> messageListSerializer,
-        IQueueSettings settings) : IMessageService
+        IQueueSettings settings) : IQueueService
     {
         public bool Authenticate(HttpRequest request)
         {
@@ -45,6 +47,10 @@ namespace AzureStorageEmulator.NET.Queue.Services
             Log.Information("ListQueues");
             if (!Authenticate(request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
+            {
+                return new BadRequestResult();
+            }
             EnumerationResults results = new();
             results.Queues.AddRange(fifoService.GetQueues());
             results.MaxResults = 5000;
@@ -153,7 +159,20 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new StatusCodeResult(204);
         }
 
-        public Dictionary<string, StringValues> QueryProcessor(HttpRequest request)
+        public IActionResult MessageCount(string queueName, HttpRequest request)
+        {
+            Log.Information($"MessageCount queueName = {queueName}");
+            if (!Authenticate(request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            return new ContentResult
+            {
+                Content = fifoService.MessageCount(queueName).ToString(),
+                ContentType = "application/xml",
+                StatusCode = 200
+            };
+        }
+
+        private static Dictionary<string, StringValues> QueryProcessor(HttpRequest request)
         {
             return request
                 .Query

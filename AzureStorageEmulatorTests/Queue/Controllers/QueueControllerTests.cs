@@ -10,7 +10,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
 {
     public class QueueControllerTests
     {
-        private static readonly Mock<IMessageService> MockMessageService = new();
+        private static readonly Mock<IQueueService> MockMessageService = new();
         private readonly QueueController _controller = new(MockMessageService.Object);
         private const string QueueName = "testQueue";
         private const int NumOfMessages = 5;

@@ -7,7 +7,7 @@ namespace AzureStorageEmulator.NET.Controllers
     [Route("devstoreaccount1")]
     [ApiController]
     [Host("*:10001")]
-    public class QueueController(IMessageService messageService) : ControllerBase
+    public class QueueController(IQueueService queueService) : ControllerBase
     {
         /// <summary>
         /// Create a new queue.
@@ -18,7 +18,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName:alpha}")]
         public Task<IActionResult> CreateQueue(string queueName)
         {
-            return messageService.CreateQueue(queueName, Request);
+            return queueService.CreateQueue(queueName, Request);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [HttpGet]
         public IActionResult ListQueues()
         {
-            return messageService.ListQueues(Request);
+            return queueService.ListQueues(Request);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName:alpha}")]
         public IActionResult DeleteQueue(string queueName)
         {
-            return messageService.DeleteQueue(queueName, Request);
+            return queueService.DeleteQueue(queueName, Request);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName:alpha}/messages")]
         public Task<IActionResult> GetMessages(string queueName, [FromQuery] int numOfMessages)
         {
-            return messageService.GetMessages(queueName, numOfMessages, Request);
+            return queueService.GetMessages(queueName, numOfMessages, Request);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName:alpha}")]
         public Task<IActionResult> GetAllMessages(string queueName)
         {
-            return messageService.GetAllMessages(queueName, Request);
+            return queueService.GetAllMessages(queueName, Request);
         }
 
         // TODO: Inspect query string usage here
@@ -87,7 +87,7 @@ namespace AzureStorageEmulator.NET.Controllers
             [FromQuery] int messageTtl = 0,
             [FromQuery] int timeout = 0)
         {
-            return messageService.PostMessage(queueName, message, visibilityTimeout, messageTtl, timeout, Request);
+            return queueService.PostMessage(queueName, message, visibilityTimeout, messageTtl, timeout, Request);
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName:alpha}/messages/{messageId:guid}")]
         public Task<IActionResult> DeleteMessage(string queueName, Guid messageId, [FromQuery] string popReceipt)
         {
-            return messageService.DeleteMessage(queueName, messageId, popReceipt, Request);
+            return queueService.DeleteMessage(queueName, messageId, popReceipt, Request);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName:alpha}/messages")]
         public IActionResult DeleteMessages(string queueName)
         {
-            return messageService.DeleteMessages(queueName, Request);
+            return queueService.DeleteMessages(queueName, Request);
         }
     }
 }
