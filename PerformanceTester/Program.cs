@@ -10,6 +10,7 @@ namespace PerformanceTester
             Console.WriteLine("This is the AzureStorageEmulator.NET performance analyzer.");
             Console.WriteLine();
             Console.WriteLine("1. Create/Delete Queues");
+            Console.WriteLine("2. Create Queue, add 1024 messages, clear all messages then delete queue");
             Console.WriteLine();
             Console.Write("Please select test(s) to run (e.g. 1,2,3,4) or hit Enter to leave: ");
             string? input = Console.ReadLine();
@@ -24,20 +25,17 @@ namespace PerformanceTester
                 switch (test)
                 {
                     case 1:
-                        CreateDeleteQueues task = new();
-                        tasks.Add(Task.Run(task.Run));
+                        tasks.Add(Task.Run(CreateDeleteQueues.Run));
                         break;
 
                     case 2:
-                        // Add code to run test 2
+                        tasks.Add(Task.Run(CreateQueueAddDeleteMessagesDeleteQueue.Run));
                         break;
 
                     case 3:
-                        // Add code to run test 3
                         break;
 
                     case 4:
-                        // Add code to run test 4
                         break;
 
                     default:

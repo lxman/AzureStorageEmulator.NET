@@ -4,7 +4,7 @@ namespace PerformanceTester.Tasks
 {
     internal class CreateDeleteQueues
     {
-        internal async Task Run()
+        internal static async Task Run()
         {
             Console.WriteLine("Running Create/Delete Queues test...");
             List<string> tableNames = Enumerable.Range(0, 1024).Select(_ => GetRandomTableName()).ToList();
