@@ -28,7 +28,7 @@ namespace AzureStorageEmulator.NET.XmlSerialization.Queue
         {
             _serializer.Serialize(_writer, o, _ns);
             _writer.Flush();
-            return _output.ToString();
+            return _output.Replace("utf-16", "utf-8").ToString();
         }
 
         public MessageList Deserialize(string xml)
