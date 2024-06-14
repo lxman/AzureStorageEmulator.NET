@@ -15,7 +15,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns>201 if created, 204 if already exists</returns>
         [HttpPut]
-        [Route("{queueName:alpha}")]
+        [Route("{queueName}")]
         public Task<IActionResult> CreateQueue(string queueName)
         {
             return queueService.CreateQueue(queueName, Request);
@@ -37,7 +37,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("{queueName:alpha}")]
+        [Route("{queueName}")]
         public IActionResult DeleteQueue(string queueName)
         {
             return queueService.DeleteQueue(queueName, Request);
@@ -50,10 +50,10 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="numOfMessages"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("{queueName:alpha}/messages")]
-        public Task<IActionResult> GetMessages(string queueName, [FromQuery] int numOfMessages)
+        [Route("{queueName}/messages")]
+        public Task<IActionResult> GetMessages(string queueName)
         {
-            return queueService.GetMessages(queueName, numOfMessages, Request);
+            return queueService.GetMessages(queueName, Request);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("{queueName:alpha}")]
+        [Route("{queueName}")]
         public Task<IActionResult> GetAllMessages(string queueName)
         {
             return queueService.GetAllMessages(queueName, Request);
@@ -79,7 +79,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("{queueName:alpha}/messages")]
+        [Route("{queueName}/messages")]
         public Task<IActionResult> PostMessage(
             string queueName,
             [FromBody] QueueMessage message,
@@ -98,7 +98,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="popReceipt"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("{queueName:alpha}/messages/{messageId:guid}")]
+        [Route("{queueName}/messages/{messageId:guid}")]
         public Task<IActionResult> DeleteMessage(string queueName, Guid messageId, [FromQuery] string popReceipt)
         {
             return queueService.DeleteMessage(queueName, messageId, popReceipt, Request);
@@ -110,7 +110,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("{queueName:alpha}/messages")]
+        [Route("{queueName}/messages")]
         public IActionResult DeleteMessages(string queueName)
         {
             return queueService.DeleteMessages(queueName, Request);

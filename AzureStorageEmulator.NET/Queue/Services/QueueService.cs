@@ -20,7 +20,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpRequest request);
 
-        Task<IActionResult> GetMessages(string queueName, int numOfMessages, HttpRequest request);
+        Task<IActionResult> GetMessages(string queueName, HttpRequest request);
 
         Task<IActionResult> GetAllMessages(string queueName, HttpRequest request);
 
@@ -62,13 +62,14 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> GetMessages(string queueName, int numOfMessages, HttpRequest request)
+        public async Task<IActionResult> GetMessages(string queueName, HttpRequest request)
         {
-            if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}, numOfMessages = {numOfMessages}");
+            if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}");
             if (!Authenticate(request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(request);
-            if (numOfMessages == 0) numOfMessages = 1;
-            List<QueueMessage?>? result = fifoService.GetMessages(queueName, numOfMessages);
+            List<QueueMessage>? result = await fifoService.GetMessages(queueName,
+                queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
+                queries.TryGetValue("peekonly", out StringValues peekOnlyValue) && Convert.ToBoolean(peekOnlyValue.First()));
             MessageList queueMessageList = new();
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
             await Task.Delay(settings.Delay);

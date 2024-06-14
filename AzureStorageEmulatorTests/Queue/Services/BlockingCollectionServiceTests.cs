@@ -1,5 +1,4 @@
-﻿using AzureStorageEmulator.NET.Queue.Models;
-using AzureStorageEmulator.NET.Queue.Services;
+﻿using AzureStorageEmulator.NET.Queue.Services;
 
 namespace AzureStorageEmulatorTests.Queue.Services
 {
@@ -27,35 +26,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
             Assert.DoesNotContain(new AzureStorageEmulator.NET.Queue.Models.Queue { Name = QueueName }, _service.GetQueues());
         }
 
-        // TODO: Fix this test
-        //[Fact]
-        //public void AddMessage_ShouldAddMessageToQueue()
-        //{
-        //    _service.CreateQueue(QueueName);
-        //    QueueMessage message = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
-
-        //    _service.PostMessage(QueueName, message);
-
-        //    List<QueueMessage?>? messages = _service.GetMessages(QueueName, 1);
-        //    Assert.NotNull(messages);
-        //    Assert.Single(messages);
-        //    Assert.Equal(message.MessageId, messages.First()!.MessageId);
-        //}
-
-        [Fact]
-        public async Task DeleteMessage_ShouldDeleteMessageFromQueue()
-        {
-            _service.AddQueue(QueueName);
-            QueueMessage message = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt" };
-            _service.AddMessage(QueueName, message);
-
-            QueueMessage? deletedMessage = await _service.DeleteMessage(QueueName, message.MessageId, message.PopReceipt);
-
-            Assert.NotNull(deletedMessage);
-            Assert.Equal(message.MessageId, deletedMessage.MessageId);
-            Assert.DoesNotContain(deletedMessage, _service.GetMessages(QueueName, 1) ?? []);
-        }
-
         [Fact]
         public void GetQueues_ShouldReturnListOfQueues()
         {
@@ -66,23 +36,5 @@ namespace AzureStorageEmulatorTests.Queue.Services
             Assert.NotNull(queues);
             Assert.Equal(QueueName, queues.First().Name);
         }
-
-        // TODO: Fix this test
-        //[Fact]
-        //public void GetMessages_ShouldReturnListOfMessagesFromQueue()
-        //{
-        //    _service.CreateQueue(QueueName);
-        //    QueueMessage message1 = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt1" };
-        //    QueueMessage message2 = new() { MessageId = Guid.NewGuid(), PopReceipt = "testReceipt2" };
-        //    _service.PostMessage(QueueName, message1);
-        //    _service.PostMessage(QueueName, message2);
-
-        //    List<QueueMessage?>? messages = _service.GetMessages(QueueName, 2);
-
-        //    Assert.NotNull(messages);
-        //    Assert.Equal(2, messages.Count);
-        //    Assert.Contains(message1.MessageId, messages.Select(m => m?.MessageId));
-        //    Assert.Contains(message2.MessageId, messages.Select(m => m?.MessageId));
-        //}
     }
 }

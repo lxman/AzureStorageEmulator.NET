@@ -59,7 +59,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddSerilog();
                 builder.Services.AddEndpointsApiExplorer();
 
-                builder.Services.AddSingleton<IFifoService, BlockingCollectionService>();
+                builder.Services.AddSingleton<IFifoService, ConcurrentQueueService>();
                 builder.Services.AddSingleton<IQueueSettings>(settings);
 
                 builder.Services.AddScoped<IQueueService, QueueService>();

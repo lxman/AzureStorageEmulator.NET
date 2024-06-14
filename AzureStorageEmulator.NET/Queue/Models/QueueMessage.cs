@@ -17,5 +17,9 @@
         public bool ShouldSerializeDequeueCount() => DequeueCount.HasValue;
 
         public string? MessageText { get; set; }
+
+        public bool Visible => TimeNextVisible <= DateTime.UtcNow;
+
+        public bool Expired => ExpirationTime < DateTime.UtcNow;
     }
 }

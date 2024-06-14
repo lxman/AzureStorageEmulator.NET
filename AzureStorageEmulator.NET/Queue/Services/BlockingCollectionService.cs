@@ -6,7 +6,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 {
     public class BlockingCollectionService : IFifoService
     {
-        private readonly Dictionary<Models.Queue, BlockingCollection<QueueMessage?>> _queues = [];
+        private readonly Dictionary<Models.Queue, BlockingCollection<QueueMessage>> _queues = [];
 
         public List<Models.Queue> GetQueues()
         {
@@ -20,26 +20,46 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return true;
         }
 
-        public void DeleteQueue(string queueName)
+        public Task<bool> DeleteQueue(string queueName)
         {
-            if (!TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return;
-            _queues.Remove(queue!.Value.Key);
+            return new Task<bool>(() => TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue) && _queues.Remove(queue!.Value.Key));
         }
 
-        public void AddMessage(string queueName, QueueMessage message)
+        public Task<bool> AddMessage(string queueName, QueueMessage message)
         {
-            _ = TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue);
+            bool result = TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue);
             queue?.Value.Add(message);
+            return new Task<bool>(() => result);
         }
 
-        public List<QueueMessage?>? GetMessages(string queueName, int numOfMessages)
+        public async Task<List<QueueMessage>?> GetMessages(string queueName, int? numOfMessages, bool peekOnly = false)
         {
-            return !TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
-                ? null
-                : FilterMessagesByTime(queue!.Value.Value.Count == 0 ? null : queue.Value.Value.Take(numOfMessages).ToList());
+            return await Task.Run(() =>
+            {
+                if (!TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue)) return null;
+
+                List<QueueMessage> messages = [.. queue!.Value.Value.Where(m => m is { Visible: true, Expired: false })];
+                if (messages.Count == 0) return null;
+
+                if (numOfMessages.HasValue)
+                {
+                    messages = messages.Take(numOfMessages.Value).ToList();
+                }
+
+                if (peekOnly)
+                {
+                    return messages;
+                }
+
+                BlockingCollection<QueueMessage> newQueue = [];
+                messages.ForEach(newQueue.Add);
+                _queues[queue.Value.Key] = newQueue;
+
+                return messages;
+            });
         }
 
-        public List<QueueMessage?>? GetAllMessages(string queueName)
+        public List<QueueMessage>? GetAllMessages(string queueName)
         {
             return !TryGetQueue(queueName,
                 out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
@@ -82,24 +102,24 @@ namespace AzureStorageEmulator.NET.Queue.Services
             while (queue!.Value.Value.TryTake(out _)) { }
         }
 
-        public int MessageCount(string queueName)
+        public Task<int?> MessageCount(string queueName)
         {
-            return !TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+            return new Task<int?>(() => !TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue)
                 ? 0
-                : queue!.Value.Value.Count;
+                : queue!.Value.Value.Count);
         }
 
         private List<string> QueueNames() => _queues.Keys.Select(k => k.Name).ToList();
 
         private bool TryGetQueue(
             string queueName,
-            out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)
+            out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue)
         {
             queue = _queues.FirstOrDefault(q => q.Key.Name == queueName);
             return queue is not null;
         }
 
-        private static List<QueueMessage?>? FilterMessagesByTime(List<QueueMessage?>? messages)
+        private static List<QueueMessage>? FilterMessagesByTime(List<QueueMessage>? messages)
         {
             return messages?.Where(m => m?.TimeNextVisible >= DateTime.UtcNow).ToList();
         }

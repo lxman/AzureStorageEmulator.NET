@@ -5,5 +5,7 @@
         public string Name { get; set; }
 
         public QueueMetadata Metadata { get; set; } = new();
+
+        public bool Blocked { get; set; }
     }
 }
