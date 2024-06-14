@@ -10,7 +10,9 @@ namespace AzureStorageEmulator.NET.Controllers
     public class QueueController(IQueueService queueService) : ControllerBase
     {
         // TODO: Implement a mechanism to return 504 Gateway Timeout if processing takes too long
+
         #region QueueOps
+
         /// <summary>
         /// Create a new queue.
         /// </summary>
@@ -44,9 +46,11 @@ namespace AzureStorageEmulator.NET.Controllers
         {
             return queueService.DeleteQueue(queueName, HttpContext);
         }
-        #endregion
+
+        #endregion QueueOps
 
         #region MessageOps
+
         /// <summary>
         /// Get 0 or more messages from the queue.
         /// </summary>
@@ -119,7 +123,7 @@ namespace AzureStorageEmulator.NET.Controllers
         {
             return queueService.DeleteMessages(queueName, HttpContext);
         }
-        #endregion
 
+        #endregion MessageOps
     }
 }

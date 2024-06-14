@@ -30,7 +30,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 _enumerationSemaphore.Release();
             }
-
         }
     }
 }

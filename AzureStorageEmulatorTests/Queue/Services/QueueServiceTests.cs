@@ -26,6 +26,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
 
         //private readonly Mock<HttpContext> _mockContext = new();
         private readonly string _requestClientId = Guid.NewGuid().ToString();
+
         private readonly HttpContext _context = new DefaultHttpContext();
 
         public QueueServiceTests()
@@ -103,7 +104,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public void TestDeleteQueue()
         {
-
             IActionResult result = _queueService.DeleteQueue(QueueName, _context);
 
             Assert.IsType<StatusCodeResult>(result);

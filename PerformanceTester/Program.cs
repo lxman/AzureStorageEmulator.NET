@@ -4,7 +4,7 @@ namespace PerformanceTester
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.Clear();
             Console.WriteLine("This is the AzureStorageEmulator.NET performance analyzer.");
@@ -27,15 +27,19 @@ namespace PerformanceTester
                         CreateDeleteQueues task = new();
                         tasks.Add(Task.Run(task.Run));
                         break;
+
                     case 2:
                         // Add code to run test 2
                         break;
+
                     case 3:
                         // Add code to run test 3
                         break;
+
                     case 4:
                         // Add code to run test 4
                         break;
+
                     default:
                         Console.WriteLine($"Invalid test number: {test}");
                         break;
