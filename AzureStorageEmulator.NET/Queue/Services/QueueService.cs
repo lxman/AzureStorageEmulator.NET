@@ -60,12 +60,22 @@ namespace AzureStorageEmulator.NET.Queue.Services
             EnumerationResults results = new();
             results.Queues.AddRange(fifoService.GetQueues());
             results.MaxResults = 5000;
+            SetResponseHeaders(context);
             return new ContentResult
             {
                 Content = enumerationResultsSerializer.Serialize(results),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
+        }
+
+        public IActionResult DeleteQueue(string queueName, HttpContext context)
+        {
+            Log.Information($"DeleteQueue name = {queueName}");
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
+            fifoService.DeleteQueue(queueName);
+            return new StatusCodeResult(204);
         }
 
         public async Task<IActionResult> GetMessages(string queueName, HttpContext context)
@@ -129,15 +139,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public IActionResult DeleteQueue(string queueName, HttpContext context)
-        {
-            Log.Information($"DeleteQueue name = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            fifoService.DeleteQueue(queueName);
-            return new StatusCodeResult(204);
-        }
-
         public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpContext context)
         {
             Log.Information($"DeleteMessage queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
@@ -190,7 +191,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             context.Response.Headers.Append("x-ms-version", "2023-11-03");
             context.Response.Headers.Append("x-ms-request-id", Guid.NewGuid().ToString());
-            context.Response.Headers.Append("x-ms-client-request-id", context.Request.Headers["x-ms-client-request-id"]);
+            string? clientRequestId = context.Request.Headers["x-ms-client-request-id"][0];
+            if (clientRequestId is not null && clientRequestId.Length <= 1024)
+                context.Response.Headers.Append("x-ms-client-request-id", clientRequestId);
         }
     }
 }

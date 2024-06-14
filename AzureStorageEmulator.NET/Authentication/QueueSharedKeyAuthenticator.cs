@@ -16,7 +16,7 @@ namespace AzureStorageEmulator.NET.Authentication
             {
                 return false;
             }
-            if (string.IsNullOrEmpty(request.Method) || string.IsNullOrEmpty(request.Path.Value) || string.IsNullOrEmpty(request.QueryString.Value))
+            if (string.IsNullOrEmpty(request.Method) || string.IsNullOrEmpty(request.Path.Value))
             {
                 return false;
             }
@@ -26,7 +26,7 @@ namespace AzureStorageEmulator.NET.Authentication
                     "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
             string authType = request.Headers.Authorization.ToString().Split(':')[0].Split(' ')[0];
             string headersToSign = GetHeadersToSign(authType, request);
-            string resource = CanonicalizedResource(request);
+            string resource = GetCanonicalizedResource(request);
             string toSign = $"{headersToSign}{resource}";
             string calculatedSignature = Sign(key, toSign);
             string providedSignature = request.Headers.Authorization.ToString().Split(' ')[1].Split(':')[1];
@@ -97,19 +97,23 @@ namespace AzureStorageEmulator.NET.Authentication
             return string.Join("\n", canonicalized);
         }
 
-        private static string CanonicalizedResource(HttpRequest request)
+        private static string GetCanonicalizedResource(HttpRequest request)
         {
-            string resource = $"{request.Path.Value!}\n";
-            string query = request.QueryString.Value!;
-            query = query[1..];
-            List<string> queryList = [.. query.Split('&').Order()];
+            string resource = $"{request.Path.Value!}";
+            string? query = request.QueryString.Value;
+            if (query is null || query == string.Empty)
+            {
+                return $"/devstoreaccount1{resource}";
+            }
+            query = query?[1..];
+            List<string> queryList = [.. query?.Split('&').Order()];
             List<string> queryResults = [];
             queryList.ForEach(q =>
             {
                 string[] parts = q.Split('=');
                 queryResults.Add($"{parts[0]}:{parts[1]}");
             });
-            return $"/devstoreaccount1{resource}{string.Join('\n', queryResults)}";
+            return $"/devstoreaccount1{resource}\n{string.Join('\n', queryResults)}";
         }
     }
 }
