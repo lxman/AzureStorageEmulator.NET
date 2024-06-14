@@ -54,9 +54,9 @@ namespace AzureStorageEmulatorTests.Queue.Services
         //{
         //    const int numOfMessages = 5;
         //    _mockContext.Setup(r => r.Query).Returns(new QueryCollection());
-        //    MockFifoService.Setup(f => f.GetMessages(QueueName, numOfMessages)).Returns([]);
+        //    MockFifoService.Setup(f => f.GetMessagesAsync(QueueName, numOfMessages)).Returns([]);
 
-        //    IActionResult result = await _queueService.GetMessages(QueueName, numOfMessages, _mockContext.Object);
+        //    IActionResult result = await _queueService.GetMessagesAsync(QueueName, numOfMessages, _mockContext.Object);
 
         //    Assert.IsType<ContentResult>(result);
         //    Assert.Equal(200, ((ContentResult)result).StatusCode);

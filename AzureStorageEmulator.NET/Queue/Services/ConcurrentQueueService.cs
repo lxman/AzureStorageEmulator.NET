@@ -17,7 +17,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
         }
 
-        public async Task<bool> DeleteQueue(string queueName)
+        public async Task<bool> DeleteQueueAsync(string queueName)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return false;
@@ -30,17 +30,17 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public async Task<bool> AddMessageAsync(string queueName, QueueMessage message)
         {
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueue(queueName);
+            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
             queue?.Enqueue(message);
             return queue is not null;
         }
 
-        public async Task<List<QueueMessage>?> GetMessages(string queueName, int? numOfMessages = null,
+        public async Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages = null,
             bool peekOnly = false)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return null;
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueue(queueName);
+            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
             if (queue is null)
             {
                 return null;
@@ -55,10 +55,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
             if (!peekOnly)
             {
-                _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(messages), queue);
+                List<QueueMessage> toRetain = [.. queue];
+                messages.ForEach(m => toRetain.Remove(m));
+                toRetain.RemoveAll(m => m.Expired);
+                _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(toRetain), queue);
             }
 
             key.Blocked = false;
+            messages.ForEach(m =>
+            {
+                m.PopReceipt = Guid.NewGuid().ToString();
+                m.TimeNextVisible = DateTime.UtcNow.AddSeconds(m.VisibilityTimeout);
+            });
             return messages;
         }
 
@@ -70,18 +78,23 @@ namespace AzureStorageEmulator.NET.Queue.Services
             List<QueueMessage> messages = [.. _queues[key]];
             messages.RemoveAll(m => m.Expired);
             List<QueueMessage> toReturn = messages.Where(m => m.Visible).ToList();
-            toReturn.ForEach(m => messages.Remove(m));
+            toReturn.ForEach(m =>
+            {
+                messages.Remove(m);
+                m.PopReceipt = Guid.NewGuid().ToString();
+                m.TimeNextVisible = DateTime.UtcNow.AddSeconds(m.VisibilityTimeout);
+            });
             _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(messages), _queues[key]);
             key.Blocked = false;
             return toReturn;
         }
 
-        public async Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
+        public async Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return null;
             key.Blocked = true;
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueue(queueName);
+            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
             if (queue is null)
             {
                 key.Blocked = false;
@@ -109,13 +122,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
             key.Blocked = false;
         }
 
-        public async Task<int?> MessageCount(string queueName)
+        public async Task<int?> MessageCountAsync(string queueName)
         {
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueue(queueName);
+            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
             return queue?.Count;
         }
 
-        private async Task<ConcurrentQueue<QueueMessage>?> TryGetQueue(string queueName)
+        private async Task<ConcurrentQueue<QueueMessage>?> TryGetQueueAsync(string queueName)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return null;

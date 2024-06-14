@@ -18,6 +18,8 @@
 
         public string? MessageText { get; set; }
 
+        public int VisibilityTimeout { get; set; }
+
         public bool Visible => TimeNextVisible <= DateTime.UtcNow;
 
         public bool Expired => ExpirationTime < DateTime.UtcNow;

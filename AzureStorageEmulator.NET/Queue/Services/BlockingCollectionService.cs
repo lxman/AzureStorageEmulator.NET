@@ -20,7 +20,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return true;
         }
 
-        public Task<bool> DeleteQueue(string queueName)
+        public Task<bool> DeleteQueueAsync(string queueName)
         {
             return new Task<bool>(() => TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue) && _queues.Remove(queue!.Value.Key));
         }
@@ -32,7 +32,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new Task<bool>(() => result);
         }
 
-        public async Task<List<QueueMessage>?> GetMessages(string queueName, int? numOfMessages, bool peekOnly = false)
+        public async Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages, bool peekOnly = false)
         {
             return await Task.Run(() =>
             {
@@ -67,7 +67,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 : FilterMessagesByTime([.. queue!.Value.Value]);
         }
 
-        public async Task<QueueMessage?> DeleteMessage(string queueName, Guid messageId, string popReceipt)
+        public async Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt)
         {
             // Does the queue exist?
             if (!TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage?>>? queue)) return null;
@@ -102,7 +102,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             while (queue!.Value.Value.TryTake(out _)) { }
         }
 
-        public Task<int?> MessageCount(string queueName)
+        public Task<int?> MessageCountAsync(string queueName)
         {
             return new Task<int?>(() => !TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue)
                 ? 0

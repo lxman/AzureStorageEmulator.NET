@@ -21,7 +21,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _service.AddQueue(QueueName);
 
-            _service.DeleteQueue(QueueName);
+            _service.DeleteQueueAsync(QueueName);
 
             Assert.DoesNotContain(new AzureStorageEmulator.NET.Queue.Models.Queue { Name = QueueName }, _service.GetQueues());
         }
