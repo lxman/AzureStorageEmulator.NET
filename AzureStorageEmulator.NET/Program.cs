@@ -20,7 +20,7 @@ namespace AzureStorageEmulator.NET
     {
         private const bool DetailedLogging = false;
         private const int BatchSeconds = 2;
-        private const int ControllerDelay = 500;
+        private const int ControllerDelay = 50;
         private const bool LogGetMessages = false;
         private const bool CreateAppliedQueues = true;
 
