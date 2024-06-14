@@ -28,7 +28,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return _queues.TryRemove(key, out _);
         }
 
-        public async Task<bool> AddMessage(string queueName, QueueMessage message)
+        public async Task<bool> AddMessageAsync(string queueName, QueueMessage message)
         {
             ConcurrentQueue<QueueMessage>? queue = await TryGetQueue(queueName);
             queue?.Enqueue(message);

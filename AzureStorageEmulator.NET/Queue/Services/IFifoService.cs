@@ -10,7 +10,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<bool> DeleteQueue(string queueName);
 
-        Task<bool> AddMessage(string queueName, QueueMessage message);
+        Task<bool> AddMessageAsync(string queueName, QueueMessage message);
 
         Task<List<QueueMessage>?> GetMessages(string queueName, int? numOfMessages = null, bool peekOnly = false);
 

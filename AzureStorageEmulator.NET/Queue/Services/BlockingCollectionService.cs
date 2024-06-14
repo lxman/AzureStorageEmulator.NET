@@ -25,7 +25,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new Task<bool>(() => TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue) && _queues.Remove(queue!.Value.Key));
         }
 
-        public Task<bool> AddMessage(string queueName, QueueMessage message)
+        public Task<bool> AddMessageAsync(string queueName, QueueMessage message)
         {
             bool result = TryGetQueue(queueName, out KeyValuePair<Models.Queue, BlockingCollection<QueueMessage>>? queue);
             queue?.Value.Add(message);

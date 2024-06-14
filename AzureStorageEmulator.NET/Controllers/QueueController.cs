@@ -9,6 +9,8 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10001")]
     public class QueueController(IQueueService queueService) : ControllerBase
     {
+        // TODO: Implement a mechanism to return 504 Gateway Timeout if processing takes too long
+        #region QueueOps
         /// <summary>
         /// Create a new queue.
         /// </summary>
@@ -18,7 +20,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}")]
         public Task<IActionResult> CreateQueue(string queueName)
         {
-            return queueService.CreateQueue(queueName, Request);
+            return queueService.CreateQueue(queueName, HttpContext);
         }
 
         /// <summary>
@@ -28,7 +30,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [HttpGet]
         public IActionResult ListQueues()
         {
-            return queueService.ListQueues(Request);
+            return queueService.ListQueues(HttpContext);
         }
 
         /// <summary>
@@ -40,9 +42,11 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}")]
         public IActionResult DeleteQueue(string queueName)
         {
-            return queueService.DeleteQueue(queueName, Request);
+            return queueService.DeleteQueue(queueName, HttpContext);
         }
+        #endregion
 
+        #region MessageOps
         /// <summary>
         /// Get 0 or more messages from the queue.
         /// </summary>
@@ -53,7 +57,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}/messages")]
         public Task<IActionResult> GetMessages(string queueName)
         {
-            return queueService.GetMessages(queueName, Request);
+            return queueService.GetMessages(queueName, HttpContext);
         }
 
         /// <summary>
@@ -65,7 +69,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}")]
         public Task<IActionResult> GetAllMessages(string queueName)
         {
-            return queueService.GetAllMessages(queueName, Request);
+            return queueService.GetAllMessages(queueName, HttpContext);
         }
 
         // TODO: Inspect query string usage here
@@ -87,7 +91,7 @@ namespace AzureStorageEmulator.NET.Controllers
             [FromQuery] int messageTtl = 0,
             [FromQuery] int timeout = 0)
         {
-            return queueService.PostMessage(queueName, message, visibilityTimeout, messageTtl, timeout, Request);
+            return queueService.PostMessage(queueName, message, visibilityTimeout, messageTtl, timeout, HttpContext);
         }
 
         /// <summary>
@@ -101,7 +105,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}/messages/{messageId:guid}")]
         public Task<IActionResult> DeleteMessage(string queueName, Guid messageId, [FromQuery] string popReceipt)
         {
-            return queueService.DeleteMessage(queueName, messageId, popReceipt, Request);
+            return queueService.DeleteMessage(queueName, messageId, popReceipt, HttpContext);
         }
 
         /// <summary>
@@ -113,7 +117,9 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("{queueName}/messages")]
         public IActionResult DeleteMessages(string queueName)
         {
-            return queueService.DeleteMessages(queueName, Request);
+            return queueService.DeleteMessages(queueName, HttpContext);
         }
+        #endregion
+
     }
 }

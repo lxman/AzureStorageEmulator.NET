@@ -12,23 +12,23 @@ namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IQueueService
     {
-        IActionResult ListQueues(HttpRequest request);
+        Task<IActionResult> CreateQueue(string queueName, HttpContext context);
 
-        Task<IActionResult> CreateQueue(string queueName, HttpRequest request);
+        IActionResult ListQueues(HttpContext context);
 
-        IActionResult DeleteQueue(string queueName, HttpRequest request);
+        IActionResult DeleteQueue(string queueName, HttpContext context);
 
-        Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpRequest request);
+        Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context);
 
-        Task<IActionResult> GetMessages(string queueName, HttpRequest request);
+        Task<IActionResult> GetMessages(string queueName, HttpContext context);
 
-        Task<IActionResult> GetAllMessages(string queueName, HttpRequest request);
+        Task<IActionResult> GetAllMessages(string queueName, HttpContext context);
 
-        Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpRequest request);
+        Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpContext context);
 
-        IActionResult DeleteMessages(string queueName, HttpRequest request);
+        IActionResult DeleteMessages(string queueName, HttpContext context);
 
-        IActionResult MessageCount(string queueName, HttpRequest request);
+        IActionResult MessageCount(string queueName, HttpContext context);
     }
 
     public class QueueService(IFifoService fifoService,
@@ -37,16 +37,22 @@ namespace AzureStorageEmulator.NET.Queue.Services
         IXmlSerializer<MessageList> messageListSerializer,
         IQueueSettings settings) : IQueueService
     {
-        public bool Authenticate(HttpRequest request)
+        public async Task<IActionResult> CreateQueue(string queueName, HttpContext context)
         {
-            return authenticator.Authenticate(request);
+            Log.Information($"CreateQueue queueName = {queueName}");
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
+            StatusCodeResult result = new(fifoService.AddQueue(queueName) ? 201 : 204);
+            SetResponseHeaders(context);
+            await Task.Delay(settings.Delay);
+            return result;
         }
 
-        public IActionResult ListQueues(HttpRequest request)
+        public IActionResult ListQueues(HttpContext context)
         {
             Log.Information("ListQueues");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
             {
                 return new BadRequestResult();
@@ -62,11 +68,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> GetMessages(string queueName, HttpRequest request)
+        public async Task<IActionResult> GetMessages(string queueName, HttpContext context)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             List<QueueMessage>? result = await fifoService.GetMessages(queueName,
                 queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
                 queries.TryGetValue("peekonly", out StringValues peekOnlyValue) && Convert.ToBoolean(peekOnlyValue.First()));
@@ -81,12 +87,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> GetAllMessages(string queueName, HttpRequest request)
+        public async Task<IActionResult> GetAllMessages(string queueName, HttpContext context)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessages queueName = {queueName}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
-            List<QueueMessage?>? result = fifoService.GetAllMessages(queueName);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
+            List<QueueMessage>? result = fifoService.GetAllMessages(queueName);
             MessageList queueMessageList = new();
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
             await Task.Delay(settings.Delay);
@@ -98,11 +104,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpRequest request)
+        public async Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
         {
             Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             MessageList queueMessageList = new();
             QueueMessage queueMessage = new();
             queueMessageList.QueueMessagesList.Add(queueMessage);
@@ -113,7 +119,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             queueMessage.MessageText = message.MessageText;
             queueMessage.PopReceipt = Guid.NewGuid().ToString();
             queueMessage.TimeNextVisible = DateTime.UtcNow.AddSeconds(visibilityTimeout);
-            fifoService.AddMessage(queueName, queueMessage);
+            await fifoService.AddMessageAsync(queueName, queueMessage);
             await Task.Delay(settings.Delay);
             return new ContentResult
             {
@@ -123,48 +129,38 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> CreateQueue(string queueName, HttpRequest request)
-        {
-            Log.Information($"CreateQueue queueName = {queueName}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
-            StatusCodeResult result = new StatusCodeResult(fifoService.AddQueue(queueName) ? 201 : 204);
-            await Task.Delay(settings.Delay);
-            return result;
-        }
-
-        public IActionResult DeleteQueue(string queueName, HttpRequest request)
+        public IActionResult DeleteQueue(string queueName, HttpContext context)
         {
             Log.Information($"DeleteQueue name = {queueName}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             fifoService.DeleteQueue(queueName);
             return new StatusCodeResult(204);
         }
 
-        public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpRequest request)
+        public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpContext context)
         {
             Log.Information($"DeleteMessage queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             _ = fifoService.DeleteMessage(queueName, messageId, popReceipt);
             await Task.Delay(settings.Delay);
             return new StatusCodeResult(204);
         }
 
-        public IActionResult DeleteMessages(string queueName, HttpRequest request)
+        public IActionResult DeleteMessages(string queueName, HttpContext context)
         {
             Log.Information($"DeleteMessages queueName = {queueName}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             fifoService.DeleteMessages(queueName);
             return new StatusCodeResult(204);
         }
 
-        public IActionResult MessageCount(string queueName, HttpRequest request)
+        public IActionResult MessageCount(string queueName, HttpContext context)
         {
             Log.Information($"MessageCount queueName = {queueName}");
-            if (!Authenticate(request)) return new StatusCodeResult(403);
-            Dictionary<string, StringValues> queries = QueryProcessor(request);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             return new ContentResult
             {
                 Content = fifoService.MessageCount(queueName).ToString(),
@@ -186,6 +182,15 @@ namespace AzureStorageEmulator.NET.Queue.Services
                         ? values
                         : []
                 );
+        }
+
+        private bool Authenticate(HttpRequest request) => authenticator.Authenticate(request);
+
+        private static void SetResponseHeaders(HttpContext context)
+        {
+            context.Response.Headers.Append("x-ms-version", "2023-11-03");
+            context.Response.Headers.Append("x-ms-request-id", Guid.NewGuid().ToString());
+            context.Response.Headers.Append("x-ms-client-request-id", context.Request.Headers["x-ms-client-request-id"]);
         }
     }
 }
