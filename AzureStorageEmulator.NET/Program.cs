@@ -49,7 +49,7 @@ namespace AzureStorageEmulator.NET
 
             try
             {
-                QueueSettings settings = new() { Delay = ControllerDelay, LogGetMessages = LogGetMessages };
+                QueueSettings settings = new() { LogGetMessages = LogGetMessages };
 
                 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -65,8 +65,6 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddScoped<IQueueService, QueueService>();
                 builder.Services.AddScoped<IBlobService, BlobService>();
                 builder.Services.AddScoped<IAuthenticator, QueueSharedKeyAuthenticator>();
-                builder.Services
-                    .AddScoped<IXmlSerializer<EnumerationResults>, XmlSerializer<EnumerationResults>>();
                 builder.Services.AddScoped<IXmlSerializer<MessageList>, XmlSerializer<MessageList>>();
                 builder.Services.AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
 

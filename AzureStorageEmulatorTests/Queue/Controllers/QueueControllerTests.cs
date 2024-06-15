@@ -33,31 +33,31 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         }
 
         [Fact]
-        public void ListQueues_ReturnsOk()
+        public async Task ListQueues_ReturnsOk()
         {
-            MockMessageService.Setup(x => x.ListQueues(It.IsAny<HttpContext>())).Returns(new OkObjectResult(new List<AzureStorageEmulator.NET.Queue.Models.Queue>()));
+            MockMessageService.Setup(x => x.ListQueues(It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<AzureStorageEmulator.NET.Queue.Models.Queue>()));
 
-            IActionResult result = _controller.ListQueues();
+            IActionResult result = await _controller.ListQueues();
 
             Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public void DeleteQueue_ReturnsOk()
+        public async Task DeleteQueue_ReturnsOk()
         {
-            MockMessageService.Setup(x => x.DeleteQueue(QueueName, It.IsAny<HttpContext>())).Returns(new OkResult());
+            MockMessageService.Setup(x => x.DeleteQueue(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
 
-            IActionResult result = _controller.DeleteQueue(QueueName);
+            IActionResult result = await _controller.DeleteQueue(QueueName);
 
             Assert.IsType<OkResult>(result);
         }
 
         [Fact]
-        public void GetAllMessages_ReturnsOk()
+        public async Task GetAllMessages_ReturnsOk()
         {
-            MockMessageService.Setup(x => x.GetQueueMetadata(QueueName, It.IsAny<HttpContext>())).Returns(new OkObjectResult(new List<Message>()));
+            MockMessageService.Setup(x => x.GetQueueMetadata(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<Message>()));
 
-            IActionResult result = _controller.GetQueueMetadata(QueueName);
+            IActionResult result = await _controller.GetQueueMetadata(QueueName);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -86,9 +86,9 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task DeleteMessages_ReturnsOk()
         {
-            MockMessageService.Setup(x => x.DeleteMessages(QueueName, It.IsAny<HttpContext>())).Returns(new OkResult());
+            MockMessageService.Setup(x => x.DeleteMessages(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
 
-            IActionResult result = _controller.DeleteMessages(QueueName);
+            IActionResult result = await _controller.DeleteMessages(QueueName);
 
             Assert.IsType<OkResult>(result);
         }
