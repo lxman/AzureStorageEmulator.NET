@@ -59,34 +59,23 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 messages.ForEach(m => toRetain.Remove(m));
                 toRetain.RemoveAll(m => m.Expired);
                 _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(toRetain), queue);
+                messages.ForEach(m =>
+                {
+                    m.PopReceipt = Guid.NewGuid().ToString();
+                    m.TimeNextVisible = DateTime.UtcNow.AddSeconds(m.VisibilityTimeout);
+                });
             }
 
             key.Blocked = false;
-            messages.ForEach(m =>
-            {
-                m.PopReceipt = Guid.NewGuid().ToString();
-                m.TimeNextVisible = DateTime.UtcNow.AddSeconds(m.VisibilityTimeout);
-            });
             return messages;
         }
 
-        public List<QueueMessage>? GetAllMessages(string queueName)
+        public Models.Queue? GetQueueMetadata(string queueName)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return null;
-            key.Blocked = true;
-            List<QueueMessage> messages = [.. _queues[key]];
-            messages.RemoveAll(m => m.Expired);
-            List<QueueMessage> toReturn = messages.Where(m => m.Visible).ToList();
-            toReturn.ForEach(m =>
-            {
-                messages.Remove(m);
-                m.PopReceipt = Guid.NewGuid().ToString();
-                m.TimeNextVisible = DateTime.UtcNow.AddSeconds(m.VisibilityTimeout);
-            });
-            _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(messages), _queues[key]);
-            key.Blocked = false;
-            return toReturn;
+            key.MessageCount = _queues.GetValueOrDefault(key)?.Count ?? 0;
+            return key;
         }
 
         public async Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt)

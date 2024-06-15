@@ -53,13 +53,12 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         }
 
         [Fact]
-        public async Task GetAllMessages_ReturnsOk()
+        public void GetAllMessages_ReturnsOk()
         {
-            MockMessageService.Setup(x => x.GetAllMessages(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<Message>()));
+            MockMessageService.Setup(x => x.GetQueueMetadata(QueueName, It.IsAny<HttpContext>())).Returns(new OkObjectResult(new List<Message>()));
 
-            IActionResult result = await _controller.GetAllMessages(QueueName);
+            IActionResult result = _controller.GetQueueMetadata(QueueName);
 
-            // Assert
             Assert.IsType<OkObjectResult>(result);
         }
 

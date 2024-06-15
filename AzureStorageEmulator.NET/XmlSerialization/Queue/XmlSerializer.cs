@@ -1,36 +1,36 @@
 ﻿using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using AzureStorageEmulator.NET.Queue.Models;
 
 namespace AzureStorageEmulator.NET.XmlSerialization.Queue
 {
-    public class EnumerationResultsSerializer : IXmlSerializer<EnumerationResults>
+    public class XmlSerializer<T> : IXmlSerializer<T>
     {
-        private readonly XmlSerializer _serializer = new(typeof(EnumerationResults));
+        private readonly XmlSerializer _serializer = new(typeof(T));
         private readonly XmlWriter _writer;
         private readonly StringBuilder _output = new();
         private readonly XmlSerializerNamespaces _ns = new();
 
-        public EnumerationResultsSerializer()
+        public XmlSerializer()
         {
             XmlWriterSettings settings = new()
             {
-                Encoding = Encoding.UTF8
+                Encoding = Encoding.UTF8,
+                ConformanceLevel = ConformanceLevel.Auto
             };
             _writer = XmlWriter.Create(_output, settings);
             _writer.WriteStartDocument(true);
             _ns.Add("", "");
         }
 
-        public string Serialize(EnumerationResults o)
+        public string Serialize(T o)
         {
             _serializer.Serialize(_writer, o, _ns);
             _writer.Flush();
             return _output.Replace("utf-16", "utf-8").ToString();
         }
 
-        public EnumerationResults Deserialize(string xml)
+        public T Deserialize(string xml)
         {
             throw new NotImplementedException();
         }

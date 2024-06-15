@@ -47,6 +47,18 @@ namespace AzureStorageEmulator.NET.Controllers
             return queueService.DeleteQueue(queueName, HttpContext);
         }
 
+        /// <summary>
+        /// Get all messages from the queue.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{queueName}")]
+        public IActionResult GetQueueMetadata(string queueName)
+        {
+            return queueService.GetQueueMetadata(queueName, HttpContext);
+        }
+
         #endregion QueueOps
 
         #region MessageOps
@@ -62,18 +74,6 @@ namespace AzureStorageEmulator.NET.Controllers
         public Task<IActionResult> GetMessages(string queueName)
         {
             return queueService.GetMessages(queueName, HttpContext);
-        }
-
-        /// <summary>
-        /// Get all messages from the queue.
-        /// </summary>
-        /// <param name="queueName"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("{queueName}")]
-        public Task<IActionResult> GetAllMessages(string queueName)
-        {
-            return queueService.GetAllMessages(queueName, HttpContext);
         }
 
         // TODO: Inspect query string usage here

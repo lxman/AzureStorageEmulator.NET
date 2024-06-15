@@ -1,74 +1,38 @@
 ﻿using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using XmlParsingTest.MessageList;
+using XmlParsingTest.QueueEnumeration;
 
-MessageList ml1 = new()
+SerializableQueue serializableQueue = new()
 {
-    QueueMessagesList =
+    Name = "queue1",
+    Metadata =
     [
-        new QueueMessage
-        {
-            MessageId = Guid.NewGuid(),
-            InsertionTime = DateTime.Now,
-            ExpirationTime = DateTime.Now.AddHours(1),
-            PopReceipt = "pop",
-            TimeNextVisible = DateTime.Now.AddHours(2),
-            DequeueCount = 1,
-            MessageText = "Hello, World!"
-        }
+        new Metadata {Key = "key1", Value = "value1"},
+        new Metadata {Key = "key2", Value = "value2"}
+    ],
+    Blocked = true
+};
+
+QueueEnumerationResults results = new()
+{
+    MaxResults = 5000,
+    Queues =
+    [
+        serializableQueue
     ]
 };
 
-MessageList ml2 = new()
+XmlSerializer serializer = new(typeof(QueueEnumerationResults));
+
+XmlWriterSettings settings = new()
 {
-    QueueMessagesList =
-    [
-        new QueueMessage
-        {
-            MessageId = Guid.NewGuid(),
-            InsertionTime = DateTime.Now,
-            ExpirationTime = DateTime.Now.AddHours(1),
-            PopReceipt = "pop",
-            TimeNextVisible = DateTime.Now.AddHours(2)
-        }
-    ]
+    Indent = true,
+    IndentChars = "    ",
+    Encoding = Encoding.UTF8
 };
-
-Write1();
-Write2();
-return;
-
-void Write1()
-{
-    XmlSerializer serializer = new(typeof(MessageList));
-
-    XmlWriterSettings settings = new()
-    {
-        Indent = true,
-        IndentChars = "    ",
-        Encoding = Encoding.UTF8
-    };
-    XmlWriter writer = XmlWriter.Create("output.xml", settings);
-    writer.WriteStartDocument(true);
-    XmlSerializerNamespaces ns = new();
-    ns.Add("", "");
-    serializer.Serialize(writer, ml1, ns);
-}
-
-void Write2()
-{
-    XmlSerializer serializer = new(typeof(MessageList));
-
-    XmlWriterSettings settings = new()
-    {
-        Indent = true,
-        IndentChars = "    ",
-        Encoding = Encoding.UTF8
-    };
-    XmlWriter writer = XmlWriter.Create("output2.xml", settings);
-    writer.WriteStartDocument(true);
-    XmlSerializerNamespaces ns = new();
-    ns.Add("", "");
-    serializer.Serialize(writer, ml2, ns);
-}
+XmlWriter writer = XmlWriter.Create("output.xml", settings);
+writer.WriteStartDocument(true);
+XmlSerializerNamespaces ns = new();
+ns.Add("", "");
+serializer.Serialize(writer, results, ns);

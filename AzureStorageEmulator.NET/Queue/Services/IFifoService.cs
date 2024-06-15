@@ -14,7 +14,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages = null, bool peekOnly = false);
 
-        List<QueueMessage>? GetAllMessages(string queueName);
+        Models.Queue? GetQueueMetadata(string queueName);
 
         Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt);
 

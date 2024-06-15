@@ -30,6 +30,7 @@
   <ItemGroup>
     <Folder Include="Blob\" />
     <Folder Include="Authentication\" />
+    <Folder Include="Queue\Services\" />
     <Folder Include="Table\" />
   </ItemGroup>
 
