@@ -12,23 +12,23 @@ namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IQueueService
     {
-        Task<IActionResult> CreateQueue(string queueName, HttpContext context);
+        Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> ListQueues(HttpContext context);
+        Task<IActionResult> ListQueuesAsync(HttpContext context);
 
-        Task<IActionResult> DeleteQueue(string queueName, HttpContext context);
+        Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context);
+        Task<IActionResult> PostMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context);
 
-        Task<IActionResult> GetMessages(string queueName, HttpContext context);
+        Task<IActionResult> GetMessagesAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> GetQueueMetadata(string queueName, HttpContext context);
+        Task<IActionResult> GetQueueMetadataAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpContext context);
+        Task<IActionResult> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt, HttpContext context);
 
-        Task<IActionResult> DeleteMessages(string queueName, HttpContext context);
+        Task<IActionResult> ClearMessagesAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> MessageCount(string queueName, HttpContext context);
+        Task<IActionResult> MessageCountAsync(string queueName, HttpContext context);
     }
 
     public class QueueService(IFifoService fifoService,
@@ -37,19 +37,19 @@ namespace AzureStorageEmulator.NET.Queue.Services
         IXmlSerializer<QueueEnumerationResults> queueEnumerationResultsSerializer,
         IQueueSettings settings) : IQueueService
     {
-        public async Task<IActionResult> CreateQueue(string queueName, HttpContext context)
+        public async Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context)
         {
             Log.Information($"CreateQueue queueName = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            StatusCodeResult result = new(await fifoService.AddQueue(queueName) ? 201 : 204);
+            StatusCodeResult result = new(await fifoService.AddQueueAsync(queueName) ? 201 : 204);
             SetResponseHeaders(context);
             return result;
         }
 
-        public async Task<IActionResult> ListQueues(HttpContext context)
+        public async Task<IActionResult> ListQueuesAsync(HttpContext context)
         {
-            Log.Information("ListQueues");
+            Log.Information("ListQueuesAsync");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
@@ -57,18 +57,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 return new BadRequestResult();
             }
             QueueEnumerationResults results = new();
-            results.Queues.AddRange(await fifoService.GetQueues());
+            results.Queues.AddRange(await fifoService.GetQueuesAsync());
             results.MaxResults = 5000;
             SetResponseHeaders(context);
             return new ContentResult
             {
-                Content = queueEnumerationResultsSerializer.Serialize(results),
+                Content = await queueEnumerationResultsSerializer.Serialize(results),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
         }
 
-        public async Task<IActionResult> DeleteQueue(string queueName, HttpContext context)
+        public async Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context)
         {
             Log.Information($"DeleteQueueAsync name = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
@@ -77,7 +77,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new StatusCodeResult(204);
         }
 
-        public async Task<IActionResult> GetMessages(string queueName, HttpContext context)
+        public async Task<IActionResult> GetMessagesAsync(string queueName, HttpContext context)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
@@ -89,19 +89,19 @@ namespace AzureStorageEmulator.NET.Queue.Services
             if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
             return new ContentResult
             {
-                Content = messageListSerializer.Serialize(queueMessageList),
+                Content = await messageListSerializer.Serialize(queueMessageList),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
         }
 
-        public async Task<IActionResult> GetQueueMetadata(string queueName, HttpContext context)
+        public async Task<IActionResult> GetQueueMetadataAsync(string queueName, HttpContext context)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             SetResponseHeaders(context);
-            Models.Queue? result = await fifoService.GetQueueMetadata(queueName);
+            Models.Queue? result = await fifoService.GetQueueMetadataAsync(queueName);
             if (result is null) return new NotFoundResult();
             context.Response.Headers.Append("x-ms-approximate-messages-count", result.MessageCount.ToString());
             if (result.Metadata is null)
@@ -116,9 +116,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new OkResult();
         }
 
-        public async Task<IActionResult> PostMessage(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
+        public async Task<IActionResult> PostMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
         {
-            Log.Information($"PostMessage queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
+            Log.Information($"PostMessageAsync queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             MessageList queueMessageList = new();
@@ -135,13 +135,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
             await fifoService.AddMessageAsync(queueName, queueMessage);
             return new ContentResult
             {
-                Content = messageListSerializer.Serialize(queueMessageList),
+                Content = await messageListSerializer.Serialize(queueMessageList),
                 ContentType = "application/xml",
                 StatusCode = 201
             };
         }
 
-        public async Task<IActionResult> DeleteMessage(string queueName, Guid messageId, string popReceipt, HttpContext context)
+        public async Task<IActionResult> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt, HttpContext context)
         {
             Log.Information($"DeleteMessageAsync queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
@@ -150,15 +150,15 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new StatusCodeResult(204);
         }
 
-        public async Task<IActionResult> DeleteMessages(string queueName, HttpContext context)
+        public async Task<IActionResult> ClearMessagesAsync(string queueName, HttpContext context)
         {
-            Log.Information($"DeleteMessages queueName = {queueName}");
+            Log.Information($"ClearMessagesAsync queueName = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
-            await fifoService.DeleteMessages(queueName);
-            return new StatusCodeResult(204);
+            int result = await fifoService.ClearMessagesAsync(queueName);
+            return new StatusCodeResult(result);
         }
 
-        public async Task<IActionResult> MessageCount(string queueName, HttpContext context)
+        public async Task<IActionResult> MessageCountAsync(string queueName, HttpContext context)
         {
             Log.Information($"MessageCountAsync queueName = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);

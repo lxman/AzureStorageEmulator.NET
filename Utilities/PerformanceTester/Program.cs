@@ -4,7 +4,7 @@ namespace PerformanceTester
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             Console.Clear();
             Console.WriteLine("This is the AzureStorageEmulator.NET performance analyzer.");

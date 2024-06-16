@@ -20,7 +20,6 @@ namespace AzureStorageEmulator.NET
     {
         private const bool DetailedLogging = false;
         private const int BatchSeconds = 2;
-        private const int ControllerDelay = 50;
         private const bool LogGetMessages = false;
         private const bool CreateAppliedQueues = true;
 
@@ -102,7 +101,7 @@ namespace AzureStorageEmulator.NET
             IFifoService fifoService = app.Services.GetRequiredService<IFifoService>();
             foreach (string queue in Queues.Names)
             {
-                fifoService.AddQueue(queue);
+                fifoService.AddQueueAsync(queue);
             }
         }
     }

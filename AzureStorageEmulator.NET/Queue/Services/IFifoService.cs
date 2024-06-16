@@ -4,9 +4,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IFifoService
     {
-        Task<List<Models.Queue>> GetQueues();
+        Task<List<Models.Queue>> GetQueuesAsync();
 
-        Task<bool> AddQueue(string queueName);
+        Task<bool> AddQueueAsync(string queueName);
 
         Task<bool> DeleteQueueAsync(string queueName);
 
@@ -14,11 +14,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages = null, bool peekOnly = false);
 
-        Task<Models.Queue?> GetQueueMetadata(string queueName);
+        Task<Models.Queue?> GetQueueMetadataAsync(string queueName);
 
         Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt);
 
-        Task DeleteMessages(string queueName);
+        Task<int> ClearMessagesAsync(string queueName);
 
         Task<int?> MessageCountAsync(string queueName);
     }

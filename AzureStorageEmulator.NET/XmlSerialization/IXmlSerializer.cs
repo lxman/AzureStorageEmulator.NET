@@ -2,7 +2,7 @@
 {
     public interface IXmlSerializer<T>
     {
-        string Serialize(T o);
+        Task<string> Serialize(T o);
 
         T Deserialize(string xml);
     }

@@ -7,7 +7,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         private readonly ConcurrentDictionary<Models.Queue, ConcurrentQueue<QueueMessage>> _queues = [];
 
-        public async Task<List<Models.Queue>> GetQueues()
+        public async Task<List<Models.Queue>> GetQueuesAsync()
         {
             List<Models.Queue> keys = [.. _queues.Keys.OrderBy(k => k.Name)];
             foreach (Models.Queue queue in keys)
@@ -17,7 +17,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return keys;
         }
 
-        public async Task<bool> AddQueue(string queueName)
+        public async Task<bool> AddQueueAsync(string queueName)
         {
             await RemoveExpired(queueName);
             return _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
@@ -77,7 +77,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return messages;
         }
 
-        public async Task<Models.Queue?> GetQueueMetadata(string queueName)
+        public async Task<Models.Queue?> GetQueueMetadataAsync(string queueName)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return null;
@@ -110,12 +110,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return message;
         }
 
-        public async Task DeleteMessages(string queueName)
+        public async Task<int> ClearMessagesAsync(string queueName)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return;
+            if (key is null) return 404;
 
-            _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(), (await TryGetQueueAsync(queueName))!);
+            return _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(), (await TryGetQueueAsync(queueName))!) ? 204 : 409;
         }
 
         public async Task<int?> MessageCountAsync(string queueName)

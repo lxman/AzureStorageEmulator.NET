@@ -16,17 +16,18 @@ namespace AzureStorageEmulator.NET.XmlSerialization.Queue
             XmlWriterSettings settings = new()
             {
                 Encoding = Encoding.UTF8,
-                ConformanceLevel = ConformanceLevel.Auto
+                ConformanceLevel = ConformanceLevel.Auto,
+                Async = true
             };
             _writer = XmlWriter.Create(_output, settings);
             _writer.WriteStartDocument(true);
             _ns.Add("", "");
         }
 
-        public string Serialize(T o)
+        public async Task<string> Serialize(T o)
         {
             _serializer.Serialize(_writer, o, _ns);
-            _writer.Flush();
+            await _writer.FlushAsync();
             return _output.Replace("utf-16", "utf-8").ToString();
         }
 
