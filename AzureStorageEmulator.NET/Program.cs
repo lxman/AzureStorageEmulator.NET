@@ -69,6 +69,10 @@ namespace AzureStorageEmulator.NET
 
                 WebApplication app = builder.Build();
 
+                app.Urls.Add("http://localhost:10000");
+                app.Urls.Add("http://localhost:10001");
+                app.Urls.Add("http://localhost:10002");
+
                 // Configure the HTTP request pipeline.
                 app.UseHttpsRedirection();
 
