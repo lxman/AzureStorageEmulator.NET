@@ -20,12 +20,11 @@
     <ItemGroup>
         <ProjectReference Include="..\AppliedQueueList\AppliedQueueList.csproj" />
         <ProjectReference Include="..\PeriodicLogger\PeriodicLogger.csproj" />
+        <ProjectReference Include="..\TableStorage\TableStorage.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Blob\Models\" />
-      <Folder Include="Table\Models\" />
-      <Folder Include="Table\Services\" />
       <Folder Include="XmlSerialization\Blob\" />
       <Folder Include="XmlSerialization\Table\" />
     </ItemGroup>

@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableStorage", "TableStorage\TableStorage.csproj", "{0F810553-77BA-409B-92DC-00ABC9E655A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableStorageTests", "TableStorageTests\TableStorageTests.csproj", "{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -110,6 +112,14 @@ Global
 		{0F810553-77BA-409B-92DC-00ABC9E655A4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F810553-77BA-409B-92DC-00ABC9E655A4}.Release|x64.ActiveCfg = Release|Any CPU
 		{0F810553-77BA-409B-92DC-00ABC9E655A4}.Release|x64.Build.0 = Release|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Debug|x64.Build.0 = Debug|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|x64.ActiveCfg = Release|Any CPU
+		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
