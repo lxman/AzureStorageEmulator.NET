@@ -56,7 +56,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 return new BadRequestResult();
             }
-            QueueEnumerationResults results = new();
+            QueueEnumerationResults results = new() { ServiceEndpoint = GetBaseUrl(context) };
             results.Queues.AddRange(await fifoService.GetQueuesAsync());
             results.MaxResults = 5000;
             SetResponseHeaders(context);
@@ -192,9 +192,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             context.Response.Headers.Append("x-ms-version", "2023-11-03");
             context.Response.Headers.Append("x-ms-request-id", Guid.NewGuid().ToString());
-            string? clientRequestId = context.Request.Headers["x-ms-client-request-id"][0];
-            if (clientRequestId is not null && clientRequestId.Length <= 1024)
+            if (context.Request.Headers.TryGetValue("x-ms-client-request-id", out StringValues clientRequestId) && clientRequestId.Count > 0)
+            {
                 context.Response.Headers.Append("x-ms-client-request-id", clientRequestId);
+            }
         }
+
+        private static string GetBaseUrl(HttpContext context) => $"{context.Request.Scheme}://{context.Request.Host.Value}{context.Request.Path.Value}";
     }
 }

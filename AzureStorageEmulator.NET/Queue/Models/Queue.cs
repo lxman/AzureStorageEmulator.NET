@@ -6,7 +6,7 @@ namespace AzureStorageEmulator.NET.Queue.Models
 {
     public class Queue : IXmlSerializable
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public List<Metadata>? Metadata { get; set; } = [];
 

@@ -92,5 +92,69 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
 
             Assert.IsType<OkResult>(result);
         }
+
+        [Fact]
+        public async Task CreateQueue_ProcessingTooLong_ReturnsGatewayTimeout()
+        {
+            MockMessageService.Setup(x => x.CreateQueueAsync(QueueName, It.IsAny<HttpContext>()))
+                              .Returns(Task.Delay(2000).ContinueWith<IActionResult>(_ => new StatusCodeResult(504)));
+
+            IActionResult result = await _controller.CreateQueue(QueueName);
+
+            Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(504, ((StatusCodeResult)result).StatusCode);
+        }
+
+        [Fact]
+        public async Task PostMessage_InspectQueryString_UsesDefaultValues()
+        {
+            MockMessageService.Setup(x => x.PostMessageAsync(QueueName, _message, 0, 0, 0, It.IsAny<HttpContext>()))
+                              .ReturnsAsync(new StatusCodeResult(201));
+
+            IActionResult resultWithDefaults = await _controller.PostMessage(QueueName, _message, 0, 0, 0);
+
+            IActionResult resultWithMethodDefaults = await _controller.PostMessage(QueueName, _message);
+
+            Assert.IsType<StatusCodeResult>(resultWithDefaults);
+            Assert.Equal(201, ((StatusCodeResult)resultWithDefaults).StatusCode);
+            Assert.IsType<StatusCodeResult>(resultWithMethodDefaults);
+            Assert.Equal(201, ((StatusCodeResult)resultWithMethodDefaults).StatusCode);
+        }
+
+        [Fact]
+        public async Task PostMessage_InspectQueryString_UsesProvidedValues()
+        {
+            const int customVisibilityTimeout = 30;
+            const int customMessageTtl = 120;
+            const int customTimeout = 15;
+
+            MockMessageService.Setup(x => x.PostMessageAsync(QueueName, _message, customVisibilityTimeout, customMessageTtl, customTimeout, It.IsAny<HttpContext>()))
+                              .ReturnsAsync(new StatusCodeResult(201));
+
+            IActionResult result = await _controller.PostMessage(QueueName, _message, customVisibilityTimeout, customMessageTtl, customTimeout);
+
+            Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(201, ((StatusCodeResult)result).StatusCode);
+        }
+
+        [Fact]
+        public async Task GetMessages_ReturnsOk()
+        {
+            MockMessageService.Setup(x => x.GetMessagesAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<QueueMessage>()));
+
+            IActionResult result = await _controller.GetMessages(QueueName);
+
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task GetMessages_ReturnsNotFound_WhenQueueDoesNotExist()
+        {
+            MockMessageService.Setup(x => x.GetMessagesAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new NotFoundResult());
+
+            IActionResult result = await _controller.GetMessages(QueueName);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
     }
 }

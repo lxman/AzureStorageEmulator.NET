@@ -20,7 +20,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<bool> AddQueueAsync(string queueName)
         {
             await RemoveExpired(queueName);
-            return _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
+            return _queues.Keys.All(q => q.Name != queueName) && _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
         }
 
         public async Task<bool> DeleteQueueAsync(string queueName)
