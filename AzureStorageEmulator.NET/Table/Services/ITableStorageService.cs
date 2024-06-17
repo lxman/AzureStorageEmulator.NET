@@ -1,9 +1,11 @@
-﻿namespace AzureStorageEmulator.NET.Table.Services
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace AzureStorageEmulator.NET.Table.Services
 {
     public interface ITableStorageService
     {
-        List<string> ListTables();
-        void CreateTable(string tableName);
-        bool DeleteTable(string tableName);
+        IActionResult ListTables(HttpContext context);
+        IActionResult CreateTable(string tableName, HttpContext context);
+        IActionResult DeleteTable(string tableName, HttpContext context);
     }
 }

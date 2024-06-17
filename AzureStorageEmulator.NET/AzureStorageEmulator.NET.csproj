@@ -24,7 +24,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Authentication\Blob\" />
+      <Folder Include="Authentication\Common\" />
       <Folder Include="Blob\Models\" />
+      <Folder Include="Common\Authorization\" />
       <Folder Include="XmlSerialization\Blob\" />
       <Folder Include="XmlSerialization\Table\" />
     </ItemGroup>

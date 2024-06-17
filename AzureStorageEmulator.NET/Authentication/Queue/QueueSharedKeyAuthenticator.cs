@@ -2,9 +2,9 @@
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
-namespace AzureStorageEmulator.NET.Authentication
+namespace AzureStorageEmulator.NET.Authentication.Queue
 {
-    public class QueueSharedKeyAuthenticator : IAuthenticator
+    public class QueueSharedKeyAuthenticator : IAuthenticator<QueueSharedKeyAuthenticator>
     {
         public bool Authenticate(HttpRequest request)
         {
@@ -101,12 +101,12 @@ namespace AzureStorageEmulator.NET.Authentication
         {
             string resource = $"{request.Path.Value!}";
             string? query = request.QueryString.Value;
-            if (query is null || query == string.Empty)
+            if (string.IsNullOrEmpty(query))
             {
                 return $"/devstoreaccount1{resource}";
             }
-            query = query?[1..];
-            List<string> queryList = [.. query?.Split('&').Order()];
+            query = query[1..];
+            List<string> queryList = [.. query.Split('&').Order()];
             List<string> queryResults = [];
             queryList.ForEach(q =>
             {

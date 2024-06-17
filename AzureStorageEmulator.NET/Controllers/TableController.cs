@@ -11,28 +11,22 @@ namespace AzureStorageEmulator.NET.Controllers
     {
         [HttpGet]
         [Route("tables")]
-        public ActionResult<List<string>> ListTables()
+        public IActionResult ListTables()
         {
-            return tableStorageService.ListTables();
+            return tableStorageService.ListTables(HttpContext);
         }
 
         [HttpPost]
         [Route("tables")]
-        public ActionResult CreateTable([FromBody] TableNameJson tableName)
+        public IActionResult CreateTable([FromBody] TableNameJson tableName)
         {
-            tableStorageService.CreateTable(tableName.TableName);
-            return Ok(new TableNameJson { TableName = tableName.TableName });
+            return tableStorageService.CreateTable(tableName.TableName, HttpContext);
         }
 
         [HttpDelete("tables({tableName})")]
-        public ActionResult DeleteTable(string tableName)
+        public IActionResult DeleteTable(string tableName)
         {
-            if (tableStorageService.DeleteTable(tableName))
-            {
-                return Ok();
-            }
-
-            return NotFound();
+            return tableStorageService.DeleteTable(tableName, HttpContext);
         }
     }
 }

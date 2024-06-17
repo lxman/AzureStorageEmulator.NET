@@ -1,4 +1,6 @@
 ﻿using AzureStorageEmulator.NET.Authentication;
+using AzureStorageEmulator.NET.Authentication.Queue;
+using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,9 +34,10 @@ namespace AzureStorageEmulator.NET.Queue.Services
     }
 
     public class QueueService(IFifoService fifoService,
-        IAuthenticator authenticator,
+        IAuthenticator<QueueSharedKeyAuthenticator> authenticator,
         IXmlSerializer<MessageList> messageListSerializer,
         IXmlSerializer<QueueEnumerationResults> queueEnumerationResultsSerializer,
+        IHeaderManagement headerManagement,
         IQueueSettings settings) : IQueueService
     {
         public async Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context)
@@ -43,7 +46,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             StatusCodeResult result = new(await fifoService.AddQueueAsync(queueName) ? 201 : 204);
-            SetResponseHeaders(context);
+            headerManagement.SetResponseHeaders(context);
             return result;
         }
 
@@ -59,7 +62,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             QueueEnumerationResults results = new() { ServiceEndpoint = GetBaseUrl(context) };
             results.Queues.AddRange(await fifoService.GetQueuesAsync());
             results.MaxResults = 5000;
-            SetResponseHeaders(context);
+            headerManagement.SetResponseHeaders(context);
             return new ContentResult
             {
                 Content = await queueEnumerationResultsSerializer.Serialize(results),
@@ -100,7 +103,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
             if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            SetResponseHeaders(context);
+            headerManagement.SetResponseHeaders(context);
             Models.Queue? result = await fifoService.GetQueueMetadataAsync(queueName);
             if (result is null) return new NotFoundResult();
             context.Response.Headers.Append("x-ms-approximate-messages-count", result.MessageCount.ToString());
@@ -187,16 +190,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         }
 
         private bool Authenticate(HttpRequest request) => authenticator.Authenticate(request);
-
-        private static void SetResponseHeaders(HttpContext context)
-        {
-            context.Response.Headers.Append("x-ms-version", "2023-11-03");
-            context.Response.Headers.Append("x-ms-request-id", Guid.NewGuid().ToString());
-            if (context.Request.Headers.TryGetValue("x-ms-client-request-id", out StringValues clientRequestId) && clientRequestId.Count > 0)
-            {
-                context.Response.Headers.Append("x-ms-client-request-id", clientRequestId);
-            }
-        }
 
         private static string GetBaseUrl(HttpContext context) => $"{context.Request.Scheme}://{context.Request.Host.Value}{context.Request.Path.Value}";
     }

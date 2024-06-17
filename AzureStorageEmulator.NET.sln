@@ -28,9 +28,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerformanceTester", "Utilit
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{CD400DBF-A960-4337-88E6-CBB481A6037D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableStorage", "TableStorage\TableStorage.csproj", "{0F810553-77BA-409B-92DC-00ABC9E655A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableStorage", "TableStorage\TableStorage.csproj", "{0F810553-77BA-409B-92DC-00ABC9E655A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableStorageTests", "TableStorageTests\TableStorageTests.csproj", "{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableStorageTests", "TableStorageTests\TableStorageTests.csproj", "{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonSerializationTest", "JsonSerializationTest\JsonSerializationTest.csproj", "{023EBBD6-1A97-4CBF-AE80-33A366373C54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,6 +122,14 @@ Global
 		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|x64.ActiveCfg = Release|Any CPU
 		{76E1B175-F9FB-4CE7-B26F-5808C73CE77B}.Release|x64.Build.0 = Release|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Debug|x64.Build.0 = Debug|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Release|x64.ActiveCfg = Release|Any CPU
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,6 +139,7 @@ Global
 		{30AC8A1B-670B-4432-ACF5-AE8C6B90F713} = {CD400DBF-A960-4337-88E6-CBB481A6037D}
 		{C52B1E70-9250-4A92-B2FF-B3286D7C7B75} = {CD400DBF-A960-4337-88E6-CBB481A6037D}
 		{0BF4D9B5-F056-4BAD-AEA8-7E6D49A02C80} = {CD400DBF-A960-4337-88E6-CBB481A6037D}
+		{023EBBD6-1A97-4CBF-AE80-33A366373C54} = {CD400DBF-A960-4337-88E6-CBB481A6037D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0132F3EC-FA34-4EF8-92EA-C3FDF8904D3A}

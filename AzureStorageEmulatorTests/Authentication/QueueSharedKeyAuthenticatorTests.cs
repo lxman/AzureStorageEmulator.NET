@@ -1,4 +1,4 @@
-using AzureStorageEmulator.NET.Authentication;
+using AzureStorageEmulator.NET.Authentication.Queue;
 using Microsoft.AspNetCore.Http;
 using Moq;
 

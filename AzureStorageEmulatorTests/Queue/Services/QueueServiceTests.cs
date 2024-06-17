@@ -1,4 +1,6 @@
 using AzureStorageEmulator.NET.Authentication;
+using AzureStorageEmulator.NET.Authentication.Queue;
+using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
@@ -13,9 +15,10 @@ namespace AzureStorageEmulatorTests.Queue.Services
     public class QueueServiceTests
     {
         private readonly Mock<IFifoService> _fifoServiceMock = new();
-        private readonly Mock<IAuthenticator> _authenticatorMock = new();
+        private readonly Mock<IAuthenticator<QueueSharedKeyAuthenticator>> _authenticatorMock = new();
         private readonly Mock<IXmlSerializer<MessageList>> _messageListSerializerMock = new();
         private readonly Mock<IXmlSerializer<QueueEnumerationResults>> _queueEnumerationResultsSerializerMock = new();
+        private readonly Mock<IHeaderManagement> _headerManagementMock = new();
         private readonly Mock<IQueueSettings> _settingsMock = new();
         private readonly Mock<HttpContext> _contextMock = new();
         private readonly QueueService _queueService;
@@ -23,7 +26,14 @@ namespace AzureStorageEmulatorTests.Queue.Services
 
         public QueueServiceTests()
         {
-            _queueService = new QueueService(_fifoServiceMock.Object, _authenticatorMock.Object, _messageListSerializerMock.Object, _queueEnumerationResultsSerializerMock.Object, _settingsMock.Object);
+            _queueService = new QueueService(
+                _fifoServiceMock.Object,
+                _authenticatorMock.Object,
+                _messageListSerializerMock.Object,
+                _queueEnumerationResultsSerializerMock.Object,
+                _headerManagementMock.Object,
+                _settingsMock.Object
+            );
             _contextMock.SetupGet(r => r.Request.Query).Returns(new QueryCollection());
             _contextMock.SetupGet(c => c.Request.Headers).Returns(new HeaderDictionary());
             _contextMock.SetupGet(r => r.Response).Returns(new DefaultHttpContext().Response);

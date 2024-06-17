@@ -1,22 +1,55 @@
-﻿using TableStorage;
+﻿using System.Text.Json;
+using AzureStorageEmulator.NET.Authentication;
+using AzureStorageEmulator.NET.Authentication.Table;
+using AzureStorageEmulator.NET.Common.HeaderManagement;
+using AzureStorageEmulator.NET.Table.Models;
+using Microsoft.AspNetCore.Mvc;
+using TableStorage;
 
 namespace AzureStorageEmulator.NET.Table.Services
 {
-    public class TableStorageService(ITableStorage storage) : ITableStorageService
+    public class TableStorageService(
+        ITableStorage storage,
+        IHeaderManagement headerManagement,
+        IAuthenticator<TableSharedKeyLiteAuthenticator> authenticator) : ITableStorageService
     {
-        public List<string> ListTables()
+        public IActionResult ListTables(HttpContext context)
         {
-            return storage.ListTables();
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            List<string> tables = storage.ListTables();
+            ListTablesResponse response = new() { Value = [] };
+            tables.ForEach(table => response.Value.Add(new TableName { Name = table }));
+            response.Metadata = $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables";
+            headerManagement.SetResponseHeaders(context);
+            return new OkObjectResult(JsonSerializer.Serialize(response));
         }
 
-        public void CreateTable(string tableName)
+        public IActionResult CreateTable(string tableName, HttpContext context)
         {
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             storage.CreateTable(tableName);
+            CreateTableResponse response = new()
+            {
+                TableName = tableName,
+                Metadata =
+                    $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables/@Element"
+            };
+            headerManagement.SetResponseHeaders(context);
+            return new ContentResult
+            {
+                Content = JsonSerializer.Serialize(response),
+                StatusCode = 201,
+                ContentType = "application/json;odata=minimalmetadata"
+            };
         }
 
-        public bool DeleteTable(string tableName)
+        public IActionResult DeleteTable(string tableName, HttpContext context)
         {
-            return storage.DeleteTable(tableName);
+            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
+            headerManagement.SetResponseHeaders(context);
+            return storage.DeleteTable(tableName) ? new OkResult() : new NotFoundResult();
         }
+
+        private bool Authenticate(HttpRequest request) => authenticator.Authenticate(request);
     }
 }
