@@ -13,6 +13,5 @@ namespace AzureStorageEmulator.NET.Common.HeaderManagement
                 context.Response.Headers.Append("x-ms-client-request-id", clientRequestId);
             }
         }
-
     }
 }

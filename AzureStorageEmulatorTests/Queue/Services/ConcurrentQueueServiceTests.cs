@@ -6,6 +6,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
     public class ConcurrentQueueServiceTests
     {
         private readonly ConcurrentQueueService _service = new();
+
         private readonly QueueMessage _message = new()
         {
             MessageText = "Hello",

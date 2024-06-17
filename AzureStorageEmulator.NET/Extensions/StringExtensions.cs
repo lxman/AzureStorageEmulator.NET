@@ -17,10 +17,7 @@ namespace AzureStorageEmulator.NET.Extensions
 
             if (quotedSections.Count == 0)
             {
-                return input.Replace('\r', ' ')
-                    .Replace('\n', ' ')
-                    .Replace('\t', ' ')
-                    .Replace("  ", " ");
+                return RemoveWhitespace(input);
             }
 
             StringBuilder builder = new();
@@ -29,22 +26,14 @@ namespace AzureStorageEmulator.NET.Extensions
             while (currentQuote < quotedSections.Count)
             {
                 (int start, int end) = quotedSections[currentQuote++];
-                builder.Append(input[previousEnd..start]
-                    .Replace('\r', ' ')
-                    .Replace('\n', ' ')
-                    .Replace('\t', ' ')
-                    .Replace("  ", " "));
+                builder.Append(RemoveWhitespace(input[previousEnd..start]));
                 previousEnd = end + 1;
                 builder.Append(input[start..previousEnd]);
             }
 
             if (quotedSections.Last().end < input.Length - 1)
             {
-                builder.Append(input[(quotedSections.Last().end + 1)..]
-                    .Replace('\r', ' ')
-                    .Replace('\n', ' ')
-                    .Replace('\t', ' ')
-                    .Replace("  ", " "));
+                builder.Append(RemoveWhitespace(input[(quotedSections.Last().end + 1)..]));
             }
 
             return builder.ToString();
@@ -61,6 +50,14 @@ namespace AzureStorageEmulator.NET.Extensions
                     : singleQuoteStart > -1
                         ? singleQuoteStart
                         : -1;
+        }
+
+        private static string RemoveWhitespace(string s)
+        {
+            return s.Replace('\r', ' ')
+                .Replace('\n', ' ')
+                .Replace('\t', ' ')
+                .Replace("  ", " ");
         }
     }
 }

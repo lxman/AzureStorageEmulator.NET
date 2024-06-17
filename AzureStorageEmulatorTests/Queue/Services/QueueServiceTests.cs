@@ -50,6 +50,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(201, statusCodeResult.StatusCode);
         }
+
         [Fact]
         public async Task ListQueuesAsync_Authenticated_Returns200()
         {
@@ -143,6 +144,5 @@ namespace AzureStorageEmulatorTests.Queue.Services
             Assert.Equal(200, contentResult.StatusCode);
             Assert.Equal("application/xml", contentResult.ContentType);
         }
-
     }
 }
