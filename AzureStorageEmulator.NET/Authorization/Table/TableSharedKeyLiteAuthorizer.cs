@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AzureStorageEmulator.NET.Authorization.Table
 {
-    public class TableSharedKeyLiteAuthorizer : IAuthorizer<TableSharedKeyLiteAuthorizer>
+    public class TableSharedKeyLiteAuthorizer
     {
         public bool Authorize(HttpRequest request)
         {
@@ -38,12 +38,11 @@ namespace AzureStorageEmulator.NET.Authorization.Table
 
         private static string GetHeadersToSign(HttpRequest request)
         {
-            if (request.Headers.ContainsKey("x-ms-date"))
+            if (request.Headers.TryGetValue("x-ms-date", out StringValues xMsDateValue))
             {
-                return $"{request.Headers["x-ms-date"].First()?.RemoveLinearWhitespaceNotQuoted()}\n";
+                return $"{xMsDateValue.First()?.RemoveLinearWhitespaceNotQuoted()}\n";
             }
-            return request.Headers.ContainsKey("Date")
-                ? $"Date:{request.Headers["Date"].First()?.RemoveLinearWhitespaceNotQuoted()}\n"
+            return request.Headers.TryGetValue("Date", out StringValues dateValue) ? $"Date:{dateValue.First()?.RemoveLinearWhitespaceNotQuoted()}\n"
                 : "\n";
         }
 

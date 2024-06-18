@@ -1,6 +1,5 @@
 using AppliedQueueList;
 using AzureStorageEmulator.NET.Authorization;
-using AzureStorageEmulator.NET.Authorization.Table;
 using AzureStorageEmulator.NET.Blob.Services;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue;
@@ -67,13 +66,11 @@ namespace AzureStorageEmulator.NET
 
                 builder.Services.AddScoped<IQueueService, QueueService>();
                 builder.Services.AddScoped<IBlobService, BlobService>();
-                builder.Services
-                    .AddScoped<IAuthorizer<TableSharedKeyLiteAuthorizer>, TableSharedKeyLiteAuthorizer>();
                 builder.Services.AddScoped<IXmlSerializer<MessageList>, XmlSerializer<MessageList>>();
                 builder.Services
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
                 builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
-                builder.Services.AddScoped<ITableStorageService, TableStorageService>();
+                builder.Services.AddScoped<ITableStorageService, TableService>();
                 builder.Services.AddScoped<IHeaderManagement, HeaderManagement>();
                 builder.Services.AddTransient<Authorizer>();
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AzureStorageEmulator.NET.Authorization.Queue
 {
-    public class QueueSharedKeyAuthorizer : IAuthorizer<QueueSharedKeyAuthorizer>
+    public class QueueSharedKeyAuthorizer
     {
         public bool Authorize(HttpRequest request)
         {

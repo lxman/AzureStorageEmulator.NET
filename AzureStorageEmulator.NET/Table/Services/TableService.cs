@@ -1,6 +1,4 @@
 ﻿using System.Text.Json;
-using AzureStorageEmulator.NET.Authorization;
-using AzureStorageEmulator.NET.Authorization.Table;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Table.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,14 +6,12 @@ using TableStorage;
 
 namespace AzureStorageEmulator.NET.Table.Services
 {
-    public class TableStorageService(
+    public class TableService(
         ITableStorage storage,
-        IHeaderManagement headerManagement,
-        IAuthorizer<TableSharedKeyLiteAuthorizer> authorizer) : ITableStorageService
+        IHeaderManagement headerManagement) : ITableStorageService
     {
         public IActionResult ListTables(HttpContext context)
         {
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             List<string> tables = storage.ListTables();
             ListTablesResponse response = new() { Value = [] };
             tables.ForEach(table => response.Value.Add(new TableName { Name = table }));
@@ -26,7 +22,6 @@ namespace AzureStorageEmulator.NET.Table.Services
 
         public IActionResult CreateTable(string tableName, HttpContext context)
         {
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             storage.CreateTable(tableName);
             CreateTableResponse response = new()
             {
@@ -45,11 +40,8 @@ namespace AzureStorageEmulator.NET.Table.Services
 
         public IActionResult DeleteTable(string tableName, HttpContext context)
         {
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             headerManagement.SetResponseHeaders(context);
             return storage.DeleteTable(tableName) ? new OkResult() : new NotFoundResult();
         }
-
-        private bool Authenticate(HttpRequest request) => authorizer.Authorize(request);
     }
 }

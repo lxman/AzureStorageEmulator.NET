@@ -1,4 +1,5 @@
 ﻿using AzureStorageEmulator.NET.Authorization.Queue;
+using AzureStorageEmulator.NET.Authorization.Table;
 
 namespace AzureStorageEmulator.NET.Authorization
 {
@@ -7,18 +8,21 @@ namespace AzureStorageEmulator.NET.Authorization
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             int port = context.Connection.LocalPort;
-            string authentication = context.Request.Headers.Authorization.First()
+            string authorization = context.Request.Headers.Authorization.First()
                                      ?? throw new UnauthorizedAccessException();
             switch (port)
             {
                 case 10000:
-                    if (!new QueueAuthorizer().Invoke(authentication, context, next))
+                    if (!new QueueAuthorizer().Invoke(authorization, context))
                     {
                         throw new UnauthorizedAccessException();
                     }
                     break;
                 case 10001:
-                    //await new TableAuthenticator().Invoke(context, next);
+                    if (!new TableAuthorizer().Invoke(authorization, context))
+                    {
+                        throw new UnauthorizedAccessException();
+                    }
                     break;
                 case 10002:
                     //await new BlobAuthenticator().Invoke(context, next);
