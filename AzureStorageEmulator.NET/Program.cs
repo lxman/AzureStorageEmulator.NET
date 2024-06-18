@@ -2,6 +2,7 @@ using AppliedQueueList;
 using AzureStorageEmulator.NET.Authorization;
 using AzureStorageEmulator.NET.Blob.Services;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
+using AzureStorageEmulator.NET.Exceptions;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
@@ -73,6 +74,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddScoped<ITableService, TableService>();
                 builder.Services.AddScoped<IHeaderManagement, HeaderManagement>();
                 builder.Services.AddTransient<Authorizer>();
+                builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
                 WebApplication app = builder.Build();
 
@@ -82,6 +84,8 @@ namespace AzureStorageEmulator.NET
 
                 // Configure the HTTP request pipeline.
                 app.UseHttpsRedirection();
+
+                app.UseExceptionHandler(opt => { });
 
                 app.UseMiddleware<Authorizer>();
 

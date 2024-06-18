@@ -24,8 +24,7 @@ namespace AzureStorageEmulator.NET.Authorization
                 case 10002:
                     if (!new TableAuthorizer().Invoke(authorization, context))
                     {
-                        context.Response.StatusCode = 403;
-                        return;
+                        throw new UnauthorizedAccessException();
                     }
                     break;
             }
