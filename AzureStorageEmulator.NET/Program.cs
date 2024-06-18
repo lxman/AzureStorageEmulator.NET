@@ -85,6 +85,7 @@ namespace AzureStorageEmulator.NET
                 // Configure the HTTP request pipeline.
                 app.UseHttpsRedirection();
 
+                // The use of the empty options is due to web api bug. If you leave it out, the application will not start.
                 app.UseExceptionHandler(opt => { });
 
                 app.UseMiddleware<Authorizer>();
