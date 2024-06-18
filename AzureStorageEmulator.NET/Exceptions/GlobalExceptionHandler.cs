@@ -5,7 +5,7 @@ namespace AzureStorageEmulator.NET.Exceptions
 {
     public class GlobalExceptionHandler : IExceptionHandler
     {
-        private readonly IHeaderManagement _headerManagement = new HeaderManagement();
+        private readonly HeaderManagement _headerManagement = new();
 
         public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
