@@ -13,19 +13,20 @@ namespace AzureStorageEmulator.NET.Authorization
             switch (port)
             {
                 case 10000:
+                    // Blob storage
+                    break;
+                case 10001:
                     if (!new QueueAuthorizer().Invoke(authorization, context))
                     {
                         throw new UnauthorizedAccessException();
                     }
                     break;
-                case 10001:
+                case 10002:
                     if (!new TableAuthorizer().Invoke(authorization, context))
                     {
-                        throw new UnauthorizedAccessException();
+                        context.Response.StatusCode = 403;
+                        return;
                     }
-                    break;
-                case 10002:
-                    //await new BlobAuthenticator().Invoke(context, next);
                     break;
             }
             await next.Invoke(context);
