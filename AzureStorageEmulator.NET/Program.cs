@@ -70,7 +70,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
                 builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
-                builder.Services.AddScoped<ITableStorageService, TableService>();
+                builder.Services.AddScoped<ITableService, TableService>();
                 builder.Services.AddScoped<IHeaderManagement, HeaderManagement>();
                 builder.Services.AddTransient<Authorizer>();
 

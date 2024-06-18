@@ -7,26 +7,26 @@ namespace AzureStorageEmulator.NET.Controllers
     [Route("devstoreaccount1")]
     [ApiController]
     [Host("*:10002")]
-    public class TableController(ITableStorageService tableStorageService) : ControllerBase
+    public class TableController(ITableService tableService) : ControllerBase
     {
         [HttpGet]
         [Route("tables")]
         public IActionResult ListTables()
         {
-            return tableStorageService.ListTables(HttpContext);
+            return tableService.ListTables(HttpContext);
         }
 
         [HttpPost]
         [Route("tables")]
         public IActionResult CreateTable([FromBody] TableNameJson tableName)
         {
-            return tableStorageService.CreateTable(tableName.TableName, HttpContext);
+            return tableService.CreateTable(tableName.TableName, HttpContext);
         }
 
         [HttpDelete("tables({tableName})")]
         public IActionResult DeleteTable(string tableName)
         {
-            return tableStorageService.DeleteTable(tableName, HttpContext);
+            return tableService.DeleteTable(tableName, HttpContext);
         }
     }
 }

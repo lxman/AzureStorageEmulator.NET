@@ -6,9 +6,18 @@ using TableStorage;
 
 namespace AzureStorageEmulator.NET.Table.Services
 {
+    public interface ITableService
+    {
+        IActionResult ListTables(HttpContext context);
+
+        IActionResult CreateTable(string tableName, HttpContext context);
+
+        IActionResult DeleteTable(string tableName, HttpContext context);
+    }
+
     public class TableService(
         ITableStorage storage,
-        IHeaderManagement headerManagement) : ITableStorageService
+        IHeaderManagement headerManagement) : ITableService
     {
         public IActionResult ListTables(HttpContext context)
         {
@@ -17,7 +26,13 @@ namespace AzureStorageEmulator.NET.Table.Services
             tables.ForEach(table => response.Value.Add(new TableName { Name = table }));
             response.Metadata = $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables";
             headerManagement.SetResponseHeaders(context);
-            return new OkObjectResult(JsonSerializer.Serialize(response));
+            context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
+            return new ContentResult
+            {
+                Content = JsonSerializer.Serialize(response),
+                StatusCode = 200,
+                ContentType = "application/json;odata=minimalmetadata"
+            };
         }
 
         public IActionResult CreateTable(string tableName, HttpContext context)
@@ -41,6 +56,7 @@ namespace AzureStorageEmulator.NET.Table.Services
         public IActionResult DeleteTable(string tableName, HttpContext context)
         {
             headerManagement.SetResponseHeaders(context);
+            context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             return storage.DeleteTable(tableName) ? new OkResult() : new NotFoundResult();
         }
     }
