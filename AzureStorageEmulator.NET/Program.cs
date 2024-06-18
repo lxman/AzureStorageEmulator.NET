@@ -86,6 +86,7 @@ namespace AzureStorageEmulator.NET
                 app.UseHttpsRedirection();
 
                 // The use of the empty options is due to web api bug. If you leave it out, the application will not start.
+                // https://github.com/dotnet/aspnetcore/issues/51888
                 app.UseExceptionHandler(opt => { });
 
                 app.UseMiddleware<Authorizer>();
