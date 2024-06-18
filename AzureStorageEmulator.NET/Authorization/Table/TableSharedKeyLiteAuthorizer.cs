@@ -3,11 +3,11 @@ using System.Text;
 using AzureStorageEmulator.NET.Extensions;
 using Microsoft.Extensions.Primitives;
 
-namespace AzureStorageEmulator.NET.Authentication.Table
+namespace AzureStorageEmulator.NET.Authorization.Table
 {
-    public class TableSharedKeyLiteAuthenticator : IAuthenticator<TableSharedKeyLiteAuthenticator>
+    public class TableSharedKeyLiteAuthorizer : IAuthorizer<TableSharedKeyLiteAuthorizer>
     {
-        public bool Authenticate(HttpRequest request)
+        public bool Authorize(HttpRequest request)
         {
             if (!request.Headers.ContainsKey("Authorization"))
             {

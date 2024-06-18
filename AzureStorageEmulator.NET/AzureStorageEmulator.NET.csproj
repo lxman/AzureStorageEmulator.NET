@@ -24,8 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Authentication\Blob\" />
-      <Folder Include="Authentication\Common\" />
+      <Folder Include="Authorization\Blob\" />
+      <Folder Include="Authorization\Common\" />
       <Folder Include="Blob\Models\" />
       <Folder Include="Common\Authorization\" />
       <Folder Include="XmlSerialization\Blob\" />

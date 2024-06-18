@@ -2,11 +2,11 @@
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
-namespace AzureStorageEmulator.NET.Authentication.Queue
+namespace AzureStorageEmulator.NET.Authorization.Queue
 {
-    public class QueueSharedKeyAuthenticator : IAuthenticator<QueueSharedKeyAuthenticator>
+    public class QueueSharedKeyAuthorizer : IAuthorizer<QueueSharedKeyAuthorizer>
     {
-        public bool Authenticate(HttpRequest request)
+        public bool Authorize(HttpRequest request)
         {
             if (!request.Headers.ContainsKey("Authorization"))
             {

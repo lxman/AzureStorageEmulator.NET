@@ -1,6 +1,4 @@
-﻿using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Authentication.Queue;
-using AzureStorageEmulator.NET.Common.HeaderManagement;
+﻿using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +32,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
     }
 
     public class QueueService(IFifoService fifoService,
-        IAuthenticator<QueueSharedKeyAuthenticator> authenticator,
         IXmlSerializer<MessageList> messageListSerializer,
         IXmlSerializer<QueueEnumerationResults> queueEnumerationResultsSerializer,
         IHeaderManagement headerManagement,
@@ -43,7 +40,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context)
         {
             Log.Information($"CreateQueue queueName = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             StatusCodeResult result = new(await fifoService.AddQueueAsync(queueName) ? 201 : 204);
             headerManagement.SetResponseHeaders(context);
@@ -53,7 +49,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> ListQueuesAsync(HttpContext context)
         {
             Log.Information("ListQueuesAsync");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
             {
@@ -74,7 +69,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context)
         {
             Log.Information($"DeleteQueueAsync name = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             await fifoService.DeleteQueueAsync(queueName);
             return new StatusCodeResult(204);
@@ -83,7 +77,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> GetMessagesAsync(string queueName, HttpContext context)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             List<QueueMessage>? result = await fifoService.GetMessagesAsync(queueName,
                 queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
@@ -101,7 +94,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> GetQueueMetadataAsync(string queueName, HttpContext context)
         {
             if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             headerManagement.SetResponseHeaders(context);
             Models.Queue? result = await fifoService.GetQueueMetadataAsync(queueName);
@@ -122,7 +114,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> PostMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
         {
             Log.Information($"PostMessageAsync queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             MessageList queueMessageList = new();
             QueueMessage queueMessage = new();
@@ -147,7 +138,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt, HttpContext context)
         {
             Log.Information($"DeleteMessageAsync queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             _ = await fifoService.DeleteMessageAsync(queueName, messageId, popReceipt);
             return new StatusCodeResult(204);
@@ -156,7 +146,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> ClearMessagesAsync(string queueName, HttpContext context)
         {
             Log.Information($"ClearMessagesAsync queueName = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             int result = await fifoService.ClearMessagesAsync(queueName);
             return new StatusCodeResult(result);
         }
@@ -164,7 +153,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> MessageCountAsync(string queueName, HttpContext context)
         {
             Log.Information($"MessageCountAsync queueName = {queueName}");
-            if (!Authenticate(context.Request)) return new StatusCodeResult(403);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             return new ContentResult
             {
@@ -188,8 +176,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
                         : []
                 );
         }
-
-        private bool Authenticate(HttpRequest request) => authenticator.Authenticate(request);
 
         private static string GetBaseUrl(HttpContext context) => $"{context.Request.Scheme}://{context.Request.Host.Value}{context.Request.Path.Value}";
     }

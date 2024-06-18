@@ -1,12 +1,12 @@
-using AzureStorageEmulator.NET.Authentication.Queue;
+using AzureStorageEmulator.NET.Authorization.Queue;
 using Microsoft.AspNetCore.Http;
 using Moq;
 
-namespace AzureStorageEmulatorTests.Authentication
+namespace AzureStorageEmulatorTests.Authorization
 {
-    public class QueueSharedKeyAuthenticatorTests
+    public class QueueSharedKeyAuthorizerTests
     {
-        private readonly QueueSharedKeyAuthenticator _authenticator = new();
+        private readonly QueueSharedKeyAuthorizer _authorizer = new();
         private readonly Mock<HttpRequest> _requestMock = new();
 
         [Fact]
@@ -24,7 +24,7 @@ namespace AzureStorageEmulatorTests.Authentication
             _requestMock.Setup(r => r.Path).Returns("/devstoreaccount1/queue1");
             _requestMock.Setup(r => r.QueryString).Returns(new QueryString("?comp=metadata"));
 
-            bool result = _authenticator.Authenticate(_requestMock.Object);
+            bool result = _authorizer.Authorize(_requestMock.Object);
 
             Assert.True(result);
         }
@@ -40,7 +40,7 @@ namespace AzureStorageEmulatorTests.Authentication
             _requestMock.Setup(r => r.Path).Returns("/devstoreaccount1/queue1");
             _requestMock.Setup(r => r.QueryString).Returns(new QueryString("?comp=metadata"));
 
-            bool result = _authenticator.Authenticate(_requestMock.Object);
+            bool result = _authorizer.Authorize(_requestMock.Object);
 
             Assert.False(result);
         }
@@ -53,7 +53,7 @@ namespace AzureStorageEmulatorTests.Authentication
             _requestMock.Setup(r => r.Path).Returns("/devstoreaccount1/queue1");
             _requestMock.Setup(r => r.QueryString).Returns(new QueryString("?comp=metadata"));
 
-            bool result = _authenticator.Authenticate(_requestMock.Object);
+            bool result = _authorizer.Authorize(_requestMock.Object);
 
             Assert.False(result);
         }
@@ -69,7 +69,7 @@ namespace AzureStorageEmulatorTests.Authentication
             _requestMock.Setup(r => r.Path).Returns("/devstoreaccount1/queue1");
             _requestMock.Setup(r => r.QueryString).Returns(new QueryString("?comp=metadata"));
 
-            bool result = _authenticator.Authenticate(_requestMock.Object);
+            bool result = _authorizer.Authorize(_requestMock.Object);
 
             Assert.False(result);
         }
@@ -85,7 +85,7 @@ namespace AzureStorageEmulatorTests.Authentication
             _requestMock.Setup(r => r.Path).Returns("/devstoreaccount1/queue1");
             _requestMock.Setup(r => r.QueryString).Returns(new QueryString(""));
 
-            bool result = _authenticator.Authenticate(_requestMock.Object);
+            bool result = _authorizer.Authorize(_requestMock.Object);
 
             Assert.False(result);
         }

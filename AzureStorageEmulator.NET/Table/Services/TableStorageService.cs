@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Authentication.Table;
+using AzureStorageEmulator.NET.Authorization;
+using AzureStorageEmulator.NET.Authorization.Table;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Table.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +11,7 @@ namespace AzureStorageEmulator.NET.Table.Services
     public class TableStorageService(
         ITableStorage storage,
         IHeaderManagement headerManagement,
-        IAuthenticator<TableSharedKeyLiteAuthenticator> authenticator) : ITableStorageService
+        IAuthorizer<TableSharedKeyLiteAuthorizer> authorizer) : ITableStorageService
     {
         public IActionResult ListTables(HttpContext context)
         {
@@ -50,6 +50,6 @@ namespace AzureStorageEmulator.NET.Table.Services
             return storage.DeleteTable(tableName) ? new OkResult() : new NotFoundResult();
         }
 
-        private bool Authenticate(HttpRequest request) => authenticator.Authenticate(request);
+        private bool Authenticate(HttpRequest request) => authorizer.Authorize(request);
     }
 }

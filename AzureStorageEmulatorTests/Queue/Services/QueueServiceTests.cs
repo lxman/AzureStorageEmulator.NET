@@ -1,5 +1,3 @@
-using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Authentication.Queue;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
@@ -15,7 +13,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
     public class QueueServiceTests
     {
         private readonly Mock<IFifoService> _fifoServiceMock = new();
-        private readonly Mock<IAuthenticator<QueueSharedKeyAuthenticator>> _authenticatorMock = new();
         private readonly Mock<IXmlSerializer<MessageList>> _messageListSerializerMock = new();
         private readonly Mock<IXmlSerializer<QueueEnumerationResults>> _queueEnumerationResultsSerializerMock = new();
         private readonly Mock<IHeaderManagement> _headerManagementMock = new();
@@ -28,7 +25,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _queueService = new QueueService(
                 _fifoServiceMock.Object,
-                _authenticatorMock.Object,
                 _messageListSerializerMock.Object,
                 _queueEnumerationResultsSerializerMock.Object,
                 _headerManagementMock.Object,
@@ -42,7 +38,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task CreateQueueAsync_Authenticated_Returns201()
         {
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
             _fifoServiceMock.Setup(f => f.AddQueueAsync(QueueName)).ReturnsAsync(true);
 
             IActionResult result = await _queueService.CreateQueueAsync(QueueName, _contextMock.Object);
@@ -54,7 +49,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task ListQueuesAsync_Authenticated_Returns200()
         {
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
             _fifoServiceMock.Setup(f => f.GetQueuesAsync()).ReturnsAsync([new AzureStorageEmulator.NET.Queue.Models.Queue { Name = "TestQueue" }]);
             _queueEnumerationResultsSerializerMock.Setup(s => s.Serialize(It.IsAny<QueueEnumerationResults>())).ReturnsAsync("<Queues></Queues>");
             Dictionary<string, StringValues> myQueryString = new([new KeyValuePair<string, StringValues>("comp", "list")]);
@@ -71,8 +65,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task DeleteQueueAsync_Authenticated_Returns204()
         {
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
-
             IActionResult result = await _queueService.DeleteQueueAsync(QueueName, _contextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
@@ -82,7 +74,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetMessagesAsync_Authenticated_Returns200()
         {
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
             _fifoServiceMock.Setup(f => f.GetMessagesAsync(QueueName, null, false)).ReturnsAsync([]);
             _messageListSerializerMock.Setup(s => s.Serialize(It.IsAny<MessageList>())).ReturnsAsync("<Messages></Messages>");
 
@@ -97,7 +88,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task PostMessageAsync_Authenticated_Returns201()
         {
             QueueMessage message = new() { MessageText = "Hello, World!" };
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
             _messageListSerializerMock.Setup(s => s.Serialize(It.IsAny<MessageList>())).ReturnsAsync("<Message></Message>");
 
             IActionResult result = await _queueService.PostMessageAsync(QueueName, message, 0, 0, 0, _contextMock.Object);
@@ -112,7 +102,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             Guid messageId = Guid.NewGuid();
             string popReceipt = Guid.NewGuid().ToString();
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
 
             IActionResult result = await _queueService.DeleteMessageAsync(QueueName, messageId, popReceipt, _contextMock.Object);
 
@@ -123,7 +112,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task ClearMessagesAsync_Authenticated_Returns204()
         {
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
             _fifoServiceMock.Setup(f => f.ClearMessagesAsync(QueueName)).ReturnsAsync(204);
 
             IActionResult result = await _queueService.ClearMessagesAsync(QueueName, _contextMock.Object);
@@ -135,7 +123,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task MessageCountAsync_Authenticated_Returns200()
         {
-            _authenticatorMock.Setup(a => a.Authenticate(It.IsAny<HttpRequest>())).Returns(true);
             _fifoServiceMock.Setup(f => f.MessageCountAsync(QueueName)).ReturnsAsync(5);
 
             IActionResult result = await _queueService.MessageCountAsync(QueueName, _contextMock.Object);

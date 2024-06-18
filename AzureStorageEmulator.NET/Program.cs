@@ -1,7 +1,6 @@
 using AppliedQueueList;
-using AzureStorageEmulator.NET.Authentication;
-using AzureStorageEmulator.NET.Authentication.Queue;
-using AzureStorageEmulator.NET.Authentication.Table;
+using AzureStorageEmulator.NET.Authorization;
+using AzureStorageEmulator.NET.Authorization.Table;
 using AzureStorageEmulator.NET.Blob.Services;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue;
@@ -68,15 +67,15 @@ namespace AzureStorageEmulator.NET
 
                 builder.Services.AddScoped<IQueueService, QueueService>();
                 builder.Services.AddScoped<IBlobService, BlobService>();
-                builder.Services.AddScoped<IAuthenticator<QueueSharedKeyAuthenticator>, QueueSharedKeyAuthenticator>();
                 builder.Services
-                    .AddScoped<IAuthenticator<TableSharedKeyLiteAuthenticator>, TableSharedKeyLiteAuthenticator>();
+                    .AddScoped<IAuthorizer<TableSharedKeyLiteAuthorizer>, TableSharedKeyLiteAuthorizer>();
                 builder.Services.AddScoped<IXmlSerializer<MessageList>, XmlSerializer<MessageList>>();
                 builder.Services
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
                 builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
                 builder.Services.AddScoped<ITableStorageService, TableStorageService>();
                 builder.Services.AddScoped<IHeaderManagement, HeaderManagement>();
+                builder.Services.AddTransient<Authorizer>();
 
                 WebApplication app = builder.Build();
 
@@ -86,6 +85,8 @@ namespace AzureStorageEmulator.NET
 
                 // Configure the HTTP request pipeline.
                 app.UseHttpsRedirection();
+
+                app.UseMiddleware<Authorizer>();
 
                 app.UseAuthorization();
 
