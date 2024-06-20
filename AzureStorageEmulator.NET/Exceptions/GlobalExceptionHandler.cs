@@ -14,10 +14,10 @@ namespace AzureStorageEmulator.NET.Exceptions
             {
                 case UnauthorizedAccessException:
                     httpContext.Response.StatusCode = 403;
-                    _headerManagement.SetResponseHeaders(httpContext);
                     handled = true;
                     break;
             }
+            _headerManagement.SetResponseHeaders(httpContext);
             return new ValueTask<bool>(handled);
         }
     }

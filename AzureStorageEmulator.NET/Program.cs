@@ -14,6 +14,7 @@ using Serilog;
 using Serilog.Events;
 using SerilogTracing;
 using TableStorage;
+// ReSharper disable UnusedParameter.Local
 
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162 // Unreachable code detected
@@ -58,7 +59,8 @@ namespace AzureStorageEmulator.NET
 
                 // Add services to the container.
 
-                builder.Services.AddControllers().AddXmlSerializerFormatters();
+                builder.Services.AddControllers()
+                    .AddXmlSerializerFormatters();
                 builder.Services.AddSerilog();
                 builder.Services.AddEndpointsApiExplorer();
 
@@ -72,9 +74,9 @@ namespace AzureStorageEmulator.NET
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
                 builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
                 builder.Services.AddScoped<ITableService, TableService>();
-                builder.Services.AddScoped<IHeaderManagement, HeaderManagement>();
                 builder.Services.AddTransient<Authorizer>();
                 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+                builder.Services.AddTransient<HeaderManager>();
 
                 WebApplication app = builder.Build();
 
@@ -90,6 +92,7 @@ namespace AzureStorageEmulator.NET
                 app.UseExceptionHandler(opt => { });
 
                 app.UseMiddleware<Authorizer>();
+                app.UseMiddleware<HeaderManager>();
 
                 app.UseAuthorization();
 

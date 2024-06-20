@@ -28,5 +28,17 @@ namespace AzureStorageEmulator.NET.Controllers
         {
             return tableService.DeleteTable(tableName, HttpContext);
         }
+
+        [HttpPost("{tableName}")]
+        public IActionResult GetTable(string tableName, [FromBody] object data)
+        {
+            return tableService.Insert(tableName, data, HttpContext);
+        }
+
+        [HttpGet("{tablename}()")]
+        public MemoryStream QueryTable(string tableName)
+        {
+            return tableService.QueryTable(tableName, HttpContext);
+        }
     }
 }

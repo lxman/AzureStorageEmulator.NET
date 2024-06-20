@@ -1,5 +1,4 @@
-﻿using AzureStorageEmulator.NET.Common.HeaderManagement;
-using AzureStorageEmulator.NET.Queue.Models;
+﻿using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -34,7 +33,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
     public class QueueService(IFifoService fifoService,
         IXmlSerializer<MessageList> messageListSerializer,
         IXmlSerializer<QueueEnumerationResults> queueEnumerationResultsSerializer,
-        IHeaderManagement headerManagement,
         IQueueSettings settings) : IQueueService
     {
         public async Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context)
@@ -42,7 +40,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             Log.Information($"CreateQueue queueName = {queueName}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             StatusCodeResult result = new(await fifoService.AddQueueAsync(queueName) ? 201 : 204);
-            headerManagement.SetResponseHeaders(context);
             return result;
         }
 
@@ -57,7 +54,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             QueueEnumerationResults results = new() { ServiceEndpoint = GetBaseUrl(context) };
             results.Queues.AddRange(await fifoService.GetQueuesAsync());
             results.MaxResults = 5000;
-            headerManagement.SetResponseHeaders(context);
             return new ContentResult
             {
                 Content = await queueEnumerationResultsSerializer.Serialize(results),
@@ -95,7 +91,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            headerManagement.SetResponseHeaders(context);
             Models.Queue? result = await fifoService.GetQueueMetadataAsync(queueName);
             if (result is null) return new NotFoundResult();
             context.Response.Headers.Append("x-ms-approximate-messages-count", result.MessageCount.ToString());

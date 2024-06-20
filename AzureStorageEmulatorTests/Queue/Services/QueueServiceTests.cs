@@ -1,4 +1,3 @@
-using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
@@ -15,7 +14,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private readonly Mock<IFifoService> _fifoServiceMock = new();
         private readonly Mock<IXmlSerializer<MessageList>> _messageListSerializerMock = new();
         private readonly Mock<IXmlSerializer<QueueEnumerationResults>> _queueEnumerationResultsSerializerMock = new();
-        private readonly Mock<IHeaderManagement> _headerManagementMock = new();
         private readonly Mock<IQueueSettings> _settingsMock = new();
         private readonly Mock<HttpContext> _contextMock = new();
         private readonly QueueService _queueService;
@@ -27,7 +25,6 @@ namespace AzureStorageEmulatorTests.Queue.Services
                 _fifoServiceMock.Object,
                 _messageListSerializerMock.Object,
                 _queueEnumerationResultsSerializerMock.Object,
-                _headerManagementMock.Object,
                 _settingsMock.Object
             );
             _contextMock.SetupGet(r => r.Request.Query).Returns(new QueryCollection());
