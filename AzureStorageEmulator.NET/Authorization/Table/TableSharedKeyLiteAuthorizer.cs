@@ -57,7 +57,7 @@ namespace AzureStorageEmulator.NET.Authorization.Table
 
             query = query[1..];
             List<string> compQuery = [.. query.Split('&').Where(q => q.StartsWith("comp"))];
-            return $"/devstoreaccount1{resource}\n{(compQuery.Count != 0 ? $"?{compQuery.First()}" : string.Empty)}";
+            return $"/devstoreaccount1{resource}{(compQuery.Count != 0 ? $"?{compQuery.First()}" : string.Empty)}";
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.Json;
-using AzureStorageEmulator.NET.JsonSerialization;
 using AzureStorageEmulator.NET.Table.Models;
 using LiteDB;
 using Microsoft.AspNetCore.Mvc;
@@ -102,7 +101,7 @@ namespace AzureStorageEmulator.NET.Table.Services
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             context.Response.Headers.Connection = "keep-alive";
             context.Response.Headers.KeepAlive = "timeout=5";
-            MemoryStream ms = new(Encoding.UTF8.GetBytes($"{JsonSerializer.Serialize(response, new JsonSerializerOptions { Converters = { new StringKeyValuePairConverter() } })}"));
+            MemoryStream ms = new(Encoding.UTF8.GetBytes($"{JsonSerializer.Serialize(response)}"));
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
         }
