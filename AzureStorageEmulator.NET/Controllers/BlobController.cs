@@ -17,7 +17,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [HttpPut("{containerName}")]
         public IActionResult CreateContainer(string containerName)
         {
-            return blobService.CreateContainer(containerName);
+            return blobService.CreateContainer(containerName, HttpContext);
         }
 
         [HttpGet]

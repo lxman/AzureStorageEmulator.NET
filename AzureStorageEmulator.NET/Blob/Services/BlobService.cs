@@ -1,4 +1,6 @@
-﻿using AzureStorageEmulator.NET.Blob.Models;
+﻿using System.Globalization;
+using AzureStorageEmulator.NET.Blob.Models;
+using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
@@ -8,12 +10,14 @@ namespace AzureStorageEmulator.NET.Blob.Services
     {
         IActionResult GetInfo(HttpContext context);
 
-        IActionResult CreateContainer(string containerName);
+        IActionResult CreateContainer(string containerName, HttpContext context);
 
         public string GetBlobs();
     }
 
-    public class BlobService(IBlobRoot root) : IBlobService
+    public class BlobService(
+        IBlobRoot root,
+        IXmlSerializer<Metadata> metadataSerializer) : IBlobService
     {
         public IActionResult GetInfo(HttpContext context)
         {
@@ -26,7 +30,7 @@ namespace AzureStorageEmulator.NET.Blob.Services
                 > 0 when compValue[0]?.ToLowerInvariant() == "properties" && restypeValue.Count > 0 &&
                          restypeValue[0]?.ToLowerInvariant() == "account" => new OkResult(),
                 > 0 when compValue[0]?.ToLowerInvariant() == "list" && includeValue.Count > 0 &&
-                         includeValue[0]?.ToLowerInvariant() == "metadata" => new OkResult(),
+                         includeValue[0]?.ToLowerInvariant() == "metadata" => new OkObjectResult(GetContainersMetadata()),
                 > 0 when compValue[0]?.ToLowerInvariant() == "list" && includeValue.Count > 0 &&
                          includeValue[0]?.ToLowerInvariant() == "metadata" && timeoutValue.Count > 0 => new OkResult(),
                 > 0 when compValue[0]?.ToLowerInvariant() == "properties" && restypeValue.Count > 0 &&
@@ -35,14 +39,21 @@ namespace AzureStorageEmulator.NET.Blob.Services
             };
         }
 
-        public IActionResult CreateContainer(string containerName)
+        public IActionResult CreateContainer(string containerName, HttpContext context)
         {
             if (root.Containers.Exists(c => c.Name == containerName))
             {
                 return new ConflictResult();
             }
-            root.Containers.Add(new Container(containerName));
-            return new CreatedResult();
+            Container c = new(containerName);
+            root.Containers.Add(c);
+            context.Response.Headers.Append("etag", $"0x{c.Metadata.Etag:X}");
+            context.Response.Headers.Append("last-modified", c.Metadata.LastModified.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'", CultureInfo.InvariantCulture));
+            context.Response.Headers.Append("content-length", "0");
+            context.Response.Headers.Connection = "keep-alive";
+            context.Response.Headers.KeepAlive = "timeout=5";
+
+            return new StatusCodeResult(201);
         }
 
         public string GetBlobs()
@@ -50,9 +61,14 @@ namespace AzureStorageEmulator.NET.Blob.Services
             return "Blobs";
         }
 
-        private string GetAllMetadata()
+        private string GetContainersMetadata()
         {
-            return string.Empty;
+            string metadata = string.Empty;
+            root.Containers.ForEach(c =>
+            {
+                metadata += metadataSerializer.Serialize(c.Metadata);
+            });
+            return metadata;
         }
     }
 }

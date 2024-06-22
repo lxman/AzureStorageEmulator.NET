@@ -4,11 +4,10 @@
     {
         private readonly HeaderManagement _headerManagement = new();
 
-        public Task InvokeAsync(HttpContext context, RequestDelegate next)
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             _headerManagement.SetResponseHeaders(context);
-            next.Invoke(context);
-            return Task.CompletedTask;
+            await next.Invoke(context);
         }
     }
 }

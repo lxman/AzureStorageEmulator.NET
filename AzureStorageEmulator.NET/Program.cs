@@ -15,6 +15,7 @@ using Serilog;
 using Serilog.Events;
 using SerilogTracing;
 using TableStorage;
+using Metadata = AzureStorageEmulator.NET.Blob.Models.Metadata;
 
 // ReSharper disable UnusedParameter.Local
 
@@ -66,20 +67,27 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddSerilog();
                 builder.Services.AddEndpointsApiExplorer();
 
-                builder.Services.AddSingleton<IFifoService, ConcurrentQueueService>();
+                // Settings
                 builder.Services.AddSingleton<IQueueSettings>(settings);
 
+                // Services
+                builder.Services.AddSingleton<IFifoService, ConcurrentQueueService>();
                 builder.Services.AddScoped<IQueueService, QueueService>();
+                builder.Services.AddScoped<ITableService, TableService>();
                 builder.Services.AddScoped<IBlobService, BlobService>();
+                builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
+                builder.Services.AddTransient<HeaderManager>();
+                builder.Services.AddSingleton<IBlobRoot, BlobRoot>();
+
+                // Serializers
                 builder.Services.AddScoped<IXmlSerializer<MessageList>, XmlSerializer<MessageList>>();
                 builder.Services
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
-                builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
-                builder.Services.AddScoped<ITableService, TableService>();
+                builder.Services.AddScoped<IXmlSerializer<Metadata>, XmlSerializer<Metadata>>();
+
+                // Middleware
                 builder.Services.AddTransient<Authorizer>();
                 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-                builder.Services.AddTransient<HeaderManager>();
-                builder.Services.AddSingleton<IBlobRoot, BlobRoot>();
 
                 WebApplication app = builder.Build();
 
