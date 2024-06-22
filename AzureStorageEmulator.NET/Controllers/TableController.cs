@@ -35,7 +35,7 @@ namespace AzureStorageEmulator.NET.Controllers
             return tableService.Insert(tableName, data, HttpContext);
         }
 
-        [HttpGet("{tablename}()")]
+        [HttpGet("{tableName}()")]
         public Task<MemoryStream> QueryTable(string tableName)
         {
             return tableService.QueryTable(tableName, HttpContext);
