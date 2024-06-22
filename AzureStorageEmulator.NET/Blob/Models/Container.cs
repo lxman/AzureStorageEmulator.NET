@@ -1,4 +1,6 @@
-﻿namespace AzureStorageEmulator.NET.Blob.Models
+﻿using System.Xml.Serialization;
+
+namespace AzureStorageEmulator.NET.Blob.Models
 {
     public interface IContainer
     {
@@ -7,17 +9,15 @@
         List<Blob> Blobs { get; set; }
     }
 
-    public class Container : IContainer
+    public class Container(string name) : IContainer
     {
-        public string Name { get; set; } = string.Empty;
+        [XmlElement(ElementName = "Properties")]
+        public Metadata Metadata { get; set; } = new();
+
+        public string Name { get; set; } = name;
 
         public List<Folder> Folders { get; set; } = [];
 
         public List<Blob> Blobs { get; set; } = [];
-
-        public Container(string name)
-        {
-            Name = name;
-        }
     }
 }

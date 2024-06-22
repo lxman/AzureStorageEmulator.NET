@@ -6,7 +6,7 @@ namespace AzureStorageEmulator.NET.Queue.Models
     public class QueueEnumerationResults
     {
         [XmlAttribute]
-        public string ServiceEndpoint { get; set; } = "http://127.0.0.1:10001/devstoreaccount1";
+        public string ServiceEndpoint { get; set; } = string.Empty;
 
         public string Prefix { get; set; } = string.Empty;
 

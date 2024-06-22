@@ -8,6 +8,12 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10000")]
     public class BlobController(IBlobService blobService) : ControllerBase
     {
+        [HttpGet]
+        public IActionResult GetInfo()
+        {
+            return blobService.GetInfo(HttpContext);
+        }
+
         [HttpPut("{containerName}")]
         public IActionResult CreateContainer(string containerName)
         {
