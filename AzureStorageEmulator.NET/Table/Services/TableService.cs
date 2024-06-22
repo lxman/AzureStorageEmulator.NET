@@ -1,8 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
 using AzureStorageEmulator.NET.Table.Models;
+using DynamicODataToSQL;
 using LiteDB;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using SqlKata.Compilers;
 using TableStorage;
 using BsonDocument = LiteDB.BsonDocument;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -19,7 +22,7 @@ namespace AzureStorageEmulator.NET.Table.Services
 
         IActionResult Insert(string tableName, object document, HttpContext context);
 
-        MemoryStream QueryTable(string tableName, HttpContext context);
+        Task<MemoryStream> QueryTable(string tableName, HttpContext context);
     }
 
     public class TableService(
@@ -77,23 +80,37 @@ namespace AzureStorageEmulator.NET.Table.Services
             return new NoContentResult();
         }
 
-        public MemoryStream QueryTable(string tableName, HttpContext context)
+        public async Task<MemoryStream> QueryTable(string tableName, HttpContext context)
         {
-            List<BsonDocument> results = storage.GetAll(tableName).ToList();
             ListEntriesResponse response = new()
             {
                 Metadata = $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables/@Element",
                 Objects = []
             };
-            results.ForEach(r =>
-            {
-                if (r.ContainsKey("_id")) r.Remove("_id");
-            });
             List<BsonDocument> newList = [];
-            results.ForEach(r =>
+            if (context.Request.QueryString.HasValue && context.Request.Query.Count > 0)
             {
-                if (r.ContainsKey("Timestamp")) newList.Add(r);
-            });
+                Dictionary<string, string> queries = context.Request.Query.Count > 0 ? ParseQuery(context.Request.Query) : [];
+                ODataToSqlConverter converter = new(new EdmModelBuilder(), new SqlServerCompiler());
+                (string actualQuery, IDictionary<string, object> parameters) = converter.ConvertToSQL(tableName, queries);
+                IAsyncEnumerable<BsonDocument> result = storage.QueryFromQueryString(tableName, actualQuery, parameters);
+                await foreach (BsonDocument item in result)
+                {
+                    newList.Add(item);
+                }
+            }
+            else
+            {
+                List<BsonDocument> results = storage.GetAll(tableName).ToList();
+                results.ForEach(r =>
+                {
+                    if (r.ContainsKey("_id")) r.Remove("_id");
+                });
+                results.ForEach(r =>
+                {
+                    if (r.ContainsKey("Timestamp")) newList.Add(r);
+                });
+            }
             newList.ForEach(item =>
             {
                 response.Objects.Add(BsonDocToDictionary(item));
@@ -115,6 +132,17 @@ namespace AzureStorageEmulator.NET.Table.Services
             }
 
             return dict;
+        }
+
+        private static Dictionary<string, string> ParseQuery(IQueryCollection query)
+        {
+            Dictionary<string, string> filters = [];
+            foreach (KeyValuePair<string, StringValues> keyValuePair in query)
+            {
+                filters.Add(keyValuePair.Key[1..], keyValuePair.Value.ToString());
+            }
+
+            return filters;
         }
     }
 }
