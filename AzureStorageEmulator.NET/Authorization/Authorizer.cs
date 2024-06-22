@@ -15,12 +15,14 @@ namespace AzureStorageEmulator.NET.Authorization
                 case 10000:
                     // Blob storage
                     break;
+
                 case 10001:
                     if (!new QueueAuthorizer().Invoke(authorization, context))
                     {
                         throw new UnauthorizedAccessException();
                     }
                     break;
+
                 case 10002:
                     if (!new TableAuthorizer().Invoke(authorization, context))
                     {

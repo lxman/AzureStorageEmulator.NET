@@ -14,6 +14,7 @@ using Serilog;
 using Serilog.Events;
 using SerilogTracing;
 using TableStorage;
+
 // ReSharper disable UnusedParameter.Local
 
 // ReSharper disable HeuristicUnreachableCode
