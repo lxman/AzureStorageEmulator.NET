@@ -1,5 +1,6 @@
 using AppliedQueueList;
 using AzureStorageEmulator.NET.Authorization;
+using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Services;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Exceptions;
@@ -78,6 +79,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddTransient<Authorizer>();
                 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
                 builder.Services.AddTransient<HeaderManager>();
+                builder.Services.AddSingleton<IBlobRoot, BlobRoot>();
 
                 WebApplication app = builder.Build();
 

@@ -20,7 +20,7 @@ namespace AzureStorageEmulator.NET.Table.Services
 
         IActionResult DeleteTable(string tableName, HttpContext context);
 
-        IActionResult Insert(string tableName, object document, HttpContext context);
+        IActionResult Insert(string tableName, JsonElement document, HttpContext context);
 
         Task<MemoryStream> QueryTable(string tableName, HttpContext context);
     }
@@ -66,11 +66,10 @@ namespace AzureStorageEmulator.NET.Table.Services
             return storage.DeleteTable(tableName) ? new OkResult() : new NotFoundResult();
         }
 
-        public IActionResult Insert(string tableName, object document, HttpContext context)
+        public IActionResult Insert(string tableName, JsonElement document, HttpContext context)
         {
-            JsonElement data = (JsonElement)document;
             BsonDocument bsonDocument = [];
-            foreach (JsonProperty property in data.EnumerateObject())
+            foreach (JsonProperty property in document.EnumerateObject())
             {
                 bsonDocument[property.Name] = property.Value.ToString();
             }
