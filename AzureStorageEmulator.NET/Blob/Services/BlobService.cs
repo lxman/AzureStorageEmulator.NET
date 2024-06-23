@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
+using System.Text;
 using AzureStorageEmulator.NET.Blob.Models;
+using AzureStorageEmulator.NET.Blob.Xml;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -12,14 +14,17 @@ namespace AzureStorageEmulator.NET.Blob.Services
 
         IActionResult CreateContainer(string containerName, HttpContext context);
 
-        IActionResult PingContainer(string containerName, HttpContext context);
+        Task<IActionResult> PingContainer(string containerName, HttpContext context);
+
+        Task<MemoryStream> ListContainerContents(string containerName, HttpContext context);
 
         string GetBlobs();
     }
 
     public class BlobService(
         IBlobRoot root,
-        IXmlSerializer<Metadata> metadataSerializer) : IBlobService
+        IXmlSerializer<Metadata> metadataSerializer,
+        IXmlSerializer<ContainerEnumerationResults> containerEnumerationSerializer) : IBlobService
     {
         public IActionResult GetInfo(HttpContext context)
         {
@@ -41,15 +46,11 @@ namespace AzureStorageEmulator.NET.Blob.Services
             };
         }
 
-        public IActionResult PingContainer(string containerName, HttpContext context)
+        public async Task<IActionResult> PingContainer(string containerName, HttpContext context)
         {
             StringValues compValue = context.Request.Query["comp"];
             StringValues restypeValue = context.Request.Query["restype"];
-            StringValues includeValue = context.Request.Query["include"];
-            StringValues timeoutValue = context.Request.Query["timeout"];
-            StringValues delimiterValue = context.Request.Query["delimiter"];
-            StringValues maxresultsValues = context.Request.Query["maxresults"];
-            if (restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "container"
+            if ((restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "container" && compValue.Count == 0)
                 || (compValue.Count > 0 && compValue[0]?.ToLowerInvariant() == "properties"
                                         && restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "account"))
             {
@@ -66,15 +67,33 @@ namespace AzureStorageEmulator.NET.Blob.Services
                 context.Response.Headers.Append("x-ms-lease-status", c.Metadata.LeaseStatus.ToString().ToLowerInvariant());
                 return new OkResult();
             }
-            if (compValue.Count > 0 && compValue[0]?.ToLowerInvariant() == "list" && includeValue.Count > 0
-                && includeValue[0]?.ToLowerInvariant() == "metadata"
-                && delimiterValue.Count > 0
-                && restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "container"
-                && maxresultsValues.Count > 0)
-            {
-                return new OkObjectResult(GetBlobs());
-            }
             return new NotFoundResult();
+        }
+
+        public async Task<MemoryStream> ListContainerContents(string containerName, HttpContext context)
+        {
+            StringValues delimiterValue = context.Request.Query["delimiter"];
+            StringValues maxresultsValues = context.Request.Query["maxresults"];
+            StringValues includeValue = context.Request.Query["include"];
+            StringValues timeoutValue = context.Request.Query["timeout"];
+            if (!root.Containers.Exists(c => c.Name == containerName))
+            {
+                context.Response.StatusCode = 404;
+                return new MemoryStream("Container not found"u8.ToArray());
+            }
+            context.Response.Headers.Connection = "keep-alive";
+            context.Response.Headers.KeepAlive = "timeout=5";
+            context.Response.StatusCode = 200;
+            context.Response.ContentType = "application/xml";
+            ContainerEnumerationResults results = new()
+            {
+                ServiceEndpoint =
+                    $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}",
+                ContainerName = containerName,
+                MaxResults = int.Parse(maxresultsValues[0]!),
+                Delimiter = delimiterValue[0]
+            };
+            return new MemoryStream(Encoding.UTF8.GetBytes(await containerEnumerationSerializer.Serialize(results)));
         }
 
         public IActionResult CreateContainer(string containerName, HttpContext context)

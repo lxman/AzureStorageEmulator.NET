@@ -1,4 +1,5 @@
-﻿using AzureStorageEmulator.NET.Blob.Services;
+﻿using AzureStorageEmulator.NET.Blob.Attributes;
+using AzureStorageEmulator.NET.Blob.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AzureStorageEmulator.NET.Controllers
@@ -21,9 +22,20 @@ namespace AzureStorageEmulator.NET.Controllers
         }
 
         [HttpGet("{containerName}")]
-        public IActionResult PingContainer(string containerName)
+        public Task<IActionResult> PingContainer(string containerName)
         {
             return blobService.PingContainer(containerName, HttpContext);
+        }
+
+        [QueryParameterConstraint("comp")]
+        [QueryParameterConstraint("maxresults")]
+        [QueryParameterConstraint("restype")]
+        [QueryParameterConstraint("include")]
+        [QueryParameterConstraint("delimiter")]
+        [HttpGet("{containerName}")]
+        public Task<MemoryStream> ListContainerContents(string containerName)
+        {
+            return blobService.ListContainerContents(containerName, HttpContext);
         }
 
         [HttpGet]

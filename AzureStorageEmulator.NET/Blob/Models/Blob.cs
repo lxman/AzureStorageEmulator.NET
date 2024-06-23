@@ -9,6 +9,7 @@ namespace AzureStorageEmulator.NET.Blob.Models
 
         public string? Name { get; set; }
 
+        [XmlIgnore]
         public Stream? Data { get; set; }
     }
 }

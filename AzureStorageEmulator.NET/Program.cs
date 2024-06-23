@@ -2,6 +2,7 @@ using AppliedQueueList;
 using AzureStorageEmulator.NET.Authorization;
 using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Services;
+using AzureStorageEmulator.NET.Blob.Xml;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Exceptions;
 using AzureStorageEmulator.NET.Queue;
@@ -84,6 +85,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
                 builder.Services.AddScoped<IXmlSerializer<Metadata>, XmlSerializer<Metadata>>();
+                builder.Services.AddScoped<IXmlSerializer<ContainerEnumerationResults>, XmlSerializer<ContainerEnumerationResults>>();
 
                 // Middleware
                 builder.Services.AddTransient<Authorizer>();
