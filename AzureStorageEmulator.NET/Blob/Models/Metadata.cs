@@ -6,9 +6,9 @@
 
         public ulong Etag { get; set; } = (ulong)new Random().NextInt64(1000000000, 9999999999);
 
-        public string LeaseStatus { get; set; } = "unlocked";
+        public LeaseStatus LeaseStatus { get; set; } = LeaseStatus.Unlocked;
 
-        public string LeaseState { get; set; } = "available";
+        public LeaseState LeaseState { get; set; } = LeaseState.Available;
 
         public bool HasImmutabilityPolicy { get; set; }
 

@@ -20,6 +20,12 @@ namespace AzureStorageEmulator.NET.Controllers
             return blobService.CreateContainer(containerName, HttpContext);
         }
 
+        [HttpGet("{containerName}")]
+        public IActionResult PingContainer(string containerName)
+        {
+            return blobService.PingContainer(containerName, HttpContext);
+        }
+
         [HttpGet]
         [Route("$logs")]
         public IActionResult GetBlob([FromQuery] string? restype)
