@@ -1,5 +1,5 @@
-﻿using AppliedQueueList;
-using Azure.Storage.Queues;
+﻿using Azure.Storage.Queues;
+using QueueList;
 
 foreach (string n in Queues.Names)
 {

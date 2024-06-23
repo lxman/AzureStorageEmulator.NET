@@ -1,4 +1,4 @@
-﻿namespace AppliedQueueList
+﻿namespace QueueList
 {
     public static class Queues
     {

@@ -1,4 +1,3 @@
-using AppliedQueueList;
 using AzureStorageEmulator.NET.Authorization;
 using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Services;
@@ -12,6 +11,7 @@ using AzureStorageEmulator.NET.Table.Services;
 using AzureStorageEmulator.NET.XmlSerialization;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
 using PeriodicLogger;
+using QueueList;
 using Serilog;
 using Serilog.Events;
 using SerilogTracing;
