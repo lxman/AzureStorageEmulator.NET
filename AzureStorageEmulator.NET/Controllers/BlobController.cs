@@ -7,7 +7,7 @@ namespace AzureStorageEmulator.NET.Controllers
     [Route("devstoreaccount1")]
     [ApiController]
     [Host("*:10000")]
-    public class BlobController(IBlobService blobService, ILogger<BlobController> logger) : ControllerBase
+    public class BlobController(IBlobService blobService) : ControllerBase
     {
         [HttpGet]
         public IActionResult GetInfo()

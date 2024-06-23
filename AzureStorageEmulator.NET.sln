@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageEmulator.NET", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteCreateQueues", "Utilities\AzuriteCreateQueues\AzuriteCreateQueues.csproj", "{24DBEEF9-6764-459A-A586-73D837336390}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppliedQueueList", "AppliedQueueList\AppliedQueueList.csproj", "{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueList", "QueueList\QueueList.csproj", "{B6EF805D-4C3C-4FEF-8AE5-F08D5205179A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzuriteListQueues", "Utilities\AzuriteListQueues\AzuriteListQueues.csproj", "{30AC8A1B-670B-4432-ACF5-AE8C6B90F713}"
 EndProject
