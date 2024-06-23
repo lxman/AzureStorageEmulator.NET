@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.Extensions;
 using Microsoft.Extensions.Primitives;
 
@@ -18,9 +19,7 @@ namespace AzureStorageEmulator.NET.Authorization.Table
                 return false;
             }
 
-            byte[] key =
-                Convert.FromBase64String(
-                    "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
+            byte[] key = DevstoreAccount1.Key;
             string headersToSign = GetHeadersToSign(request);
             string resource = GetCanonicalizedResource(request);
             string toSign = $"{headersToSign}{resource}";

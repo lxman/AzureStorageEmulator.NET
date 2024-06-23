@@ -1,4 +1,5 @@
-﻿using AzureStorageEmulator.NET.Authorization.Queue;
+﻿using AzureStorageEmulator.NET.Authorization.Blob;
+using AzureStorageEmulator.NET.Authorization.Queue;
 using AzureStorageEmulator.NET.Authorization.Table;
 
 namespace AzureStorageEmulator.NET.Authorization
@@ -13,7 +14,10 @@ namespace AzureStorageEmulator.NET.Authorization
             switch (port)
             {
                 case 10000:
-                    // Blob storage
+                    if (!new BlobAuthorizer().Invoke(authorization, context))
+                    {
+                        throw new UnauthorizedAccessException();
+                    }
                     break;
 
                 case 10001:

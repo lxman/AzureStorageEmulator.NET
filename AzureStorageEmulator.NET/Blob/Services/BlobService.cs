@@ -32,6 +32,10 @@ namespace AzureStorageEmulator.NET.Blob.Services
             StringValues restypeValue = context.Request.Query["restype"];
             StringValues includeValue = context.Request.Query["include"];
             StringValues timeoutValue = context.Request.Query["timeout"];
+            if (restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "container")
+            {
+                return new OkResult();
+            }
             return compValue.Count switch
             {
                 > 0 when compValue[0]?.ToLowerInvariant() == "properties" && restypeValue.Count > 0 &&
@@ -42,7 +46,7 @@ namespace AzureStorageEmulator.NET.Blob.Services
                          includeValue[0]?.ToLowerInvariant() == "metadata" && timeoutValue.Count > 0 => new OkResult(),
                 > 0 when compValue[0]?.ToLowerInvariant() == "properties" && restypeValue.Count > 0 &&
                          restypeValue[0]?.ToLowerInvariant() == "service" => new OkResult(),
-                _ => new NotFoundResult()
+                _ => new BadRequestResult()
             };
         }
 
@@ -50,24 +54,26 @@ namespace AzureStorageEmulator.NET.Blob.Services
         {
             StringValues compValue = context.Request.Query["comp"];
             StringValues restypeValue = context.Request.Query["restype"];
-            if ((restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "container" && compValue.Count == 0)
-                || (compValue.Count > 0 && compValue[0]?.ToLowerInvariant() == "properties"
-                                        && restypeValue.Count > 0 && restypeValue[0]?.ToLowerInvariant() == "account"))
+            if ((restypeValue.Count <= 0 || restypeValue[0]?.ToLowerInvariant() != "container" || compValue.Count != 0)
+                && (compValue.Count <= 0 || compValue[0]?.ToLowerInvariant() != "properties"
+                                         || restypeValue.Count <= 0 ||
+                                         restypeValue[0]?.ToLowerInvariant() != "account"))
             {
-                IContainer? c = root.Containers.Find(c => c.Name == containerName);
-                if (c is null) return new NotFoundResult();
-                context.Response.Headers.Append("etag", $"0x{c.Metadata.Etag:X}");
-                context.Response.Headers.Append("last-modified", c.Metadata.LastModified.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'", CultureInfo.InvariantCulture));
-                context.Response.Headers.Append("content-length", "0");
-                context.Response.Headers.Connection = "keep-alive";
-                context.Response.Headers.KeepAlive = "timeout=5";
-                context.Response.Headers.Append("x-ms-has-legal-hold", c.Metadata.HasLegalHold.ToString().ToLowerInvariant());
-                context.Response.Headers.Append("x-ms-has-immutability-policy", c.Metadata.HasImmutabilityPolicy.ToString().ToLowerInvariant());
-                context.Response.Headers.Append("x-ms-lease-state", c.Metadata.LeaseState.ToString().ToLowerInvariant());
-                context.Response.Headers.Append("x-ms-lease-status", c.Metadata.LeaseStatus.ToString().ToLowerInvariant());
-                return new OkResult();
+                return new BadRequestResult();
             }
-            return new NotFoundResult();
+
+            IContainer? c = root.Containers.Find(c => c.Name == containerName);
+            if (c is null) return new NotFoundResult();
+            context.Response.Headers.Append("etag", $"0x{c.Metadata.Etag:X}");
+            context.Response.Headers.Append("last-modified", c.Metadata.LastModified.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'", CultureInfo.InvariantCulture));
+            context.Response.Headers.Append("content-length", "0");
+            context.Response.Headers.Connection = "keep-alive";
+            context.Response.Headers.KeepAlive = "timeout=5";
+            context.Response.Headers.Append("x-ms-has-legal-hold", c.Metadata.HasLegalHold.ToString().ToLowerInvariant());
+            context.Response.Headers.Append("x-ms-has-immutability-policy", c.Metadata.HasImmutabilityPolicy.ToString().ToLowerInvariant());
+            context.Response.Headers.Append("x-ms-lease-state", c.Metadata.LeaseState.ToString().ToLowerInvariant());
+            context.Response.Headers.Append("x-ms-lease-status", c.Metadata.LeaseStatus.ToString().ToLowerInvariant());
+            return new OkResult();
         }
 
         public async Task<MemoryStream> ListContainerContents(string containerName, HttpContext context)

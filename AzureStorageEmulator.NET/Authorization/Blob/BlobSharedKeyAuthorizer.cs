@@ -1,11 +1,12 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Web;
 using AzureStorageEmulator.NET.Common;
 using Microsoft.Extensions.Primitives;
 
-namespace AzureStorageEmulator.NET.Authorization.Queue
+namespace AzureStorageEmulator.NET.Authorization.Blob
 {
-    public class QueueSharedKeyAuthorizer
+    public class BlobSharedKeyAuthorizer
     {
         public bool Authorize(HttpRequest request)
         {
@@ -98,13 +99,13 @@ namespace AzureStorageEmulator.NET.Authorization.Queue
 
         private static string GetCanonicalizedResource(HttpRequest request)
         {
-            string resource = $"{request.Path.Value!}";
+            string resource = request.Path.Value!.Replace("$", "%24");
             string? query = request.QueryString.Value;
             if (string.IsNullOrEmpty(query))
             {
                 return $"/devstoreaccount1{resource}";
             }
-            query = query[1..];
+            query = HttpUtility.UrlDecode(query[1..]);
             List<string> queryList = [.. query.Split('&').Order()];
             List<string> queryResults = [];
             queryList.ForEach(q =>
