@@ -1,4 +1,5 @@
-﻿using AzureStorageEmulator.NET.Queue.Models;
+﻿using AzureStorageEmulator.NET.Common;
+using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -13,7 +14,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> ListQueuesAsync(HttpContext context, CancellationToken? cancellationToken);
+        Task<IActionResult> GetQueuesAsync(HttpContext context, CancellationToken? cancellationToken);
 
         Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
 
@@ -33,7 +34,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     public class QueueService(IFifoService fifoService,
         IXmlSerializer<MessageList> messageListSerializer,
         IXmlSerializer<QueueEnumerationResults> queueEnumerationResultsSerializer,
-        IQueueSettings settings) : IQueueService
+        ISettings settings) : IQueueService
     {
         public async Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context)
         {
@@ -43,9 +44,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return result;
         }
 
-        public async Task<IActionResult> ListQueuesAsync(HttpContext context, CancellationToken? cancellationToken)
+        public async Task<IActionResult> GetQueuesAsync(HttpContext context, CancellationToken? cancellationToken)
         {
-            Log.Information("ListQueuesAsync");
+            Log.Information("GetQueuesAsync");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
             {
@@ -74,7 +75,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public async Task<IActionResult> GetMessagesAsync(string queueName, HttpContext context)
         {
-            if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
+            if (settings.QueueSettings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             List<QueueMessage>? result = await fifoService.GetMessagesAsync(queueName,
                 queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
@@ -91,7 +92,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public async Task<IActionResult> GetQueueMetadataAsync(string queueName, HttpContext context)
         {
-            if (settings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
+            if (settings.QueueSettings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             Models.Queue? result = await fifoService.GetQueueMetadataAsync(queueName);
             if (result is null) return new NotFoundResult();

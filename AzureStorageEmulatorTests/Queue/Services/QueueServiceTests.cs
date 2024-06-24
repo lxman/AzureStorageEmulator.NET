@@ -1,3 +1,4 @@
+using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
@@ -15,7 +16,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private readonly Mock<IFifoService> _fifoServiceMock = new();
         private readonly Mock<IXmlSerializer<MessageList>> _messageListSerializerMock = new();
         private readonly Mock<IXmlSerializer<QueueEnumerationResults>> _queueEnumerationResultsSerializerMock = new();
-        private readonly Mock<IQueueSettings> _settingsMock = new();
+        private readonly Mock<ISettings> _settingsMock = new();
         private readonly Mock<HttpContext> _contextMock = new();
         private readonly QueueService _queueService;
         private const string QueueName = "testQueue";
@@ -53,7 +54,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             QueryCollection queries = new(myQueryString);
             _contextMock.SetupGet(r => r.Request.Query).Returns(queries);
 
-            IActionResult result = await _queueService.ListQueuesAsync(_contextMock.Object, _cancellationTokenSourceMock.Object.Token);
+            IActionResult result = await _queueService.GetQueuesAsync(_contextMock.Object, _cancellationTokenSourceMock.Object.Token);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(200, contentResult.StatusCode);
@@ -72,6 +73,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetMessagesAsync_Authenticated_Returns200()
         {
+            _settingsMock.Setup(s => s.QueueSettings).Returns(new QueueSettings());
             _fifoServiceMock.Setup(f => f.GetMessagesAsync(QueueName, null, false)).ReturnsAsync([]);
             _messageListSerializerMock.Setup(s => s.Serialize(It.IsAny<MessageList>())).ReturnsAsync("<Messages></Messages>");
 

@@ -84,7 +84,6 @@ namespace AzureStorageEmulatorTests.Table.Services
                 ["Timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:MM:ss.fffffffZ"),
                 ["PartitionKey"] = "TestPartition",
                 ["RowKey"] = "TestRow"
-
             }]);
 
             MemoryStream resultStream = await _tableService.QueryTable(tableName, _httpContext);

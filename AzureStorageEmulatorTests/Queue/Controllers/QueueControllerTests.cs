@@ -35,7 +35,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         public async Task ListQueues_ReturnsOk()
         {
             ControllerContext ctx = new() { HttpContext = new DefaultHttpContext() };
-            MockQueueService.Setup(x => x.ListQueuesAsync(It.IsAny<HttpContext>(), null))
+            MockQueueService.Setup(x => x.GetQueuesAsync(It.IsAny<HttpContext>(), null))
                 .ReturnsAsync(new OkObjectResult(new List<AzureStorageEmulator.NET.Queue.Models.Queue>()));
 
             _controller.ControllerContext = ctx;
