@@ -2,5 +2,6 @@
 {
     public class BlobSettings
     {
+        public bool LogGetMessages { get; set; }
     }
 }

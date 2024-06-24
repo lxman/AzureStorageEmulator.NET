@@ -2,9 +2,9 @@ using AzureStorageEmulator.NET.Authorization;
 using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Services;
 using AzureStorageEmulator.NET.Blob.Xml;
+using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Exceptions;
-using AzureStorageEmulator.NET.Queue;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.Table.Services;
@@ -57,7 +57,12 @@ namespace AzureStorageEmulator.NET
 
             try
             {
-                QueueSettings settings = new() { LogGetMessages = LogGetMessages };
+                Settings settings = new()
+                {
+                    QueueSettings = { LogGetMessages = LogGetMessages },
+                    TableSettings = { LogGetMessages = LogGetMessages },
+                    BlobSettings = { LogGetMessages = LogGetMessages }
+                };
 
                 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -69,7 +74,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddEndpointsApiExplorer();
 
                 // Settings
-                builder.Services.AddSingleton<IQueueSettings>(settings);
+                builder.Services.AddSingleton<ISettings>(settings);
 
                 // Services
                 builder.Services.AddSingleton<IFifoService, ConcurrentQueueService>();

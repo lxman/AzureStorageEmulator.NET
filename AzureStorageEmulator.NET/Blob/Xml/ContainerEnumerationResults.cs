@@ -1,13 +1,16 @@
-﻿using System.Xml.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Xml.Serialization;
 
 namespace AzureStorageEmulator.NET.Blob.Xml
 {
     [XmlRoot("EnumerationResults")]
     public class ContainerEnumerationResults
     {
+        [Required]
         [XmlAttribute]
         public string ServiceEndpoint { get; set; } = "https://myaccount.blob.core.windows.net";
 
+        [Required]
         [XmlAttribute]
         public string? ContainerName { get; set; }
 
@@ -17,7 +20,7 @@ namespace AzureStorageEmulator.NET.Blob.Xml
 
         public int MaxResults { get; set; }
 
-        public string? Delimiter { get; set; }
+        public string Delimiter { get; set; } = string.Empty;
 
         public List<Models.Blob> Blobs { get; set; } = [];
 

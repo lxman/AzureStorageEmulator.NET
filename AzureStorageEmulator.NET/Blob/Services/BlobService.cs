@@ -97,7 +97,7 @@ namespace AzureStorageEmulator.NET.Blob.Services
                     $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}",
                 ContainerName = containerName,
                 MaxResults = int.Parse(maxresultsValues[0]!),
-                Delimiter = delimiterValue[0]
+                Delimiter = delimiterValue[0] ?? string.Empty
             };
             return new MemoryStream(Encoding.UTF8.GetBytes(await containerEnumerationSerializer.Serialize(results)));
         }

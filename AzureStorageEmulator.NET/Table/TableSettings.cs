@@ -2,5 +2,6 @@
 {
     public class TableSettings
     {
+        public bool LogGetMessages { get; set; }
     }
 }

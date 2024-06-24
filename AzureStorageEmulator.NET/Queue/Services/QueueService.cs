@@ -13,7 +13,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> ListQueuesAsync(HttpContext context);
+        Task<IActionResult> ListQueuesAsync(HttpContext context, CancellationToken? cancellationToken);
 
         Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
 
@@ -43,7 +43,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return result;
         }
 
-        public async Task<IActionResult> ListQueuesAsync(HttpContext context)
+        public async Task<IActionResult> ListQueuesAsync(HttpContext context, CancellationToken? cancellationToken)
         {
             Log.Information("ListQueuesAsync");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
@@ -52,7 +52,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 return new BadRequestResult();
             }
             QueueEnumerationResults results = new() { ServiceEndpoint = GetBaseUrl(context) };
+            if (cancellationToken is { IsCancellationRequested: true }) return new StatusCodeResult(504);
             results.Queues.AddRange(await fifoService.GetQueuesAsync());
+            if (cancellationToken is { IsCancellationRequested: true }) return new StatusCodeResult(504);
             results.MaxResults = 5000;
             return new ContentResult
             {

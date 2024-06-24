@@ -11,6 +11,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
 {
     public class QueueServiceTests
     {
+        private readonly Mock<CancellationTokenSource> _cancellationTokenSourceMock = new();
         private readonly Mock<IFifoService> _fifoServiceMock = new();
         private readonly Mock<IXmlSerializer<MessageList>> _messageListSerializerMock = new();
         private readonly Mock<IXmlSerializer<QueueEnumerationResults>> _queueEnumerationResultsSerializerMock = new();
@@ -52,7 +53,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             QueryCollection queries = new(myQueryString);
             _contextMock.SetupGet(r => r.Request.Query).Returns(queries);
 
-            IActionResult result = await _queueService.ListQueuesAsync(_contextMock.Object);
+            IActionResult result = await _queueService.ListQueuesAsync(_contextMock.Object, _cancellationTokenSourceMock.Object.Token);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(200, contentResult.StatusCode);

@@ -10,6 +10,8 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10002")]
     public class TableController(ITableService tableService) : ControllerBase
     {
+        // TODO: Implement a mechanism to return 504 Gateway Timeout if processing takes too long
+
         #region TableOps
 
         /// <summary>

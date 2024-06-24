@@ -9,18 +9,36 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10000")]
     public class BlobController(IBlobService blobService) : ControllerBase
     {
+        // TODO: Implement a mechanism to return 504 Gateway Timeout if processing takes too long
+
+        /// <summary>
+        /// ???
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetInfo()
         {
             return blobService.GetInfo(HttpContext);
         }
 
+        /// <summary>
+        /// Create a container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <returns></returns>
         [HttpPut("{containerName}")]
         public IActionResult CreateContainer(string containerName)
         {
             return blobService.CreateContainer(containerName, HttpContext);
         }
 
+        /// <summary>
+        /// Returns information about a container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="comp"></param>
+        /// <param name="restype"></param>
+        /// <returns></returns>
         [QueryStringConstraint("restype", true)]
         [QueryStringConstraint("maxresults", false)]
         [QueryStringConstraint("include", false)]
@@ -34,6 +52,16 @@ namespace AzureStorageEmulator.NET.Controllers
             return blobService.PingContainer(containerName, HttpContext);
         }
 
+        /// <summary>
+        /// List the contents of a container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="comp"></param>
+        /// <param name="maxresults"></param>
+        /// <param name="restype"></param>
+        /// <param name="include"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
         [QueryStringConstraint("comp", true)]
         [QueryStringConstraint("maxresults", true)]
         [QueryStringConstraint("restype", true)]
@@ -51,6 +79,11 @@ namespace AzureStorageEmulator.NET.Controllers
             return blobService.ListContainerContents(containerName, HttpContext);
         }
 
+        /// <summary>
+        /// ???
+        /// </summary>
+        /// <param name="restype"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("$logs")]
         public IActionResult GetBlob([FromQuery] string? restype)
@@ -59,6 +92,11 @@ namespace AzureStorageEmulator.NET.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// ???
+        /// </summary>
+        /// <param name="restype"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("$blobchangefeed")]
         public IActionResult GetBlobChangeFeed([FromQuery] string? restype)
