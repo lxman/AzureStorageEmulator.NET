@@ -17,9 +17,11 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private readonly Mock<IXmlSerializer<MessageList>> _messageListSerializerMock = new();
         private readonly Mock<IXmlSerializer<QueueEnumerationResults>> _queueEnumerationResultsSerializerMock = new();
         private readonly Mock<ISettings> _settingsMock = new();
-        private readonly Mock<HttpContext> _contextMock = new();
+        private readonly Mock<IHeaderDictionary> _headerDictionaryMock = new();
+        private readonly Mock<HttpContext> _httpContextMock = new();
         private readonly QueueService _queueService;
         private const string QueueName = "testQueue";
+        private readonly AzureStorageEmulator.NET.Queue.Models.Queue _queue = new() { Name = QueueName, MessageCount = 5 };
 
         public QueueServiceTests()
         {
@@ -29,9 +31,12 @@ namespace AzureStorageEmulatorTests.Queue.Services
                 _queueEnumerationResultsSerializerMock.Object,
                 _settingsMock.Object
             );
-            _contextMock.SetupGet(r => r.Request.Query).Returns(new QueryCollection());
-            _contextMock.SetupGet(c => c.Request.Headers).Returns(new HeaderDictionary());
-            _contextMock.SetupGet(r => r.Response).Returns(new DefaultHttpContext().Response);
+            _httpContextMock.SetupGet(r => r.Request.Query).Returns(new QueryCollection());
+            _httpContextMock.SetupGet(c => c.Request.Headers).Returns(_headerDictionaryMock.Object);
+            _httpContextMock.SetupGet(r => r.Response).Returns(new DefaultHttpContext().Response);
+            _httpContextMock.SetupGet(c => c.Response.Headers).Returns(_headerDictionaryMock.Object);
+            _httpContextMock.Setup(c => c.Request).Returns(new DefaultHttpContext().Request);
+            _settingsMock.Setup(s => s.QueueSettings).Returns(new QueueSettings());
         }
 
         [Fact]
@@ -39,7 +44,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _fifoServiceMock.Setup(f => f.AddQueueAsync(QueueName)).ReturnsAsync(true);
 
-            IActionResult result = await _queueService.CreateQueueAsync(QueueName, _contextMock.Object);
+            IActionResult result = await _queueService.CreateQueueAsync(QueueName, _httpContextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(201, statusCodeResult.StatusCode);
@@ -52,9 +57,9 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _queueEnumerationResultsSerializerMock.Setup(s => s.Serialize(It.IsAny<QueueEnumerationResults>())).ReturnsAsync("<Queues></Queues>");
             Dictionary<string, StringValues> myQueryString = new([new KeyValuePair<string, StringValues>("comp", "list")]);
             QueryCollection queries = new(myQueryString);
-            _contextMock.SetupGet(r => r.Request.Query).Returns(queries);
+            _httpContextMock.SetupGet(r => r.Request.Query).Returns(queries);
 
-            IActionResult result = await _queueService.GetQueuesAsync(_contextMock.Object, _cancellationTokenSourceMock.Object.Token);
+            IActionResult result = await _queueService.GetQueuesAsync(_cancellationTokenSourceMock.Object.Token, _httpContextMock.Object);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(200, contentResult.StatusCode);
@@ -64,7 +69,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task DeleteQueueAsync_Authenticated_Returns204()
         {
-            IActionResult result = await _queueService.DeleteQueueAsync(QueueName, _contextMock.Object);
+            IActionResult result = await _queueService.DeleteQueueAsync(QueueName, _httpContextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, statusCodeResult.StatusCode);
@@ -77,7 +82,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _fifoServiceMock.Setup(f => f.GetMessagesAsync(QueueName, null, false)).ReturnsAsync([]);
             _messageListSerializerMock.Setup(s => s.Serialize(It.IsAny<MessageList>())).ReturnsAsync("<Messages></Messages>");
 
-            IActionResult result = await _queueService.GetMessagesAsync(QueueName, _contextMock.Object);
+            IActionResult result = await _queueService.GetMessagesAsync(QueueName, _httpContextMock.Object);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(200, contentResult.StatusCode);
@@ -90,7 +95,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             QueueMessage message = new() { MessageText = "Hello, World!" };
             _messageListSerializerMock.Setup(s => s.Serialize(It.IsAny<MessageList>())).ReturnsAsync("<Message></Message>");
 
-            IActionResult result = await _queueService.PostMessageAsync(QueueName, message, 0, 0, 0, _contextMock.Object);
+            IActionResult result = await _queueService.PostMessageAsync(QueueName, message, 0, 0, 0, _httpContextMock.Object);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(201, contentResult.StatusCode);
@@ -103,7 +108,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             Guid messageId = Guid.NewGuid();
             string popReceipt = Guid.NewGuid().ToString();
 
-            IActionResult result = await _queueService.DeleteMessageAsync(QueueName, messageId, popReceipt, _contextMock.Object);
+            IActionResult result = await _queueService.DeleteMessageAsync(QueueName, messageId, popReceipt, _httpContextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, statusCodeResult.StatusCode);
@@ -114,7 +119,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _fifoServiceMock.Setup(f => f.ClearMessagesAsync(QueueName)).ReturnsAsync(204);
 
-            IActionResult result = await _queueService.ClearMessagesAsync(QueueName, _contextMock.Object);
+            IActionResult result = await _queueService.ClearMessagesAsync(QueueName, _httpContextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, statusCodeResult.StatusCode);
@@ -125,11 +130,74 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _fifoServiceMock.Setup(f => f.MessageCountAsync(QueueName)).ReturnsAsync(5);
 
-            IActionResult result = await _queueService.MessageCountAsync(QueueName, _contextMock.Object);
+            IActionResult result = await _queueService.MessageCountAsync(QueueName, _httpContextMock.Object);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(200, contentResult.StatusCode);
             Assert.Equal("application/xml", contentResult.ContentType);
+        }
+
+        [Fact]
+        public async Task GetQueueMetadataAsync_QueueExistsWithMetadata_Returns200AndMetadata()
+        {
+            List<Metadata> metadata = [new Metadata { Key = "key1", Value = "value1" }];
+            _queue.Metadata = metadata;
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName)).ReturnsAsync(_queue);
+            const string expectedMessageCount = "5";
+            const string expectedMetadataValue = "value1";
+            _headerDictionaryMock.Setup(d => d.Keys).Returns(["x-ms-approximate-messages-count", "x-ms-meta-key1"]);
+            _headerDictionaryMock.Setup(d => d["x-ms-approximate-messages-count"]).Returns(new StringValues(expectedMessageCount));
+            _headerDictionaryMock.Setup(d => d["x-ms-meta-key1"]).Returns(new StringValues(expectedMetadataValue));
+
+            IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, _httpContextMock.Object);
+
+            OkResult okResult = Assert.IsType<OkResult>(result);
+            Assert.Equal(200, okResult.StatusCode);
+            Assert.Contains("x-ms-approximate-messages-count", _httpContextMock.Object.Response.Headers.Keys);
+            Assert.Equal(expectedMessageCount, _httpContextMock.Object.Response.Headers["x-ms-approximate-messages-count"]);
+            Assert.Contains("x-ms-meta-key1", _httpContextMock.Object.Response.Headers.Keys);
+            Assert.Equal(expectedMetadataValue, _httpContextMock.Object.Response.Headers["x-ms-meta-key1"]);
+        }
+
+        [Fact]
+        public async Task GetQueueMetadataAsync_QueueExistsNoMetadata_Returns200()
+        {
+            _queue.Metadata = null;
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName)).ReturnsAsync(_queue);
+            _headerDictionaryMock.Setup(d => d["x-ms-approximate-messages-count"]).Returns("5");
+
+            IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, _httpContextMock.Object);
+
+            OkResult okResult = Assert.IsType<OkResult>(result);
+            Assert.Equal(200, okResult.StatusCode);
+            Assert.Equal("5", _headerDictionaryMock.Object["x-ms-approximate-messages-count"]);
+        }
+
+        [Fact]
+        public async Task GetQueueMetadataAsync_QueueDoesNotExist_Returns404()
+        {
+            const string queueName = "nonExistentQueue";
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(queueName)).ReturnsAsync((AzureStorageEmulator.NET.Queue.Models.Queue?)null);
+
+            IActionResult result = await _queueService.GetQueueMetadataAsync(queueName, _httpContextMock.Object);
+
+            NotFoundResult notFoundResult = Assert.IsType<NotFoundResult>(result);
+            Assert.Equal(404, notFoundResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetQueuesAsync_MissingCompQuery_ReturnsBadRequest()
+        {
+            Mock<IQueryCollection> queryCollectionMock = new();
+
+            // Simulate a request without the required "comp=list" query parameter
+            queryCollectionMock.Setup(q => q.ContainsKey(It.IsAny<string>())).Returns(false);
+            _httpContextMock.Setup(r => r.Request.Query).Returns(queryCollectionMock.Object);
+            _httpContextMock.Setup(c => c.Request.Query.Keys).Returns(Array.Empty<string>());
+
+            IActionResult result = await _queueService.GetQueuesAsync(null, _httpContextMock.Object);
+
+            Assert.IsType<BadRequestResult>(result);
         }
     }
 }

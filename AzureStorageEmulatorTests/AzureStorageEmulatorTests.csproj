@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Folder Include="Blob\" />
+    <Folder Include="Common\" />
     <Folder Include="Queue\Services\" />
     <Folder Include="Table\Controller\" />
     <Folder Include="Table\Services\" />

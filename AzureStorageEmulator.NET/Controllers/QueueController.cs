@@ -39,7 +39,7 @@ namespace AzureStorageEmulator.NET.Controllers
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSource.CancelAfter(timeout.Value * 1000);
             }
-            return await queueService.GetQueuesAsync(HttpContext, cancellationTokenSource?.Token);
+            return await queueService.GetQueuesAsync(cancellationTokenSource?.Token, HttpContext);
         }
 
         /// <summary>

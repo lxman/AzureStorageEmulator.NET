@@ -14,7 +14,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> GetQueuesAsync(HttpContext context, CancellationToken? cancellationToken);
+        Task<IActionResult> GetQueuesAsync(CancellationToken? cancellationToken, HttpContext context);
 
         Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
 
@@ -44,7 +44,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return result;
         }
 
-        public async Task<IActionResult> GetQueuesAsync(HttpContext context, CancellationToken? cancellationToken)
+        public async Task<IActionResult> GetQueuesAsync(CancellationToken? cancellationToken, HttpContext context)
         {
             Log.Information("GetQueuesAsync");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
