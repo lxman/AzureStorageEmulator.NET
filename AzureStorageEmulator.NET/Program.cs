@@ -10,18 +10,12 @@ using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.Table.Services;
 using AzureStorageEmulator.NET.XmlSerialization;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
-using PeriodicLogger;
 using QueueList;
 using Serilog;
-using Serilog.Events;
-using SerilogTracing;
 using TableStorage;
 using Metadata = AzureStorageEmulator.NET.Blob.Models.Metadata;
 
 // ReSharper disable UnusedParameter.Local
-
-// ReSharper disable HeuristicUnreachableCode
-#pragma warning disable CS0162 // Unreachable code detected
 
 namespace AzureStorageEmulator.NET
 {
@@ -34,36 +28,26 @@ namespace AzureStorageEmulator.NET
 
         public static async Task<int> Main(string[] args)
         {
-            if (DetailedLogging)
+            Settings settings = new()
             {
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
-                    .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
-                    .Enrich.WithProperty("Application", "Example")
-                    .WriteTo.PeriodicLoggerSink(BatchSeconds)
-                    .CreateLogger();
+                LogSettings = { BatchSeconds = BatchSeconds, DetailedLogging = DetailedLogging },
+                QueueSettings = { LogGetMessages = LogGetMessages },
+                TableSettings = { LogGetMessages = LogGetMessages },
+                BlobSettings = { LogGetMessages = LogGetMessages }
+            };
 
-                using IDisposable listener = new ActivityListenerConfiguration()
-                    .Instrument.AspNetCoreRequests()
-                    .TraceToSharedLogger();
+            if (args is ["true", _])
+            {
+                settings.LogSettings.LogUrl = new Uri($"http://127.0.0.1:{Convert.ToInt32(args[1])}");
+                settings.LogSettings.LogToFrontEnd = true;
             }
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .WriteTo.PeriodicLoggerSink(BatchSeconds)
-                .CreateLogger();
+            Serilog.Setup(settings);
 
             Log.Information("Starting up");
 
             try
             {
-                Settings settings = new()
-                {
-                    QueueSettings = { LogGetMessages = LogGetMessages },
-                    TableSettings = { LogGetMessages = LogGetMessages },
-                    BlobSettings = { LogGetMessages = LogGetMessages }
-                };
-
                 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
                 // Add services to the container.

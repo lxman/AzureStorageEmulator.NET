@@ -18,7 +18,7 @@ namespace PeriodicLogger
                 QueueLimit = 10000
             };
 
-            PeriodicBatchingSink? periodicBatchingSink = new(sink, batchingOptions);
+            PeriodicBatchingSink periodicBatchingSink = new(sink, batchingOptions);
 
             return loggerConfiguration.Sink(periodicBatchingSink);
         }

@@ -6,6 +6,8 @@ namespace AzureStorageEmulator.NET.Common
 {
     public interface ISettings
     {
+        LogSettings LogSettings { get; set; }
+
         QueueSettings QueueSettings { get; set; }
 
         TableSettings TableSettings { get; set; }
@@ -15,6 +17,8 @@ namespace AzureStorageEmulator.NET.Common
 
     public class Settings : ISettings
     {
+        public LogSettings LogSettings { get; set; } = new();
+
         public QueueSettings QueueSettings { get; set; } = new();
 
         public TableSettings TableSettings { get; set; } = new();
