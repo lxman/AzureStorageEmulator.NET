@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using AzureStorageEmulator.NET.Authorization.Queue;
 using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace AzureStorageEmulatorTests.Authorization
 {
+    [ExcludeFromCodeCoverage]
     public class QueueSharedKeyAuthorizerTests
     {
         private readonly QueueSharedKeyAuthorizer _authorizer = new();

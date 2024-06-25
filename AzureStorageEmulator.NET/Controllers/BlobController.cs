@@ -44,10 +44,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [QueryStringConstraint("include", false)]
         [QueryStringConstraint("delimiter", false)]
         [HttpGet("{containerName}")]
-        public Task<IActionResult> PingContainer(
-            string containerName,
-            [FromQuery] string comp,
-            [FromQuery] string restype)
+        public Task<IActionResult> PingContainer(string containerName)
         {
             return blobService.PingContainer(containerName, HttpContext);
         }
@@ -68,13 +65,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [QueryStringConstraint("include", true)]
         [QueryStringConstraint("delimiter", true)]
         [HttpGet("{containerName}")]
-        public Task<MemoryStream> ListContainerContents(
-            string containerName,
-            [FromQuery] string comp,
-            [FromQuery] int maxresults,
-            [FromQuery] string restype,
-            [FromQuery] string include,
-            [FromQuery] char delimiter)
+        public Task<MemoryStream> ListContainerContents(string containerName)
         {
             return blobService.ListContainerContents(containerName, HttpContext);
         }

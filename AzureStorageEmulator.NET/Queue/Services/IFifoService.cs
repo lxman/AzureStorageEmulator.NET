@@ -4,13 +4,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
 {
     public interface IFifoService
     {
-        Task<List<Models.Queue>> GetQueuesAsync();
+        Task<List<Models.Queue>> ListQueuesAsync();
 
-        Task<bool> AddQueueAsync(string queueName);
+        Task<bool> CreateQueueAsync(string queueName);
 
         Task<bool> DeleteQueueAsync(string queueName);
 
-        Task<bool> AddMessageAsync(string queueName, QueueMessage message);
+        Task<bool> PutMessageAsync(string queueName, QueueMessage message);
 
         Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages = null, bool peekOnly = false);
 

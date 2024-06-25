@@ -7,7 +7,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         private readonly ConcurrentDictionary<Models.Queue, ConcurrentQueue<QueueMessage>> _queues = [];
 
-        public async Task<List<Models.Queue>> GetQueuesAsync()
+        public async Task<List<Models.Queue>> ListQueuesAsync()
         {
             List<Models.Queue> keys = [.. _queues.Keys.OrderBy(k => k.Name)];
             foreach (Models.Queue queue in keys)
@@ -17,7 +17,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return keys;
         }
 
-        public async Task<bool> AddQueueAsync(string queueName)
+        public async Task<bool> CreateQueueAsync(string queueName)
         {
             await RemoveExpired(queueName);
             return _queues.Keys.All(q => q.Name != queueName) && _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
@@ -34,7 +34,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return _queues.TryRemove(key, out _);
         }
 
-        public async Task<bool> AddMessageAsync(string queueName, QueueMessage message)
+        public async Task<bool> PutMessageAsync(string queueName, QueueMessage message)
         {
             await RemoveExpired(queueName);
             ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);

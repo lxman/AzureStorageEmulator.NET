@@ -6,13 +6,13 @@ namespace TableStorage
 {
     public interface ITableStorage
     {
-        List<string> ListTables();
+        List<string> QueryTables();
 
         void CreateTable(string tableName);
 
         bool DeleteTable(string tableName);
 
-        BsonValue Insert(string tableName, BsonDocument document);
+        BsonValue InsertEntity(string tableName, BsonDocument document);
 
         IEnumerable<BsonDocument> GetAll(string tableName);
 
@@ -23,7 +23,7 @@ namespace TableStorage
     {
         private readonly LiteDatabase _db = new("Filename=:memory:");
 
-        public List<string> ListTables()
+        public List<string> QueryTables()
         {
             return _db.GetCollectionNames().ToList();
         }
@@ -39,7 +39,7 @@ namespace TableStorage
             return _db.DropCollection(tableName);
         }
 
-        public BsonValue Insert(string tableName, BsonDocument document)
+        public BsonValue InsertEntity(string tableName, BsonDocument document)
         {
             ILiteCollection<BsonDocument> documents = _db.GetCollection(tableName) ?? throw new Exception("Table not found");
             return documents.Insert(document);

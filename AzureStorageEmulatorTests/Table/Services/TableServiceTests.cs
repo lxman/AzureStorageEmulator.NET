@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AzureStorageEmulator.NET.Table.Services;
@@ -10,6 +11,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AzureStorageEmulatorTests.Table.Services
 {
+    [ExcludeFromCodeCoverage]
     public class TableServiceTests
     {
         private readonly Mock<ITableStorage> _mockStorage;
@@ -26,9 +28,9 @@ namespace AzureStorageEmulatorTests.Table.Services
         [Fact]
         public void ListTables_ReturnsNonEmptyList()
         {
-            _mockStorage.Setup(s => s.ListTables()).Returns(["TestTable1", "TestTable2"]);
+            _mockStorage.Setup(s => s.QueryTables()).Returns(["TestTable1", "TestTable2"]);
 
-            IActionResult result = _tableService.ListTables(_httpContext);
+            IActionResult result = _tableService.QueryTables(_httpContext);
 
             ContentResult contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(200, contentResult.StatusCode);
@@ -67,9 +69,9 @@ namespace AzureStorageEmulatorTests.Table.Services
             const string tableName = "TableToInsert";
             JsonElement document = JsonSerializer.SerializeToElement(JsonNode.Parse("{\"Name\":\"Fred\"}"));
 
-            IActionResult result = _tableService.Insert(tableName, document, _httpContext);
+            IActionResult result = _tableService.InsertEntity(tableName, document, _httpContext);
 
-            _mockStorage.Verify(s => s.Insert(tableName, It.IsAny<BsonDocument>()), Times.Once);
+            _mockStorage.Verify(s => s.InsertEntity(tableName, It.IsAny<BsonDocument>()), Times.Once);
             NoContentResult noContentResult = Assert.IsType<NoContentResult>(result);
             Assert.Equal(204, noContentResult.StatusCode);
         }
@@ -86,7 +88,7 @@ namespace AzureStorageEmulatorTests.Table.Services
                 ["RowKey"] = "TestRow"
             }]);
 
-            MemoryStream resultStream = await _tableService.QueryTable(tableName, _httpContext);
+            MemoryStream resultStream = await _tableService.QueryEntities(tableName, _httpContext);
 
             Assert.NotNull(resultStream);
             resultStream.Seek(0, SeekOrigin.Begin);

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using AzureStorageEmulator.NET.Controllers;
 using AzureStorageEmulator.NET.Table.Models;
@@ -7,6 +8,7 @@ using Moq;
 
 namespace AzureStorageEmulatorTests.Table.Controller
 {
+    [ExcludeFromCodeCoverage]
     public class TableControllerTests
     {
         private readonly Mock<ITableService> _mockTableService;
@@ -22,7 +24,7 @@ namespace AzureStorageEmulatorTests.Table.Controller
         [Fact]
         public void ListTables_ReturnsExpectedResult()
         {
-            _mockTableService.Setup(service => service.ListTables(It.IsAny<Microsoft.AspNetCore.Http.HttpContext>()))
+            _mockTableService.Setup(service => service.QueryTables(It.IsAny<Microsoft.AspNetCore.Http.HttpContext>()))
                 .Returns(new OkResult());
 
             IActionResult result = _controller.ListTables();
@@ -56,10 +58,10 @@ namespace AzureStorageEmulatorTests.Table.Controller
         [Fact]
         public void InsertEntity_ReturnsExpectedResult()
         {
-            _mockTableService.Setup(service => service.Insert(TableName, It.IsAny<JsonElement>(), It.IsAny<Microsoft.AspNetCore.Http.HttpContext>()))
+            _mockTableService.Setup(service => service.InsertEntity(TableName, It.IsAny<JsonElement>(), It.IsAny<Microsoft.AspNetCore.Http.HttpContext>()))
                 .Returns(new OkResult());
 
-            IActionResult result = _controller.Insert(TableName, new JsonElement());
+            IActionResult result = _controller.InsertEntity(TableName, new JsonElement());
 
             Assert.IsType<OkResult>(result);
         }
@@ -67,10 +69,10 @@ namespace AzureStorageEmulatorTests.Table.Controller
         [Fact]
         public async Task QueryTable_ReturnsExpectedResultAsync()
         {
-            _mockTableService.Setup(service => service.QueryTable(TableName, It.IsAny<Microsoft.AspNetCore.Http.HttpContext>()))
+            _mockTableService.Setup(service => service.QueryEntities(TableName, It.IsAny<Microsoft.AspNetCore.Http.HttpContext>()))
                 .ReturnsAsync(new MemoryStream());
 
-            MemoryStream result = await _controller.QueryTable(TableName);
+            MemoryStream result = await _controller.QueryEntities(TableName);
 
             Assert.IsType<MemoryStream>(result);
         }

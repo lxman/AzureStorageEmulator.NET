@@ -22,7 +22,7 @@ namespace AzureStorageEmulator.NET.Controllers
         [Route("tables")]
         public IActionResult ListTables()
         {
-            return tableService.ListTables(HttpContext);
+            return tableService.QueryTables(HttpContext);
         }
 
         /// <summary>
@@ -53,15 +53,15 @@ namespace AzureStorageEmulator.NET.Controllers
         #region EntityOps
 
         /// <summary>
-        /// Insert an entity into a table
+        /// InsertEntity an entity into a table
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="data"></param>
         /// <returns>json tagged with odata metadata</returns>
         [HttpPost("{tableName}")]
-        public IActionResult Insert(string tableName, [FromBody] object data)
+        public IActionResult InsertEntity(string tableName, [FromBody] object data)
         {
-            return tableService.Insert(tableName, (JsonElement)data, HttpContext);
+            return tableService.InsertEntity(tableName, (JsonElement)data, HttpContext);
         }
 
         /// <summary>
@@ -70,9 +70,9 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="tableName"></param>
         /// <returns>json tagged with odata metadata</returns>
         [HttpGet("{tableName}()")]
-        public Task<MemoryStream> QueryTable(string tableName)
+        public Task<MemoryStream> QueryEntities(string tableName)
         {
-            return tableService.QueryTable(tableName, HttpContext);
+            return tableService.QueryEntities(tableName, HttpContext);
         }
 
         #endregion EntityOps

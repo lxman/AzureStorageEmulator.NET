@@ -14,23 +14,23 @@ namespace AzureStorageEmulator.NET.Table.Services
 {
     public interface ITableService
     {
-        IActionResult ListTables(HttpContext context);
+        IActionResult QueryTables(HttpContext context);
 
         IActionResult CreateTable(string tableName, HttpContext context);
 
         IActionResult DeleteTable(string tableName, HttpContext context);
 
-        IActionResult Insert(string tableName, JsonElement document, HttpContext context);
+        IActionResult InsertEntity(string tableName, JsonElement document, HttpContext context);
 
-        Task<MemoryStream> QueryTable(string tableName, HttpContext context);
+        Task<MemoryStream> QueryEntities(string tableName, HttpContext context);
     }
 
     public class TableService(
         ITableStorage storage) : ITableService
     {
-        public IActionResult ListTables(HttpContext context)
+        public IActionResult QueryTables(HttpContext context)
         {
-            List<string> tables = storage.ListTables();
+            List<string> tables = storage.QueryTables();
             ListTablesResponse response = new() { Value = [] };
             tables.ForEach(table => response.Value.Add(new TableName { Name = table }));
             response.Metadata = $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables";
@@ -66,7 +66,7 @@ namespace AzureStorageEmulator.NET.Table.Services
             return storage.DeleteTable(tableName) ? new OkResult() : new NotFoundResult();
         }
 
-        public IActionResult Insert(string tableName, JsonElement document, HttpContext context)
+        public IActionResult InsertEntity(string tableName, JsonElement document, HttpContext context)
         {
             BsonDocument bsonDocument = [];
             foreach (JsonProperty property in document.EnumerateObject())
@@ -74,12 +74,12 @@ namespace AzureStorageEmulator.NET.Table.Services
                 bsonDocument[property.Name] = property.Value.ToString();
             }
             bsonDocument["Timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:MM:ss.fffffffZ");
-            _ = storage.Insert(tableName, bsonDocument);
+            _ = storage.InsertEntity(tableName, bsonDocument);
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             return new NoContentResult();
         }
 
-        public async Task<MemoryStream> QueryTable(string tableName, HttpContext context)
+        public async Task<MemoryStream> QueryEntities(string tableName, HttpContext context)
         {
             ListEntriesResponse response = new()
             {

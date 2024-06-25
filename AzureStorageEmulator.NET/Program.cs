@@ -125,7 +125,7 @@ namespace AzureStorageEmulator.NET
             IFifoService fifoService = app.Services.GetRequiredService<IFifoService>();
             foreach (string queue in Queues.Names)
             {
-                fifoService.AddQueueAsync(queue);
+                fifoService.CreateQueueAsync(queue);
             }
         }
     }

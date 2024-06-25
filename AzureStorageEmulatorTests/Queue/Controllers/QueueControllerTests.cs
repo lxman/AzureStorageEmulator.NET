@@ -1,4 +1,5 @@
-﻿using AzureStorageEmulator.NET.Controllers;
+﻿using System.Diagnostics.CodeAnalysis;
+using AzureStorageEmulator.NET.Controllers;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Queue.Services;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +9,7 @@ using Moq;
 
 namespace AzureStorageEmulatorTests.Queue.Controllers
 {
+    [ExcludeFromCodeCoverage]
     public class QueueControllerTests
     {
         private static readonly Mock<IQueueService> MockQueueService = new();
@@ -35,7 +37,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         public async Task ListQueues_ReturnsOk()
         {
             ControllerContext ctx = new() { HttpContext = new DefaultHttpContext() };
-            MockQueueService.Setup(x => x.GetQueuesAsync(null, It.IsAny<HttpContext>()))
+            MockQueueService.Setup(x => x.ListQueuesAsync(null, It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkObjectResult(new List<AzureStorageEmulator.NET.Queue.Models.Queue>()));
 
             _controller.ControllerContext = ctx;
@@ -67,9 +69,9 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task PostMessage_ReturnsCreated()
         {
-            MockQueueService.Setup(x => x.PostMessageAsync(QueueName, _message, VisibilityTimeout, MessageTtl, Timeout, It.IsAny<HttpContext>())).ReturnsAsync(new StatusCodeResult(201));
+            MockQueueService.Setup(x => x.PutMessageAsync(QueueName, _message, VisibilityTimeout, MessageTtl, Timeout, It.IsAny<HttpContext>())).ReturnsAsync(new StatusCodeResult(201));
 
-            IActionResult result = await _controller.PostMessageAsync(QueueName, _message, VisibilityTimeout, MessageTtl, Timeout);
+            IActionResult result = await _controller.PutMessageAsync(QueueName, _message, VisibilityTimeout, MessageTtl, Timeout);
 
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(201, ((StatusCodeResult)result).StatusCode);
@@ -110,12 +112,12 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task PostMessage_InspectQueryString_UsesDefaultValues()
         {
-            MockQueueService.Setup(x => x.PostMessageAsync(QueueName, _message, 0, 0, 0, It.IsAny<HttpContext>()))
+            MockQueueService.Setup(x => x.PutMessageAsync(QueueName, _message, 0, 0, 0, It.IsAny<HttpContext>()))
                               .ReturnsAsync(new StatusCodeResult(201));
 
-            IActionResult resultWithDefaults = await _controller.PostMessageAsync(QueueName, _message, 0, 0, 0);
+            IActionResult resultWithDefaults = await _controller.PutMessageAsync(QueueName, _message, 0, 0, 0);
 
-            IActionResult resultWithMethodDefaults = await _controller.PostMessageAsync(QueueName, _message);
+            IActionResult resultWithMethodDefaults = await _controller.PutMessageAsync(QueueName, _message);
 
             Assert.IsType<StatusCodeResult>(resultWithDefaults);
             Assert.Equal(201, ((StatusCodeResult)resultWithDefaults).StatusCode);
@@ -130,10 +132,10 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
             const int customMessageTtl = 120;
             const int customTimeout = 15;
 
-            MockQueueService.Setup(x => x.PostMessageAsync(QueueName, _message, customVisibilityTimeout, customMessageTtl, customTimeout, It.IsAny<HttpContext>()))
+            MockQueueService.Setup(x => x.PutMessageAsync(QueueName, _message, customVisibilityTimeout, customMessageTtl, customTimeout, It.IsAny<HttpContext>()))
                               .ReturnsAsync(new StatusCodeResult(201));
 
-            IActionResult result = await _controller.PostMessageAsync(QueueName, _message, customVisibilityTimeout, customMessageTtl, customTimeout);
+            IActionResult result = await _controller.PutMessageAsync(QueueName, _message, customVisibilityTimeout, customMessageTtl, customTimeout);
 
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(201, ((StatusCodeResult)result).StatusCode);

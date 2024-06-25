@@ -9,8 +9,6 @@ namespace AzureStorageEmulator.NET.Controllers
     [Host("*:10001")]
     public class QueueController(IQueueService queueService) : ControllerBase
     {
-        // TODO: Implement a mechanism to return 504 Gateway Timeout if processing takes too long
-
         #region QueueOps
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace AzureStorageEmulator.NET.Controllers
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSource.CancelAfter(timeout.Value * 1000);
             }
-            return await queueService.GetQueuesAsync(cancellationTokenSource?.Token, HttpContext);
+            return await queueService.ListQueuesAsync(cancellationTokenSource?.Token, HttpContext);
         }
 
         /// <summary>
@@ -94,14 +92,14 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("{queueName}/messages")]
-        public Task<IActionResult> PostMessageAsync(
+        public Task<IActionResult> PutMessageAsync(
             string queueName,
             [FromBody] QueueMessage message,
             [FromQuery] int visibilityTimeout = 0,
             [FromQuery] int messageTtl = 0,
             [FromQuery] int timeout = 0)
         {
-            return queueService.PostMessageAsync(queueName, message, visibilityTimeout, messageTtl, timeout, HttpContext);
+            return queueService.PutMessageAsync(queueName, message, visibilityTimeout, messageTtl, timeout, HttpContext);
         }
 
         /// <summary>

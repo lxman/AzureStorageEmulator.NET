@@ -14,11 +14,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         Task<IActionResult> CreateQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> GetQueuesAsync(CancellationToken? cancellationToken, HttpContext context);
+        Task<IActionResult> ListQueuesAsync(CancellationToken? cancellationToken, HttpContext context);
 
         Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
 
-        Task<IActionResult> PostMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context);
+        Task<IActionResult> PutMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context);
 
         Task<IActionResult> GetMessagesAsync(string queueName, HttpContext context);
 
@@ -40,13 +40,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             Log.Information($"CreateQueue queueName = {queueName}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            StatusCodeResult result = new(await fifoService.AddQueueAsync(queueName) ? 201 : 204);
+            StatusCodeResult result = new(await fifoService.CreateQueueAsync(queueName) ? 201 : 204);
             return result;
         }
 
-        public async Task<IActionResult> GetQueuesAsync(CancellationToken? cancellationToken, HttpContext context)
+        public async Task<IActionResult> ListQueuesAsync(CancellationToken? cancellationToken, HttpContext context)
         {
-            Log.Information("GetQueuesAsync");
+            Log.Information("ListQueuesAsync");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
             {
@@ -54,7 +54,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             }
             QueueEnumerationResults results = new() { ServiceEndpoint = GetBaseUrl(context) };
             if (cancellationToken is { IsCancellationRequested: true }) return new StatusCodeResult(504);
-            results.Queues.AddRange(await fifoService.GetQueuesAsync());
+            results.Queues.AddRange(await fifoService.ListQueuesAsync());
             if (cancellationToken is { IsCancellationRequested: true }) return new StatusCodeResult(504);
             results.MaxResults = 5000;
             return new ContentResult
@@ -109,9 +109,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new OkResult();
         }
 
-        public async Task<IActionResult> PostMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
+        public async Task<IActionResult> PutMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
         {
-            Log.Information($"PostMessageAsync queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
+            Log.Information($"PutMessageAsync queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             MessageList queueMessageList = new();
             QueueMessage queueMessage = new();
@@ -124,7 +124,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             queueMessage.PopReceipt = Guid.NewGuid().ToString();
             queueMessage.VisibilityTimeout = visibilityTimeout;
             queueMessage.TimeNextVisible = DateTime.UtcNow;
-            await fifoService.AddMessageAsync(queueName, queueMessage);
+            await fifoService.PutMessageAsync(queueName, queueMessage);
             return new ContentResult
             {
                 Content = await messageListSerializer.Serialize(queueMessageList),
