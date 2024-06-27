@@ -1,6 +1,6 @@
-﻿namespace AzureStorageEmulator.NET.Queue.Models
+﻿namespace AzureStorageEmulator.NET.Queue.Models.MessageResponses
 {
-    public class QueueMessage
+    public class GetMessageResponse
     {
         public Guid MessageId { get; set; }
 
@@ -15,11 +15,5 @@
         public int DequeueCount { get; set; }
 
         public string MessageText { get; set; } = string.Empty;
-
-        public int VisibilityTimeout { get; set; }
-
-        public bool Visible => TimeNextVisible <= DateTime.UtcNow;
-
-        public bool Expired => ExpirationTime < DateTime.UtcNow;
     }
 }

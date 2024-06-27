@@ -10,6 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Blob\**" />
+    <Compile Remove="Common\**" />
+    <EmbeddedResource Remove="Blob\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <None Remove="Blob\**" />
+    <None Remove="Common\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,8 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Blob\" />
-    <Folder Include="Common\" />
     <Folder Include="Queue\Services\" />
     <Folder Include="Table\Controller\" />
     <Folder Include="Table\Services\" />

@@ -6,6 +6,7 @@ using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.Common.HeaderManagement;
 using AzureStorageEmulator.NET.Exceptions;
 using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Queue.Models.MessageResponseLists;
 using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.Table.Services;
 using AzureStorageEmulator.NET.XmlSerialization;
@@ -70,11 +71,13 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddSingleton<IBlobRoot, BlobRoot>();
 
                 // Serializers
-                builder.Services.AddScoped<IXmlSerializer<MessageList>, XmlSerializer<MessageList>>();
                 builder.Services
                     .AddScoped<IXmlSerializer<QueueEnumerationResults>, XmlSerializer<QueueEnumerationResults>>();
                 builder.Services.AddScoped<IXmlSerializer<Metadata>, XmlSerializer<Metadata>>();
                 builder.Services.AddScoped<IXmlSerializer<ContainerEnumerationResults>, XmlSerializer<ContainerEnumerationResults>>();
+                builder.Services.AddScoped<IXmlSerializer<GetMessagesResponseList>, XmlSerializer<GetMessagesResponseList>>();
+                builder.Services.AddScoped<IXmlSerializer<PeekMessageResponseList>, XmlSerializer<PeekMessageResponseList>>();
+                builder.Services.AddScoped<IXmlSerializer<PutMessageResponseList>, XmlSerializer<PutMessageResponseList>>();
 
                 // Middleware
                 builder.Services.AddTransient<Authorizer>();

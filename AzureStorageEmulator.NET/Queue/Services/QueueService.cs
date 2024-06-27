@@ -1,5 +1,7 @@
 ﻿using AzureStorageEmulator.NET.Common;
+using AzureStorageEmulator.NET.Queue.Extensions;
 using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Queue.Models.MessageResponseLists;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -32,7 +34,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
     }
 
     public class QueueService(IFifoService fifoService,
-        IXmlSerializer<MessageList> messageListSerializer,
+        IXmlSerializer<PutMessageResponseList> putMessageResponseListSerializer,
+        IXmlSerializer<PeekMessageResponseList> peekMessageResponseListSerializer,
+        IXmlSerializer<GetMessagesResponseList> getMessagesResponseListSerializer,
         IXmlSerializer<QueueEnumerationResults> queueEnumerationResultsSerializer,
         ISettings settings) : IQueueService
     {
@@ -80,11 +84,22 @@ namespace AzureStorageEmulator.NET.Queue.Services
             List<QueueMessage>? result = await fifoService.GetMessagesAsync(queueName,
                 queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
                 queries.TryGetValue("peekonly", out StringValues peekOnlyValue) && Convert.ToBoolean(peekOnlyValue.First()));
-            MessageList queueMessageList = new();
-            if (result is not null) queueMessageList.QueueMessagesList.AddRange(result);
+            if (peekOnlyValue is { Count: > 0 })
+            {
+                PeekMessageResponseList peekMessageResponseList = new();
+                if (result is not null) peekMessageResponseList.QueueMessagesList.AddRange(result.ToPeekMessageResponseList());
+                return new ContentResult
+                {
+                    Content = await peekMessageResponseListSerializer.Serialize(peekMessageResponseList),
+                    ContentType = "application/xml",
+                    StatusCode = 200
+                };
+            }
+            GetMessagesResponseList getMessagesResponseList = new();
+            if (result is not null) getMessagesResponseList.QueueMessagesList.AddRange(result.ToGetMessageResponseList());
             return new ContentResult
             {
-                Content = await messageListSerializer.Serialize(queueMessageList),
+                Content = await getMessagesResponseListSerializer.Serialize(getMessagesResponseList),
                 ContentType = "application/xml",
                 StatusCode = 200
             };
@@ -113,21 +128,23 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             Log.Information($"PutMessageAsync queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            MessageList queueMessageList = new();
-            QueueMessage queueMessage = new();
-            queueMessageList.QueueMessagesList.Add(queueMessage);
-            queueMessage.DequeueCount = 0;
-            queueMessage.ExpirationTime = DateTime.UtcNow.AddDays(7);
-            queueMessage.InsertionTime = DateTime.UtcNow;
-            queueMessage.MessageId = Guid.NewGuid();
-            queueMessage.MessageText = message.MessageText;
-            queueMessage.PopReceipt = Guid.NewGuid().ToString();
-            queueMessage.VisibilityTimeout = visibilityTimeout;
-            queueMessage.TimeNextVisible = DateTime.UtcNow;
+            QueueMessage queueMessage = new()
+            {
+                DequeueCount = 0,
+                ExpirationTime = DateTime.UtcNow.AddDays(7),
+                InsertionTime = DateTime.UtcNow,
+                MessageId = Guid.NewGuid(),
+                MessageText = message.MessageText,
+                PopReceipt = Guid.NewGuid().ToString(),
+                VisibilityTimeout = visibilityTimeout,
+                TimeNextVisible = DateTime.UtcNow
+            };
             await fifoService.PutMessageAsync(queueName, queueMessage);
+            PutMessageResponseList putMessageResponseList = new();
+            putMessageResponseList.QueueMessagesList.Add(queueMessage.ToPutMessageResponse());
             return new ContentResult
             {
-                Content = await messageListSerializer.Serialize(queueMessageList),
+                Content = await putMessageResponseListSerializer.Serialize(putMessageResponseList),
                 ContentType = "application/xml",
                 StatusCode = 201
             };
