@@ -68,8 +68,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(toRetain), queue);
                 messages.ForEach(m =>
                 {
+                    m.DequeueCount++;
                     m.PopReceipt = Guid.NewGuid().ToString();
-                    m.TimeNextVisible = DateTime.UtcNow.AddSeconds(m.VisibilityTimeout);
+                    m.InsertionTime = DateTime.UtcNow;
                 });
             }
 
@@ -98,7 +99,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             await RemoveExpired(queueName);
             key.Blocked = true;
             List<QueueMessage> messages = queue.ToList() ?? [];
-            QueueMessage? message = messages.FirstOrDefault(m => m?.MessageId == messageId && m.PopReceipt == popReceipt && m.Visible);
+            QueueMessage? message = messages.FirstOrDefault(m => m?.MessageId == messageId && m.PopReceipt == popReceipt);
             if (message is null)
             {
                 key.Blocked = false;

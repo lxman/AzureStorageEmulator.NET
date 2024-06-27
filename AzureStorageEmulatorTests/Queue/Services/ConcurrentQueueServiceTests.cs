@@ -12,7 +12,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private readonly QueueMessage _message = new()
         {
             MessageText = "Hello",
-            ExpirationTime = DateTime.UtcNow.AddDays(7),
+            TimeToLive = Convert.ToInt32(TimeSpan.FromDays(7).TotalSeconds),
             MessageId = Guid.NewGuid(),
             PopReceipt = Guid.NewGuid().ToString()
         };
@@ -116,11 +116,11 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetQueueMetadataAsync_WithExistingQueue_ReturnsCorrectMetadata()
         {
-            string queueName = "existingQueue";
+            const string queueName = "existingQueue";
             await _service.CreateQueueAsync(queueName);
-            await _service.PutMessageAsync(queueName, new QueueMessage { MessageText = "Test", ExpirationTime = DateTime.UtcNow.AddDays(1) });
+            await _service.PutMessageAsync(queueName, new QueueMessage { MessageText = "Test", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(1).TotalSeconds) });
 
-            var queueMetadata = await _service.GetQueueMetadataAsync(queueName);
+            AzureStorageEmulator.NET.Queue.Models.Queue? queueMetadata = await _service.GetQueueMetadataAsync(queueName);
 
             Assert.NotNull(queueMetadata);
             Assert.Equal(queueName, queueMetadata.Name);
@@ -130,14 +130,14 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetQueueMetadataAsync_WithNonExistingQueue_ReturnsNull()
         {
-            var queueMetadata = await _service.GetQueueMetadataAsync("nonExistingQueue");
+            AzureStorageEmulator.NET.Queue.Models.Queue? queueMetadata = await _service.GetQueueMetadataAsync("nonExistingQueue");
             Assert.Null(queueMetadata);
         }
 
         [Fact]
         public async Task GetQueuesAsync_WithNoQueues_ReturnsEmptyList()
         {
-            var queues = await _service.ListQueuesAsync();
+            List<AzureStorageEmulator.NET.Queue.Models.Queue> queues = await _service.ListQueuesAsync();
             Assert.Empty(queues);
         }
 
@@ -147,7 +147,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             await _service.CreateQueueAsync("queue1");
             await _service.CreateQueueAsync("queue2");
 
-            var queues = await _service.ListQueuesAsync();
+            List<AzureStorageEmulator.NET.Queue.Models.Queue> queues = await _service.ListQueuesAsync();
 
             Assert.Equal(2, queues.Count);
             Assert.Equal("queue1", queues[0].Name);
@@ -158,11 +158,11 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task GetQueuesAsync_AfterAddingQueuesAndMessages_ExcludesExpiredMessagesFromQueueListing()
         {
             await _service.CreateQueueAsync("queueWithExpiredMessage");
-            await _service.PutMessageAsync("queueWithExpiredMessage", new QueueMessage { MessageText = "Expired", ExpirationTime = DateTime.UtcNow.AddDays(-1) });
+            await _service.PutMessageAsync("queueWithExpiredMessage", new QueueMessage { MessageText = "Expired", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(-1).TotalSeconds) });
             await _service.CreateQueueAsync("queueWithValidMessage");
-            await _service.PutMessageAsync("queueWithValidMessage", new QueueMessage { MessageText = "Valid", ExpirationTime = DateTime.UtcNow.AddDays(1) });
+            await _service.PutMessageAsync("queueWithValidMessage", new QueueMessage { MessageText = "Valid", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(1).TotalSeconds) });
 
-            var queues = await _service.ListQueuesAsync();
+            List<AzureStorageEmulator.NET.Queue.Models.Queue> queues = await _service.ListQueuesAsync();
 
             Assert.Equal(2, queues.Count);
             Assert.Contains(queues, q => q.Name == "queueWithExpiredMessage");

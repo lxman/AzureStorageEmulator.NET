@@ -84,6 +84,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             List<QueueMessage>? result = await fifoService.GetMessagesAsync(queueName,
                 queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
                 queries.TryGetValue("peekonly", out StringValues peekOnlyValue) && Convert.ToBoolean(peekOnlyValue.First()));
+            if (numMessagesValue.Count > 0 && (Convert.ToInt32(numMessagesValue.First()) > 32 || Convert.ToInt32(numMessagesValue.First()) < 1)) return new BadRequestResult();
             if (peekOnlyValue is { Count: > 0 })
             {
                 PeekMessageResponseList peekMessageResponseList = new();
@@ -96,7 +97,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 };
             }
             GetMessagesResponseList getMessagesResponseList = new();
-            if (result is not null) getMessagesResponseList.QueueMessagesList.AddRange(result.ToGetMessageResponseList());
+            if (result is not null)
+            {
+                result.ForEach(m => m.InsertionTime = DateTime.UtcNow);
+                getMessagesResponseList.QueueMessagesList.AddRange(result.ToGetMessageResponseList());
+            }
             return new ContentResult
             {
                 Content = await getMessagesResponseListSerializer.Serialize(getMessagesResponseList),
@@ -131,13 +136,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
             QueueMessage queueMessage = new()
             {
                 DequeueCount = 0,
-                ExpirationTime = DateTime.UtcNow.AddDays(7),
+                TimeToLive = Convert.ToInt32(TimeSpan.FromSeconds(messageTtl).TotalSeconds),
                 InsertionTime = DateTime.UtcNow,
                 MessageId = Guid.NewGuid(),
                 MessageText = message.MessageText,
                 PopReceipt = Guid.NewGuid().ToString(),
-                VisibilityTimeout = visibilityTimeout,
-                TimeNextVisible = DateTime.UtcNow
+                VisibilityTimeout = visibilityTimeout
             };
             await fifoService.PutMessageAsync(queueName, queueMessage);
             PutMessageResponseList putMessageResponseList = new();
@@ -152,10 +156,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public async Task<IActionResult> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt, HttpContext context)
         {
+            if (string.IsNullOrEmpty(popReceipt)) return new BadRequestResult();
             Log.Information($"DeleteMessageAsync queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            _ = await fifoService.DeleteMessageAsync(queueName, messageId, popReceipt);
-            return new StatusCodeResult(204);
+            QueueMessage? result = await fifoService.DeleteMessageAsync(queueName, messageId, popReceipt);
+            return result is null ? new NotFoundResult() : new StatusCodeResult(204);
         }
 
         public async Task<IActionResult> ClearMessagesAsync(string queueName, HttpContext context)

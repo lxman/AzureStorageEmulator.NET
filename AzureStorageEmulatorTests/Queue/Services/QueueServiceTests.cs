@@ -97,6 +97,48 @@ namespace AzureStorageEmulatorTests.Queue.Services
         }
 
         [Fact]
+        public async Task PutMessageAsync_GetMessagesAsync_DeleteMessageAsync_WorkAsExpected()
+        {
+            QueueMessage message = new() { MessageId = Guid.NewGuid(), MessageText = "Hello, World!", PopReceipt = Guid.NewGuid().ToString() };
+            _putMessageResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<PutMessageResponseList>())).ReturnsAsync("<Messages></Messages>");
+            _fifoServiceMock.Setup(f => f.GetMessagesAsync(QueueName, null, false)).ReturnsAsync([message]);
+            _getMessagesResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<GetMessagesResponseList>())).ReturnsAsync("<Messages></Messages>");
+            _putMessageResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<PutMessageResponseList>())).ReturnsAsync("<Messages></Messages>");
+            _getMessagesResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<GetMessagesResponseList>())).ReturnsAsync("<Messages></Messages>");
+            _fifoServiceMock.Setup(f => f.DeleteMessageAsync(QueueName, message.MessageId, "incorrectPopReceipt")).ReturnsAsync((QueueMessage?)null);
+            _fifoServiceMock.Setup(f => f.DeleteMessageAsync(QueueName, message.MessageId, message.PopReceipt)).ReturnsAsync(message);
+
+            IActionResult result = await _queueService.PutMessageAsync(QueueName, message, 0, 0, 0, _httpContextMock.Object);
+
+            ContentResult contentResult = Assert.IsType<ContentResult>(result);
+            Assert.Equal(201, contentResult.StatusCode);
+            Assert.Equal("application/xml", contentResult.ContentType);
+            Assert.Equal("<Messages></Messages>", contentResult.Content);
+
+            result = await _queueService.GetMessagesAsync(QueueName, _httpContextMock.Object);
+
+            contentResult = Assert.IsType<ContentResult>(result);
+            Assert.Equal(200, contentResult.StatusCode);
+            Assert.Equal("application/xml", contentResult.ContentType);
+            Assert.Equal("<Messages></Messages>", contentResult.Content);
+
+            result = await _queueService.DeleteMessageAsync(QueueName, message.MessageId, null, _httpContextMock.Object);
+
+            BadRequestResult badRequestResult = Assert.IsType<BadRequestResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
+
+            result = await _queueService.DeleteMessageAsync(QueueName, message.MessageId, "incorrectPopReceipt", _httpContextMock.Object);
+
+            NotFoundResult notFoundResult = Assert.IsType<NotFoundResult>(result);
+            Assert.Equal(404, notFoundResult.StatusCode);
+
+            result = await _queueService.DeleteMessageAsync(QueueName, message.MessageId, message.PopReceipt, _httpContextMock.Object);
+
+            StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
+            Assert.Equal(204, statusCodeResult.StatusCode);
+        }
+
+        [Fact]
         public async Task PostMessageAsync_Authenticated_Returns201()
         {
             QueueMessage message = new() { MessageText = "Hello, World!" };
@@ -114,6 +156,9 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             Guid messageId = Guid.NewGuid();
             string popReceipt = Guid.NewGuid().ToString();
+            QueueMessage message = new() { MessageId = messageId, PopReceipt = popReceipt };
+
+            _fifoServiceMock.Setup(s => s.DeleteMessageAsync(QueueName, messageId, popReceipt)).ReturnsAsync(message);
 
             IActionResult result = await _queueService.DeleteMessageAsync(QueueName, messageId, popReceipt, _httpContextMock.Object);
 
