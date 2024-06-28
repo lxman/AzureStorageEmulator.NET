@@ -33,6 +33,8 @@ namespace AzureStorageEmulator.NET.Authorization
                         throw new UnauthorizedAccessException();
                     }
                     break;
+                case 10010:
+                    break;
             }
             await next.Invoke(context);
         }

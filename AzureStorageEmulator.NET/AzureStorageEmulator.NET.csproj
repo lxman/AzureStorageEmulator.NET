@@ -36,4 +36,10 @@
       <Folder Include="XmlSerialization\Table\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="AzureStorageEmulator.NET.Assembly_Attributes.BuildTimeAttribute">
+            <_Parameter1>$([System.DateTime]::UtcNow.ToString())</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>

@@ -1,3 +1,4 @@
+using AzureStorageEmulator.NET.Assembly_Attributes.Readers;
 using AzureStorageEmulator.NET.Authorization;
 using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Services;
@@ -46,6 +47,7 @@ namespace AzureStorageEmulator.NET
             Serilog.Setup(settings);
 
             Log.Information("Starting up");
+            Log.Information($"Build time for this module is {BuildTime.GetBuildTime().ToLocalTime()}");
 
             try
             {
@@ -88,6 +90,7 @@ namespace AzureStorageEmulator.NET
                 app.Urls.Add("http://localhost:10000");
                 app.Urls.Add("http://localhost:10001");
                 app.Urls.Add("http://localhost:10002");
+                app.Urls.Add("http://localhost:10010");
 
                 // Configure the HTTP request pipeline.
                 app.UseHttpsRedirection();
