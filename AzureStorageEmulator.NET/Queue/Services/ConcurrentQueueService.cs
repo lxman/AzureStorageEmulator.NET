@@ -8,20 +8,33 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         private readonly ConcurrentDictionary<Models.Queue, ConcurrentQueue<QueueMessage>> _queues = [];
 
-        public async Task<List<Models.Queue>> ListQueuesAsync()
+        #region QueueOps
+
+        public async Task<bool> CreateQueueAsync(string queueName, CancellationToken? cancellationToken)
+        {
+            await RemoveExpired(queueName);
+            if (cancellationToken is { IsCancellationRequested: true }) return false;
+            return _queues.Keys.All(q => q.Name != queueName) && _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
+        }
+
+        public async Task<(IMethodResult, List<Models.Queue>)> ListQueuesAsync(CancellationToken? cancellationToken)
         {
             List<Models.Queue> keys = [.. _queues.Keys.OrderBy(k => k.Name)];
             foreach (Models.Queue queue in keys)
             {
                 await RemoveExpired(queue.Name);
             };
-            return keys;
+            if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), []);
+            return (new ResultOk(), keys);
         }
 
-        public async Task<bool> CreateQueueAsync(string queueName)
+        public async Task<Models.Queue?> GetQueueMetadataAsync(string queueName)
         {
+            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
+            if (key is null) return null;
             await RemoveExpired(queueName);
-            return _queues.Keys.All(q => q.Name != queueName) && _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
+            key.MessageCount = _queues.GetValueOrDefault(key)?.Count ?? 0;
+            return key;
         }
 
         public async Task<bool> DeleteQueueAsync(string queueName)
@@ -34,6 +47,10 @@ namespace AzureStorageEmulator.NET.Queue.Services
             }
             return _queues.TryRemove(key, out _);
         }
+
+        #endregion QueueOps
+
+        #region MessageOps
 
         public async Task<IMethodResult> PutMessageAsync(string queueName, QueueMessage message,
             CancellationToken? cancellationToken)
@@ -110,15 +127,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return (new ResultOk(), messages);
         }
 
-        public async Task<Models.Queue?> GetQueueMetadataAsync(string queueName)
-        {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return null;
-            await RemoveExpired(queueName);
-            key.MessageCount = _queues.GetValueOrDefault(key)?.Count ?? 0;
-            return key;
-        }
-
         public async Task<(IMethodResult, QueueMessage?)> DeleteMessageAsync(string queueName, Guid messageId,
             string popReceipt,
             CancellationToken? cancellationToken)
@@ -172,6 +180,10 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return queue?.Count;
         }
 
+        #endregion MessageOps
+
+        #region Private Helpers
+
         private async Task RemoveExpired(string queueName)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
@@ -207,5 +219,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         private static (IMethodResult, QueueMessage?) DeleteMessageTimeout() => (new ResultTimeout(), null);
 
         private static (IMethodResult, QueueMessage?) DeleteMessageNotFound() => (new ResultNotFound(), null);
+
+        #endregion Private Helpers
     }
 }

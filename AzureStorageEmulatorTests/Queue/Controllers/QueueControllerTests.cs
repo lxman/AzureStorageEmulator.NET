@@ -25,7 +25,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task CreateQueue_ReturnsCreated()
         {
-            MockQueueService.Setup(x => x.CreateQueueAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new StatusCodeResult(201));
+            MockQueueService.Setup(x => x.CreateQueueAsync(QueueName, 0, It.IsAny<HttpContext>())).ReturnsAsync(new StatusCodeResult(201));
 
             IActionResult result = await _controller.CreateQueueAsync(QueueName);
 
@@ -37,11 +37,11 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         public async Task ListQueues_ReturnsOk()
         {
             ControllerContext ctx = new() { HttpContext = new DefaultHttpContext() };
-            MockQueueService.Setup(x => x.ListQueuesAsync(null, It.IsAny<HttpContext>()))
+            MockQueueService.Setup(x => x.ListQueuesAsync(0, It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkObjectResult(new List<AzureStorageEmulator.NET.Queue.Models.Queue>()));
 
             _controller.ControllerContext = ctx;
-            IActionResult result = await _controller.ListQueuesAsync(null);
+            IActionResult result = await _controller.ListQueuesAsync(0);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -100,7 +100,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task CreateQueue_ProcessingTooLong_ReturnsGatewayTimeout()
         {
-            MockQueueService.Setup(x => x.CreateQueueAsync(QueueName, It.IsAny<HttpContext>()))
+            MockQueueService.Setup(x => x.CreateQueueAsync(QueueName, 0, It.IsAny<HttpContext>()))
                               .Returns(Task.Delay(2000).ContinueWith<IActionResult>(_ => new StatusCodeResult(504)));
 
             IActionResult result = await _controller.CreateQueueAsync(QueueName);
