@@ -49,7 +49,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task DeleteQueue_ReturnsOk()
         {
-            MockQueueService.Setup(x => x.DeleteQueueAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
+            MockQueueService.Setup(x => x.DeleteQueueAsync(QueueName, 0, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
 
             IActionResult result = await _controller.DeleteQueueAsync(QueueName);
 
@@ -59,7 +59,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task GetAllMessages_ReturnsOk()
         {
-            MockQueueService.Setup(x => x.GetQueueMetadataAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<Message>()));
+            MockQueueService.Setup(x => x.GetQueueMetadataAsync(QueueName, 0, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<Message>()));
 
             IActionResult result = await _controller.GetQueueMetadataAsync(QueueName);
 
@@ -90,7 +90,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task DeleteMessages_ReturnsOk()
         {
-            MockQueueService.Setup(x => x.ClearMessagesAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
+            MockQueueService.Setup(x => x.ClearMessagesAsync(QueueName, 0, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
 
             IActionResult result = await _controller.ClearMessagesAsync(QueueName);
 

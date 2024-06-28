@@ -77,7 +77,9 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task DeleteQueueAsync_Authenticated_Returns204()
         {
-            IActionResult result = await _queueService.DeleteQueueAsync(QueueName, _httpContextMock.Object);
+            _fifoServiceMock.Setup(f => f.DeleteQueueAsync(QueueName, null)).ReturnsAsync(new ResultOk());
+
+            IActionResult result = await _queueService.DeleteQueueAsync(QueueName, 0, _httpContextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, statusCodeResult.StatusCode);
@@ -172,9 +174,9 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task ClearMessagesAsync_Authenticated_Returns204()
         {
-            _fifoServiceMock.Setup(f => f.ClearMessagesAsync(QueueName)).ReturnsAsync(204);
+            _fifoServiceMock.Setup(f => f.ClearMessagesAsync(QueueName, It.IsAny<CancellationToken>())).ReturnsAsync(204);
 
-            IActionResult result = await _queueService.ClearMessagesAsync(QueueName, _httpContextMock.Object);
+            IActionResult result = await _queueService.ClearMessagesAsync(QueueName, 0, _httpContextMock.Object);
 
             StatusCodeResult statusCodeResult = Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(204, statusCodeResult.StatusCode);
@@ -197,14 +199,14 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             List<Metadata> metadata = [new Metadata { Key = "key1", Value = "value1" }];
             _queue.Metadata = metadata;
-            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName)).ReturnsAsync(_queue);
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName, null)).ReturnsAsync((new ResultOk(), _queue));
             const string expectedMessageCount = "5";
             const string expectedMetadataValue = "value1";
             _headerDictionaryMock.Setup(d => d.Keys).Returns(["x-ms-approximate-messages-count", "x-ms-meta-key1"]);
             _headerDictionaryMock.Setup(d => d["x-ms-approximate-messages-count"]).Returns(new StringValues(expectedMessageCount));
             _headerDictionaryMock.Setup(d => d["x-ms-meta-key1"]).Returns(new StringValues(expectedMetadataValue));
 
-            IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, _httpContextMock.Object);
+            IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, 0, _httpContextMock.Object);
 
             OkResult okResult = Assert.IsType<OkResult>(result);
             Assert.Equal(200, okResult.StatusCode);
@@ -218,10 +220,10 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task GetQueueMetadataAsync_QueueExistsNoMetadata_Returns200()
         {
             _queue.Metadata = null;
-            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName)).ReturnsAsync(_queue);
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName, null)).ReturnsAsync((new ResultOk(), _queue));
             _headerDictionaryMock.Setup(d => d["x-ms-approximate-messages-count"]).Returns("5");
 
-            IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, _httpContextMock.Object);
+            IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, 0, _httpContextMock.Object);
 
             OkResult okResult = Assert.IsType<OkResult>(result);
             Assert.Equal(200, okResult.StatusCode);
@@ -232,9 +234,9 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task GetQueueMetadataAsync_QueueDoesNotExist_Returns404()
         {
             const string queueName = "nonExistentQueue";
-            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(queueName)).ReturnsAsync((AzureStorageEmulator.NET.Queue.Models.Queue?)null);
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(queueName, null)).ReturnsAsync((new ResultNotFound(), null));
 
-            IActionResult result = await _queueService.GetQueueMetadataAsync(queueName, _httpContextMock.Object);
+            IActionResult result = await _queueService.GetQueueMetadataAsync(queueName, 0, _httpContextMock.Object);
 
             NotFoundResult notFoundResult = Assert.IsType<NotFoundResult>(result);
             Assert.Equal(404, notFoundResult.StatusCode);

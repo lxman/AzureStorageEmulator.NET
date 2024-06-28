@@ -11,9 +11,10 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<(IMethodResult, List<Models.Queue>)> ListQueuesAsync(CancellationToken? cancellationToken);
 
-        Task<Models.Queue?> GetQueueMetadataAsync(string queueName);
+        Task<(IMethodResult, Models.Queue?)> GetQueueMetadataAsync(string queueName,
+            CancellationToken? cancellationToken);
 
-        Task<bool> DeleteQueueAsync(string queueName);
+        Task<IMethodResult> DeleteQueueAsync(string queueName, CancellationToken? cancellationToken);
 
         #endregion QueueOps
 
@@ -30,7 +31,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         Task<(IMethodResult, QueueMessage?)> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt,
             CancellationToken? cancellationToken);
 
-        Task<int> ClearMessagesAsync(string queueName);
+        Task<int> ClearMessagesAsync(string queueName, CancellationToken? cancellationToken);
 
         Task<int?> MessageCountAsync(string queueName);
 

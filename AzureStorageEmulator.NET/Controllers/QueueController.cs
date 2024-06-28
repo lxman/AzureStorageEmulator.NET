@@ -39,24 +39,26 @@ namespace AzureStorageEmulator.NET.Controllers
         /// Get all messages from the queue.
         /// </summary>
         /// <param name="queueName"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("{queueName}")]
-        public Task<IActionResult> GetQueueMetadataAsync(string queueName)
+        public Task<IActionResult> GetQueueMetadataAsync(string queueName, [FromQuery] int timeout = 0)
         {
-            return queueService.GetQueueMetadataAsync(queueName, HttpContext);
+            return queueService.GetQueueMetadataAsync(queueName, timeout, HttpContext);
         }
 
         /// <summary>
         /// Delete a queue.
         /// </summary>
         /// <param name="queueName"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("{queueName}")]
-        public Task<IActionResult> DeleteQueueAsync(string queueName)
+        public Task<IActionResult> DeleteQueueAsync(string queueName, [FromQuery] int timeout = 0)
         {
-            return queueService.DeleteQueueAsync(queueName, HttpContext);
+            return queueService.DeleteQueueAsync(queueName, timeout, HttpContext);
         }
 
         #endregion QueueOps
@@ -120,12 +122,13 @@ namespace AzureStorageEmulator.NET.Controllers
         /// Delete all messages from the queue.
         /// </summary>
         /// <param name="queueName"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("{queueName}/messages")]
-        public Task<IActionResult> ClearMessagesAsync(string queueName)
+        public Task<IActionResult> ClearMessagesAsync(string queueName, [FromQuery] int timeout = 0)
         {
-            return queueService.ClearMessagesAsync(queueName, HttpContext);
+            return queueService.ClearMessagesAsync(queueName, timeout, HttpContext);
         }
 
         #endregion MessageOps

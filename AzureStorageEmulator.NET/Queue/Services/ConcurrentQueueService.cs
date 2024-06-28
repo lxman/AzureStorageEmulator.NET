@@ -28,24 +28,27 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return (new ResultOk(), keys);
         }
 
-        public async Task<Models.Queue?> GetQueueMetadataAsync(string queueName)
+        public async Task<(IMethodResult, Models.Queue?)> GetQueueMetadataAsync(string queueName,
+            CancellationToken? cancellationToken)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return null;
+            if (key is null) return (new ResultNotFound(), null);
             await RemoveExpired(queueName);
+            if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), null);
             key.MessageCount = _queues.GetValueOrDefault(key)?.Count ?? 0;
-            return key;
+            return (new ResultOk(), key);
         }
 
-        public async Task<bool> DeleteQueueAsync(string queueName)
+        public async Task<IMethodResult> DeleteQueueAsync(string queueName, CancellationToken? cancellationToken)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return false;
+            if (key is null) return new ResultNotFound();
             while (key.Blocked)
             {
+                if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
                 await Task.Delay(50);
             }
-            return _queues.TryRemove(key, out _);
+            return _queues.TryRemove(key, out _) ? new ResultOk() : new ResultGone();
         }
 
         #endregion QueueOps
@@ -165,10 +168,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return (new ResultOk(), message);
         }
 
-        public async Task<int> ClearMessagesAsync(string queueName)
+        public async Task<int> ClearMessagesAsync(string queueName, CancellationToken? cancellationToken)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
             if (key is null) return 404;
+            if (cancellationToken is { IsCancellationRequested: true }) return 504;
 
             return _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(), (await TryGetQueueAsync(queueName))!) ? 204 : 409;
         }

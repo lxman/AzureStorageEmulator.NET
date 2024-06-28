@@ -21,9 +21,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<IActionResult> ListQueuesAsync(int timeout, HttpContext context);
 
-        Task<IActionResult> GetQueueMetadataAsync(string queueName, HttpContext context);
+        Task<IActionResult> GetQueueMetadataAsync(string queueName, int timeout, HttpContext context);
 
-        Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
+        Task<IActionResult> DeleteQueueAsync(string queueName, int timeout, HttpContext context);
 
         #endregion QueueOps
 
@@ -36,7 +36,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         Task<IActionResult> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt, int timeout,
             HttpContext context);
 
-        Task<IActionResult> ClearMessagesAsync(string queueName, HttpContext context);
+        Task<IActionResult> ClearMessagesAsync(string queueName, int timeout, HttpContext context);
 
         Task<IActionResult> MessageCountAsync(string queueName, HttpContext context);
 
@@ -87,14 +87,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> GetQueueMetadataAsync(string queueName, HttpContext context)
+        public async Task<IActionResult> GetQueueMetadataAsync(string queueName, int timeout, HttpContext context)
         {
             if (settings.QueueSettings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
+
+            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            Models.Queue? result = await fifoService.GetQueueMetadataAsync(queueName);
-            if (result is null) return new NotFoundResult();
-            context.Response.Headers.Append("x-ms-approximate-messages-count", result.MessageCount.ToString());
-            if (result.Metadata is null)
+            (IMethodResult methodResult, Models.Queue? result) = await fifoService.GetQueueMetadataAsync(queueName, cancellationSource?.Token);
+            if (methodResult is ResultTimeout) return new StatusCodeResult(504);
+            if (cancellationSource?.IsCancellationRequested ?? false) return new StatusCodeResult(504);
+            if (methodResult is ResultNotFound) return new NotFoundResult();
+            context.Response.Headers.Append("x-ms-approximate-messages-count", result?.MessageCount.ToString());
+            if (result?.Metadata is null)
             {
                 return new OkResult();
             }
@@ -106,12 +110,20 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new OkResult();
         }
 
-        public async Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context)
+        public async Task<IActionResult> DeleteQueueAsync(string queueName, int timeout, HttpContext context)
         {
             Log.Information($"DeleteQueueAsync name = {queueName}");
+            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            await fifoService.DeleteQueueAsync(queueName);
-            return new StatusCodeResult(204);
+            IMethodResult result = await fifoService.DeleteQueueAsync(queueName, cancellationSource?.Token);
+            return result switch
+            {
+                ResultGone resultGone => new StatusCodeResult(409),
+                ResultNotFound resultNotFound => new NotFoundResult(),
+                ResultOk resultOk => new StatusCodeResult(204),
+                ResultTimeout resultTimeout => new StatusCodeResult(504),
+                _ => throw new ArgumentOutOfRangeException(nameof(result))
+            };
         }
 
         #endregion QueueOps
@@ -217,10 +229,11 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        public async Task<IActionResult> ClearMessagesAsync(string queueName, HttpContext context)
+        public async Task<IActionResult> ClearMessagesAsync(string queueName, int timeout, HttpContext context)
         {
             Log.Information($"ClearMessagesAsync queueName = {queueName}");
-            int result = await fifoService.ClearMessagesAsync(queueName);
+            CancellationTokenSource? cancellationSource = SetupTimeout(timeout == 0 ? int.MaxValue : timeout);
+            int result = await fifoService.ClearMessagesAsync(queueName, cancellationSource?.Token);
             return new StatusCodeResult(result);
         }
 
