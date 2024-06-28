@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>false</IsTestProject>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeFilesForSelfExtraction>true</IncludeNativeFilesForSelfExtraction>
     <!--OutputType>WinExe</OutputType-->
     <!--Get rid of console window-->
   </PropertyGroup>
