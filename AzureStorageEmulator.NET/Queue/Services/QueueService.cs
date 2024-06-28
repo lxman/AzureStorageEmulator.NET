@@ -25,7 +25,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<IActionResult> DeleteQueueAsync(string queueName, HttpContext context);
 
-        #endregion
+        #endregion QueueOps
 
         #region MessageOps
 
@@ -40,7 +40,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<IActionResult> MessageCountAsync(string queueName, HttpContext context);
 
-        #endregion
+        #endregion MessageOps
     }
 
     public class QueueService(IFifoService fifoService,
@@ -114,7 +114,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return new StatusCodeResult(204);
         }
 
-        #endregion
+        #endregion QueueOps
 
         #region MessageOps
 
@@ -138,6 +138,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 case ResultNotFound resultNotFound:
                     return new NotFoundResult();
+
                 case ResultOk resultOk:
                     PutMessageResponseList putMessageResponseList = new();
                     putMessageResponseList.QueueMessagesList.Add(queueMessage.ToPutMessageResponse());
@@ -147,8 +148,10 @@ namespace AzureStorageEmulator.NET.Queue.Services
                         ContentType = "application/xml",
                         StatusCode = 201
                     };
+
                 case ResultTimeout resultTimeout:
                     return new StatusCodeResult(504);
+
                 default:
                     throw new ArgumentOutOfRangeException(result.GetType().Name);
             }
@@ -167,6 +170,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 case ResultNotFound:
                     return new NotFoundResult();
+
                 case ResultTimeout:
                     return new StatusCodeResult(504);
             }
@@ -232,7 +236,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             };
         }
 
-        #endregion
+        #endregion MessageOps
 
         #region Private Helpers
 

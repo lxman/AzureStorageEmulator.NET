@@ -9,10 +9,10 @@
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" />
             <RowDefinition Height=".5*" />
         </Grid.RowDefinitions>
-        <ListBox Grid.Row="0" Grid.Column="0" Margin="10,10,10,0" Name="LogView" ItemsSource="{Binding Logs}"/>
-        <Button Grid.Row="1" Grid.Column="0" Content="Start AzureStorageEmulator.NET" HorizontalAlignment="Center" VerticalAlignment="Center" Click="StartButtonClick"/>
+        <ListBox Grid.Row="0" Grid.Column="0" Margin="10,10,10,0" Name="LogView" ItemsSource="{Binding Logs}" />
+        <Button Grid.Row="1" Grid.Column="0" Content="Start AzureStorageEmulator.NET" HorizontalAlignment="Center" VerticalAlignment="Center" Click="StartButtonClick" />
     </Grid>
 </Window>
