@@ -72,12 +72,13 @@ namespace AzureStorageEmulator.NET.Controllers
         /// Get 0 or more messages from the queue.
         /// </summary>
         /// <param name="queueName"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("{queueName}/messages")]
-        public Task<IActionResult> GetMessagesAsync(string queueName)
+        public Task<IActionResult> GetMessagesAsync(string queueName, [FromQuery] int timeout = 0)
         {
-            return queueService.GetMessagesAsync(queueName, HttpContext);
+            return queueService.GetMessagesAsync(queueName, timeout, HttpContext);
         }
 
         // TODO: Inspect query string usage here
@@ -108,12 +109,17 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="queueName"></param>
         /// <param name="messageId"></param>
         /// <param name="popReceipt"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("{queueName}/messages/{messageId:guid}")]
-        public Task<IActionResult> DeleteMessageAsync(string queueName, Guid messageId, [FromQuery] string popReceipt)
+        public Task<IActionResult> DeleteMessageAsync(
+            string queueName,
+            Guid messageId,
+            [FromQuery] string popReceipt,
+            [FromQuery] int timeout = 0)
         {
-            return queueService.DeleteMessageAsync(queueName, messageId, popReceipt, HttpContext);
+            return queueService.DeleteMessageAsync(queueName, messageId, popReceipt, timeout, HttpContext);
         }
 
         /// <summary>

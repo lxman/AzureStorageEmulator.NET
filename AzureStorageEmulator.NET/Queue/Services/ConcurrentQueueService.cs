@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Results;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
@@ -34,38 +35,69 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return _queues.TryRemove(key, out _);
         }
 
-        public async Task<bool> PutMessageAsync(string queueName, QueueMessage message)
+        public async Task<IMethodResult> PutMessageAsync(string queueName, QueueMessage message,
+            CancellationToken? cancellationToken)
         {
             await RemoveExpired(queueName);
+            if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
             ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
+            if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
             queue?.Enqueue(message);
-            return queue is not null;
+            return queue is not null ? new ResultOk() : new ResultNotFound();
         }
 
-        public async Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages = null,
-            bool peekOnly = false)
+        public async Task<(IMethodResult, List<QueueMessage>?)> GetMessagesAsync(string queueName,
+            int? numOfMessages,
+            bool peekOnly = false, CancellationToken? cancellationToken = null)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return null;
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                return GetMessagesTimeout();
+            }
+
+            if (key is null)
+            {
+                return GetMessagesNotFound();
+            }
             ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                return GetMessagesTimeout();
+            }
             if (queue is null)
             {
-                return null;
+                return GetMessagesNotFound();
             }
             key.Blocked = true;
             List<QueueMessage> messages = [.. queue];
             messages.RemoveAll(m => m.Expired);
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                key.Blocked = false;
+                return GetMessagesTimeout();
+            }
             if (numOfMessages.HasValue)
             {
                 messages = messages.Where(m => m.Visible).Take(numOfMessages.Value).ToList();
             }
 
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                key.Blocked = false;
+                return GetMessagesTimeout();
+            }
             if (!peekOnly)
             {
                 List<QueueMessage> toRetain = [.. queue];
                 messages.ForEach(m => toRetain.Remove(m));
                 toRetain.RemoveAll(m => m.Expired);
                 _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(toRetain), queue);
+                if (cancellationToken is { IsCancellationRequested: true })
+                {
+                    key.Blocked = false;
+                    return GetMessagesTimeout();
+                }
                 messages.ForEach(m =>
                 {
                     m.DequeueCount++;
@@ -75,7 +107,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             }
 
             key.Blocked = false;
-            return messages;
+            return (new ResultOk(), messages);
         }
 
         public async Task<Models.Queue?> GetQueueMetadataAsync(string queueName)
@@ -87,28 +119,42 @@ namespace AzureStorageEmulator.NET.Queue.Services
             return key;
         }
 
-        public async Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt)
+        public async Task<(IMethodResult, QueueMessage?)> DeleteMessageAsync(string queueName, Guid messageId,
+            string popReceipt,
+            CancellationToken? cancellationToken)
         {
             Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return null;
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                return DeleteMessageTimeout();
+            }
+            if (key is null) return DeleteMessageNotFound();
             ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                return DeleteMessageTimeout();
+            }
             if (queue is null)
             {
-                return null;
+                return DeleteMessageNotFound();
             }
             await RemoveExpired(queueName);
+            if (cancellationToken is { IsCancellationRequested: true })
+            {
+                return DeleteMessageTimeout();
+            }
             key.Blocked = true;
             List<QueueMessage> messages = queue.ToList() ?? [];
             QueueMessage? message = messages.FirstOrDefault(m => m?.MessageId == messageId && m.PopReceipt == popReceipt);
             if (message is null)
             {
                 key.Blocked = false;
-                return null;
+                return DeleteMessageNotFound();
             }
             messages.Remove(message);
             _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(messages), queue);
             key.Blocked = false;
-            return message;
+            return (new ResultOk(), message);
         }
 
         public async Task<int> ClearMessagesAsync(string queueName)
@@ -153,5 +199,13 @@ namespace AzureStorageEmulator.NET.Queue.Services
             ConcurrentQueue<QueueMessage>? queue = _queues!.GetValueOrDefault(_queues.Keys.FirstOrDefault(q => q.Name == queueName));
             return queue;
         }
+
+        private static (IMethodResult, List<QueueMessage>?) GetMessagesTimeout() => (new ResultTimeout(), null);
+
+        private static (IMethodResult, List<QueueMessage>?) GetMessagesNotFound() => (new ResultNotFound(), null);
+
+        private static (IMethodResult, QueueMessage?) DeleteMessageTimeout() => (new ResultTimeout(), null);
+
+        private static (IMethodResult, QueueMessage?) DeleteMessageNotFound() => (new ResultNotFound(), null);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AzureStorageEmulator.NET.Queue.Models;
+using AzureStorageEmulator.NET.Results;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
@@ -10,13 +11,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         Task<bool> DeleteQueueAsync(string queueName);
 
-        Task<bool> PutMessageAsync(string queueName, QueueMessage message);
+        Task<IMethodResult> PutMessageAsync(string queueName, QueueMessage message,
+            CancellationToken? cancellationToken);
 
-        Task<List<QueueMessage>?> GetMessagesAsync(string queueName, int? numOfMessages = null, bool peekOnly = false);
+        Task<(IMethodResult, List<QueueMessage>?)> GetMessagesAsync(string queueName,
+            int? numOfMessages = null,
+            bool peekOnly = false,
+            CancellationToken? cancellationToken = null);
 
         Task<Models.Queue?> GetQueueMetadataAsync(string queueName);
 
-        Task<QueueMessage?> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt);
+        Task<(IMethodResult, QueueMessage?)> DeleteMessageAsync(string queueName, Guid messageId, string popReceipt,
+            CancellationToken? cancellationToken);
 
         Task<int> ClearMessagesAsync(string queueName);
 

@@ -80,7 +80,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task DeleteMessage_ReturnsOk()
         {
-            MockQueueService.Setup(x => x.DeleteMessageAsync(QueueName, _messageId, PopReceipt, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
+            MockQueueService.Setup(x => x.DeleteMessageAsync(QueueName, _messageId, PopReceipt, 0, It.IsAny<HttpContext>())).ReturnsAsync(new OkResult());
 
             IActionResult result = await _controller.DeleteMessageAsync(QueueName, _messageId, PopReceipt);
 
@@ -144,7 +144,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task GetMessages_ReturnsOk()
         {
-            MockQueueService.Setup(x => x.GetMessagesAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<QueueMessage>()));
+            MockQueueService.Setup(x => x.GetMessagesAsync(QueueName, 0, It.IsAny<HttpContext>())).ReturnsAsync(new OkObjectResult(new List<QueueMessage>()));
 
             IActionResult result = await _controller.GetMessagesAsync(QueueName);
 
@@ -154,7 +154,7 @@ namespace AzureStorageEmulatorTests.Queue.Controllers
         [Fact]
         public async Task GetMessages_ReturnsNotFound_WhenQueueDoesNotExist()
         {
-            MockQueueService.Setup(x => x.GetMessagesAsync(QueueName, It.IsAny<HttpContext>())).ReturnsAsync(new NotFoundResult());
+            MockQueueService.Setup(x => x.GetMessagesAsync(QueueName, 0, It.IsAny<HttpContext>())).ReturnsAsync(new NotFoundResult());
 
             IActionResult result = await _controller.GetMessagesAsync(QueueName);
 
