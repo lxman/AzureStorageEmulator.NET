@@ -115,7 +115,7 @@ namespace AzureStorageEmulator.NET.Controllers
             [FromQuery] string popReceipt,
             [FromQuery] int timeout = 0)
         {
-            return queueService.DeleteMessageAsync(queueName, messageId, popReceipt, 0, HttpContext);
+            return queueService.DeleteMessageAsync(queueName, messageId, popReceipt, timeout, HttpContext);
         }
 
         /// <summary>
