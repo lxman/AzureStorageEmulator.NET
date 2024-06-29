@@ -1,9 +1,10 @@
 ﻿using AzureStorageEmulator.NET.Common.HeaderManagement;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace AzureStorageEmulator.NET.Exceptions
 {
-    public class GlobalExceptionHandler : IExceptionHandler
+    public class GlobalExceptionHandler : ExceptionFilterAttribute, IExceptionHandler
     {
         private readonly HeaderManagement _headerManagement = new();
 

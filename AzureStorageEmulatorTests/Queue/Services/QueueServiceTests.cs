@@ -50,7 +50,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task CreateQueueAsync_Authenticated_Returns201()
         {
-            _fifoServiceMock.Setup(f => f.CreateQueueAsync(QueueName, null)).ReturnsAsync(true);
+            _fifoServiceMock.Setup(f => f.CreateQueueAsync(QueueName)).Returns(true);
 
             IActionResult result = await _queueService.CreateQueueAsync(QueueName, 0, _httpContextMock.Object);
 
@@ -61,7 +61,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task ListQueuesAsync_Authenticated_Returns200()
         {
-            _fifoServiceMock.Setup(f => f.ListQueuesAsync(null)).ReturnsAsync((new ResultOk(), [new AzureStorageEmulator.NET.Queue.Models.Queue { Name = "TestQueue" }]));
+            _fifoServiceMock.Setup(f => f.ListQueuesAsync(It.IsAny<CancellationToken?>())).ReturnsAsync((new ResultOk(), [new AzureStorageEmulator.NET.Queue.Models.Queue { Name = "TestQueue" }]));
             _queueEnumerationResultsSerializerMock.Setup(s => s.Serialize(It.IsAny<QueueEnumerationResults>())).ReturnsAsync("<Queues></Queues>");
             Dictionary<string, StringValues> myQueryString = new([new KeyValuePair<string, StringValues>("comp", "list")]);
             QueryCollection queries = new(myQueryString);
@@ -77,7 +77,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task DeleteQueueAsync_Authenticated_Returns204()
         {
-            _fifoServiceMock.Setup(f => f.DeleteQueueAsync(QueueName, null)).ReturnsAsync(new ResultOk());
+            _fifoServiceMock.Setup(f => f.DeleteQueueAsync(QueueName, It.IsAny<CancellationToken>())).ReturnsAsync(new ResultOk());
 
             IActionResult result = await _queueService.DeleteQueueAsync(QueueName, 0, _httpContextMock.Object);
 
@@ -104,8 +104,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             QueueMessage message = new() { MessageId = Guid.NewGuid(), MessageText = "Hello, World!", PopReceipt = Guid.NewGuid().ToString() };
             _putMessageResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<PutMessageResponseList>())).ReturnsAsync("<Messages></Messages>");
-            _fifoServiceMock.Setup(f => f.PutMessageAsync(QueueName, It.IsAny<QueueMessage>(), null)).ReturnsAsync(new ResultOk());
-            _fifoServiceMock.Setup(f => f.GetMessagesAsync(QueueName, null, false, It.IsAny<CancellationToken>())).ReturnsAsync((new ResultOk(), [message]));
+            _fifoServiceMock.Setup(f => f.PutMessageAsync(QueueName, It.IsAny<QueueMessage>(), It.IsAny<CancellationToken?>())).ReturnsAsync(new ResultOk());
+            _fifoServiceMock.Setup(f => f.GetMessagesAsync(QueueName, null, false, It.IsAny<CancellationToken?>())).ReturnsAsync((new ResultOk(), [message]));
             _getMessagesResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<GetMessagesResponseList>())).ReturnsAsync("<Messages></Messages>");
             _putMessageResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<PutMessageResponseList>())).ReturnsAsync("<Messages></Messages>");
             _getMessagesResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<GetMessagesResponseList>())).ReturnsAsync("<Messages></Messages>");
@@ -147,7 +147,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             QueueMessage message = new() { MessageText = "Hello, World!" };
             _putMessageResponseListSerializerMock.Setup(s => s.Serialize(It.IsAny<PutMessageResponseList>())).ReturnsAsync("<Messages></Messages>");
-            _fifoServiceMock.Setup(f => f.PutMessageAsync(QueueName, It.IsAny<QueueMessage>(), null)).ReturnsAsync(new ResultOk());
+            _fifoServiceMock.Setup(f => f.PutMessageAsync(QueueName, It.IsAny<QueueMessage>(), It.IsAny<CancellationToken?>())).ReturnsAsync(new ResultOk());
 
             IActionResult result = await _queueService.PutMessageAsync(QueueName, message, 0, 0, 0, _httpContextMock.Object);
 
@@ -234,7 +234,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task GetQueueMetadataAsync_QueueDoesNotExist_Returns404()
         {
             const string queueName = "nonExistentQueue";
-            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(queueName, null)).ReturnsAsync((new ResultNotFound(), null));
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(queueName, It.IsAny<CancellationToken?>())).ReturnsAsync((new ResultNotFound(), null));
 
             IActionResult result = await _queueService.GetQueueMetadataAsync(queueName, 0, _httpContextMock.Object);
 

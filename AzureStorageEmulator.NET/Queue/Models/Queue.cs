@@ -14,6 +14,8 @@ namespace AzureStorageEmulator.NET.Queue.Models
 
         public int MessageCount { get; set; }
 
+        private readonly Guid _id = Guid.NewGuid();
+
         public XmlSchema? GetSchema()
         {
             return null;
@@ -40,6 +42,11 @@ namespace AzureStorageEmulator.NET.Queue.Models
             {
                 writer.WriteElementString("Metadata", string.Empty);
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return _id.GetHashCode();
         }
     }
 }

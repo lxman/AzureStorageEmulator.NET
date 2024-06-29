@@ -58,7 +58,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
             CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            StatusCodeResult result = new(await fifoService.CreateQueueAsync(queueName, cancellationSource?.Token) ? 201 : 204);
+            StatusCodeResult result = new(fifoService.CreateQueueAsync(queueName) ? 201 : 204);
             return result;
         }
 
@@ -66,7 +66,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             Log.Information("ListQueuesAsync");
 
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             if (!queries.TryGetValue("comp", out StringValues values) || !values.Contains("list"))
             {
@@ -91,7 +91,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             if (settings.QueueSettings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
 
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             (IMethodResult methodResult, Models.Queue? result) = await fifoService.GetQueueMetadataAsync(queueName, cancellationSource?.Token);
             if (methodResult is ResultTimeout) return new StatusCodeResult(504);
@@ -113,9 +113,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> DeleteQueueAsync(string queueName, int timeout, HttpContext context)
         {
             Log.Information($"DeleteQueueAsync name = {queueName}");
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            IMethodResult result = await fifoService.DeleteQueueAsync(queueName, cancellationSource?.Token);
+            IMethodResult result = await fifoService.DeleteQueueAsync(queueName, cancellationSource.Token);
             return result switch
             {
                 ResultGone resultGone => new StatusCodeResult(409),
@@ -133,7 +133,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> PutMessageAsync(string queueName, QueueMessage message, int visibilityTimeout, int messageTtl, int timeout, HttpContext context)
         {
             Log.Information($"PutMessageAsync queueName = {queueName}, message={message.MessageText}, visibilityTimeout = {visibilityTimeout}, messageTtl = {messageTtl}, timeOut = {timeout}");
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             QueueMessage queueMessage = new()
             {
@@ -172,12 +172,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> GetMessagesAsync(string queueName, int timeout, HttpContext context)
         {
             if (settings.QueueSettings.LogGetMessages) Log.Information($"GetMessagesAsync queueName = {queueName}");
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
             (IMethodResult methodResult, List<QueueMessage>? messages) = await fifoService.GetMessagesAsync(queueName,
-                queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : null,
+                queries.TryGetValue("numofmessages", out StringValues numMessagesValue) ? Convert.ToInt32(numMessagesValue.First()) : 1,
                 queries.TryGetValue("peekonly", out StringValues peekOnlyValue) && Convert.ToBoolean(peekOnlyValue.First()),
-                cancellationSource?.Token);
+                cancellationSource.Token);
             switch (methodResult)
             {
                 case ResultNotFound:
@@ -218,9 +218,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             Log.Information($"DeleteMessageAsync queueName = {queueName}, messageId = {messageId}, popReceipt = {popReceipt}");
             if (string.IsNullOrEmpty(popReceipt)) return new BadRequestResult();
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout == 0 ? int.MaxValue : timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            (IMethodResult methodResult, QueueMessage? message) = await fifoService.DeleteMessageAsync(queueName, messageId, popReceipt, cancellationSource?.Token);
+            (IMethodResult methodResult, QueueMessage? message) = await fifoService.DeleteMessageAsync(queueName, messageId, popReceipt, cancellationSource.Token);
             return methodResult switch
             {
                 ResultOk => new StatusCodeResult(204),
@@ -232,7 +232,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<IActionResult> ClearMessagesAsync(string queueName, int timeout, HttpContext context)
         {
             Log.Information($"ClearMessagesAsync queueName = {queueName}");
-            CancellationTokenSource? cancellationSource = SetupTimeout(timeout == 0 ? int.MaxValue : timeout);
+            CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             int result = await fifoService.ClearMessagesAsync(queueName, cancellationSource?.Token);
             return new StatusCodeResult(result);
         }
@@ -270,10 +270,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         private static string GetBaseUrl(HttpContext context) => $"{context.Request.Scheme}://{context.Request.Host.Value}{context.Request.Path.Value}";
 
-        private static CancellationTokenSource? SetupTimeout(int timeout)
+        private static CancellationTokenSource SetupTimeout(int timeout)
         {
-            timeout = timeout > 30 ? 30 : timeout < 0 ? 0 : timeout;
-            return timeout > 0 ? new CancellationTokenSource(timeout) : null;
+            if (timeout <= 0)
+            {
+                timeout = int.MaxValue;
+            }
+            else
+            {
+                timeout = timeout > 30 ? 30 : timeout;
+                timeout *= 1000;
+            }
+            return new CancellationTokenSource(timeout);
         }
 
         #endregion Private Helpers

@@ -7,7 +7,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
     {
         #region QueueOps
 
-        Task<bool> CreateQueueAsync(string queueName, CancellationToken? cancellationToken);
+        bool CreateQueueAsync(string queueName);
 
         Task<(IMethodResult, List<Models.Queue>)> ListQueuesAsync(CancellationToken? cancellationToken);
 

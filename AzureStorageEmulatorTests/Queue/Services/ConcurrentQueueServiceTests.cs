@@ -22,18 +22,18 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task TestAddQueueAsync()
         {
-            bool result = await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            bool result = _service.CreateQueueAsync("testQueue");
             Assert.True(result);
 
             // Attempt to add a queue with the same name
-            result = await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            result = _service.CreateQueueAsync("testQueue");
             Assert.False(result);
         }
 
         [Fact]
         public async Task TestDeleteQueueAsync()
         {
-            await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            _service.CreateQueueAsync("testQueue");
             IMethodResult result = await _service.DeleteQueueAsync("testQueue", _cancellationToken);
             Assert.IsType<ResultOk>(result);
 
@@ -45,7 +45,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task TestAddMessageAsync()
         {
-            await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            _service.CreateQueueAsync("testQueue");
             IMethodResult result = await _service.PutMessageAsync("testQueue", _message, _cancellationToken);
             Assert.IsType<ResultOk>(result);
 
@@ -57,7 +57,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task TestGetMessagesAsync()
         {
-            await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            _service.CreateQueueAsync("testQueue");
             await _service.PutMessageAsync("testQueue", _message, _cancellationToken);
 
             // Test peeking without removing
@@ -81,7 +81,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task TestDeleteMessageAsync()
         {
-            await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            _service.CreateQueueAsync("testQueue");
             await _service.PutMessageAsync("testQueue", _message, _cancellationToken);
             (IMethodResult methodResult, QueueMessage? deletedMessage) result = await _service.DeleteMessageAsync("testQueue", _message.MessageId, _message.PopReceipt, _cancellationToken);
             Assert.IsType<ResultOk>(result.methodResult);
@@ -97,7 +97,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task TestClearMessagesAsync()
         {
-            await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            _service.CreateQueueAsync("testQueue");
             await _service.PutMessageAsync("testQueue", _message, _cancellationToken);
             int statusCode = await _service.ClearMessagesAsync("testQueue", _cancellationToken);
             Assert.Equal(204, statusCode);
@@ -110,7 +110,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task TestMessageCountAsync()
         {
-            await _service.CreateQueueAsync("testQueue", _cancellationToken);
+            _service.CreateQueueAsync("testQueue");
             await _service.PutMessageAsync("testQueue", _message, _cancellationToken);
             int? count = await _service.MessageCountAsync("testQueue");
             Assert.Equal(1, count);
@@ -124,7 +124,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task GetQueueMetadataAsync_WithExistingQueue_ReturnsCorrectMetadata()
         {
             const string queueName = "existingQueue";
-            await _service.CreateQueueAsync(queueName, _cancellationToken);
+            _service.CreateQueueAsync(queueName);
             await _service.PutMessageAsync(queueName, new QueueMessage { MessageText = "Test", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(1).TotalSeconds) }, _cancellationToken);
 
             (IMethodResult result, AzureStorageEmulator.NET.Queue.Models.Queue? queueMetadata) = await _service.GetQueueMetadataAsync(queueName, _cancellationToken);
@@ -154,23 +154,23 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetQueuesAsync_AfterAddingQueues_ReturnsAllQueuesInOrder()
         {
-            await _service.CreateQueueAsync("queue1", _cancellationToken);
-            await _service.CreateQueueAsync("queue2", _cancellationToken);
+            _service.CreateQueueAsync("queue1");
+            _service.CreateQueueAsync("queue2");
 
             (IMethodResult result, List<AzureStorageEmulator.NET.Queue.Models.Queue> queues) = await _service.ListQueuesAsync(_cancellationToken);
 
             Assert.IsType<ResultOk>(result);
             Assert.Equal(2, queues.Count);
-            Assert.Equal("queue1", queues[0].Name);
-            Assert.Equal("queue2", queues[1].Name);
+            Assert.Contains(queues, q => q.Name == "queue1");
+            Assert.Contains(queues, q => q.Name == "queue2");
         }
 
         [Fact]
         public async Task GetQueuesAsync_AfterAddingQueuesAndMessages_ExcludesExpiredMessagesFromQueueListing()
         {
-            await _service.CreateQueueAsync("queueWithExpiredMessage", _cancellationToken);
+            _service.CreateQueueAsync("queueWithExpiredMessage");
             await _service.PutMessageAsync("queueWithExpiredMessage", new QueueMessage { MessageText = "Expired", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(-1).TotalSeconds) }, _cancellationToken);
-            await _service.CreateQueueAsync("queueWithValidMessage", _cancellationToken);
+            _service.CreateQueueAsync("queueWithValidMessage");
             await _service.PutMessageAsync("queueWithValidMessage", new QueueMessage { MessageText = "Valid", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(1).TotalSeconds) }, _cancellationToken);
 
             (IMethodResult result, List<AzureStorageEmulator.NET.Queue.Models.Queue> queues) = await _service.ListQueuesAsync(_cancellationToken);

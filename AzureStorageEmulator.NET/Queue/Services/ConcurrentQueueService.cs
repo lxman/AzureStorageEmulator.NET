@@ -6,49 +6,48 @@ namespace AzureStorageEmulator.NET.Queue.Services
 {
     public class ConcurrentQueueService : IFifoService
     {
-        private readonly ConcurrentDictionary<Models.Queue, ConcurrentQueue<QueueMessage>> _queues = [];
+        private readonly ConcurrentDictionary<Guid, QueueObject> _queues = [];
 
         #region QueueOps
 
-        public async Task<bool> CreateQueueAsync(string queueName, CancellationToken? cancellationToken)
+        public bool CreateQueueAsync(string queueName)
         {
-            await RemoveExpired(queueName);
-            if (cancellationToken is { IsCancellationRequested: true }) return false;
-            return _queues.Keys.All(q => q.Name != queueName) && _queues.TryAdd(new Models.Queue { Name = queueName }, new ConcurrentQueue<QueueMessage>());
+            return _queues.All(q => q.Value.Queue.Name != queueName)
+                   && _queues.TryAdd(Guid.NewGuid(), new QueueObject(queueName));
         }
 
         public async Task<(IMethodResult, List<Models.Queue>)> ListQueuesAsync(CancellationToken? cancellationToken)
         {
-            List<Models.Queue> keys = [.. _queues.Keys.OrderBy(k => k.Name)];
-            foreach (Models.Queue queue in keys)
+            List<QueueObject> keys = [.. _queues.Values];
+            foreach (QueueObject queue in keys)
             {
-                await RemoveExpired(queue.Name);
-            };
+                await RemoveExpired(queue.Queue.Name);
+            }
             if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), []);
-            return (new ResultOk(), keys);
+            return (new ResultOk(), [.. _queues.Values.Select(q => q.Queue)]);
         }
 
         public async Task<(IMethodResult, Models.Queue?)> GetQueueMetadataAsync(string queueName,
             CancellationToken? cancellationToken)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return (new ResultNotFound(), null);
+            QueueObject? queueObject = _queues.Values.FirstOrDefault(q => q.Queue.Name == queueName);
+            if (queueObject is null) return (new ResultNotFound(), null);
             await RemoveExpired(queueName);
             if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), null);
-            key.MessageCount = _queues.GetValueOrDefault(key)?.Count ?? 0;
-            return (new ResultOk(), key);
+            queueObject.Queue.MessageCount = queueObject.Messages.Count;
+            return (new ResultOk(), queueObject.Queue);
         }
 
         public async Task<IMethodResult> DeleteQueueAsync(string queueName, CancellationToken? cancellationToken)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
+            KeyValuePair<Guid, QueueObject>? key = await TryGetEntryByNameAsync(queueName);
             if (key is null) return new ResultNotFound();
-            while (key.Blocked)
+            while (key.Value.Value.Queue.Blocked)
             {
                 if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
                 await Task.Delay(50);
             }
-            return _queues.TryRemove(key, out _) ? new ResultOk() : new ResultGone();
+            return _queues.TryRemove(key.Value.Key, out _) ? new ResultOk() : new ResultGone();
         }
 
         #endregion QueueOps
@@ -60,128 +59,114 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             await RemoveExpired(queueName);
             if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
+            KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
+            if (entry is null) return new ResultNotFound();
             if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
-            queue?.Enqueue(message);
-            return queue is not null ? new ResultOk() : new ResultNotFound();
+            entry.Value.Value.Messages.Enqueue(message);
+            return new ResultOk();
         }
 
         public async Task<(IMethodResult, List<QueueMessage>?)> GetMessagesAsync(string queueName,
             int? numOfMessages,
             bool peekOnly = false, CancellationToken? cancellationToken = null)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
+            numOfMessages ??= 1;
+            if (numOfMessages is null or < 1) return (new ResultOk(), null);
+            KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
             if (cancellationToken is { IsCancellationRequested: true })
             {
                 return GetMessagesTimeout();
             }
-
-            if (key is null)
+            if (entry is null)
             {
                 return GetMessagesNotFound();
             }
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
             if (cancellationToken is { IsCancellationRequested: true })
             {
                 return GetMessagesTimeout();
             }
-            if (queue is null)
-            {
-                return GetMessagesNotFound();
-            }
-            key.Blocked = true;
-            List<QueueMessage> messages = [.. queue];
-            messages.RemoveAll(m => m.Expired);
+            entry.Value.Value.Queue.Blocked = true;
+            List<QueueMessage> allMessages = [.. entry.Value.Value.Messages];
+            allMessages.RemoveAll(m => m.Expired);
             if (cancellationToken is { IsCancellationRequested: true })
             {
-                key.Blocked = false;
+                entry.Value.Value.Queue.Blocked = false;
                 return GetMessagesTimeout();
-            }
-            if (numOfMessages.HasValue)
-            {
-                messages = messages.Where(m => m.Visible).Take(numOfMessages.Value).ToList();
             }
 
             if (cancellationToken is { IsCancellationRequested: true })
             {
-                key.Blocked = false;
+                entry.Value.Value.Queue.Blocked = false;
                 return GetMessagesTimeout();
             }
             if (!peekOnly)
             {
-                List<QueueMessage> toRetain = [.. queue];
-                messages.ForEach(m => toRetain.Remove(m));
-                toRetain.RemoveAll(m => m.Expired);
-                _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(toRetain), queue);
-                if (cancellationToken is { IsCancellationRequested: true })
-                {
-                    key.Blocked = false;
-                    return GetMessagesTimeout();
-                }
-                messages.ForEach(m =>
+                foreach (QueueMessage m in allMessages.Where(m => m.Visible).Take(numOfMessages.Value))
                 {
                     m.DequeueCount++;
                     m.PopReceipt = Guid.NewGuid().ToString();
                     m.InsertionTime = DateTime.UtcNow;
-                });
+                }
             }
+            entry.Value.Value.Queue.Blocked = false;
+            QueueObject newQueue = new(entry.Value.Value.Queue, new ConcurrentQueue<QueueMessage>(allMessages));
+            _queues.TryUpdate(entry.Value.Key, newQueue, entry.Value.Value);
 
-            key.Blocked = false;
-            return (new ResultOk(), messages);
+            return (new ResultOk(), allMessages.Where(m => m.Visible).Take(numOfMessages.Value).ToList());
         }
 
         public async Task<(IMethodResult, QueueMessage?)> DeleteMessageAsync(string queueName, Guid messageId,
             string popReceipt,
             CancellationToken? cancellationToken)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
+            KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
             if (cancellationToken is { IsCancellationRequested: true })
             {
                 return DeleteMessageTimeout();
             }
-            if (key is null) return DeleteMessageNotFound();
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
+            if (entry is null) return DeleteMessageNotFound();
             if (cancellationToken is { IsCancellationRequested: true })
             {
                 return DeleteMessageTimeout();
-            }
-            if (queue is null)
-            {
-                return DeleteMessageNotFound();
             }
             await RemoveExpired(queueName);
             if (cancellationToken is { IsCancellationRequested: true })
             {
                 return DeleteMessageTimeout();
             }
-            key.Blocked = true;
-            List<QueueMessage> messages = queue.ToList() ?? [];
-            QueueMessage? message = messages.FirstOrDefault(m => m?.MessageId == messageId && m.PopReceipt == popReceipt);
+            entry.Value.Value.Queue.Blocked = true;
+            List<QueueMessage> messages = [.. entry.Value.Value.Messages];
+            QueueMessage? message = messages.FirstOrDefault(m => m.MessageId == messageId && m.PopReceipt == popReceipt);
             if (message is null)
             {
-                key.Blocked = false;
+                entry.Value.Value.Queue.Blocked = false;
                 return DeleteMessageNotFound();
             }
-            messages.Remove(message);
-            _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(messages), queue);
-            key.Blocked = false;
+            bool result = messages.Remove(message);
+            entry.Value.Value.Queue.Blocked = false;
+            // For the life of me, I don't understand why TryUpdate is not working here.
+            lock (new object())
+            {
+                _queues[entry.Value.Key] = new QueueObject(entry.Value.Value.Queue, new ConcurrentQueue<QueueMessage>(messages));
+            }
             return (new ResultOk(), message);
         }
 
         public async Task<int> ClearMessagesAsync(string queueName, CancellationToken? cancellationToken)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return 404;
+            KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
+            Guid? key = _queues.FirstOrDefault(q => q.Value.Queue.Name == queueName).Key;
+            if (entry is null) return 404;
             if (cancellationToken is { IsCancellationRequested: true }) return 504;
 
-            return _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(), (await TryGetQueueAsync(queueName))!) ? 204 : 409;
+            return _queues.TryUpdate(entry.Value.Key, new QueueObject(queueName), entry.Value.Value) ? 204 : 409;
         }
 
         public async Task<int?> MessageCountAsync(string queueName)
         {
             await RemoveExpired(queueName);
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
-            return queue?.Count;
+            KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
+            return entry?.Value.Messages.Count;
         }
 
         #endregion MessageOps
@@ -190,30 +175,25 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         private async Task RemoveExpired(string queueName)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return;
-            ConcurrentQueue<QueueMessage>? queue = await TryGetQueueAsync(queueName);
-            if (queue is null)
-            {
-                return;
-            }
-            key.Blocked = true;
+            KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
+            if (entry is null) return;
+            ConcurrentQueue<QueueMessage> queue = entry.Value.Value.Messages;
+            entry.Value.Value.Queue.Blocked = true;
             List<QueueMessage> messages = queue.ToList() ?? [];
             messages.RemoveAll(m => m.Expired);
-            _queues.TryUpdate(key, new ConcurrentQueue<QueueMessage>(messages), queue);
-            key.Blocked = false;
+            entry.Value.Value.Queue.Blocked = false;
+            _queues.TryUpdate(entry.Value.Key, new QueueObject(entry.Value.Value.Queue, new ConcurrentQueue<QueueMessage>(messages)), entry.Value.Value);
         }
 
-        private async Task<ConcurrentQueue<QueueMessage>?> TryGetQueueAsync(string queueName)
+        private async Task<KeyValuePair<Guid, QueueObject>?> TryGetEntryByNameAsync(string queueName)
         {
-            Models.Queue? key = _queues.Keys.FirstOrDefault(q => q.Name == queueName);
-            if (key is null) return null;
-            while (key.Blocked)
+            KeyValuePair<Guid, QueueObject>? key = _queues.FirstOrDefault(q => q.Value.Queue.Name == queueName);
+            if (key.Value.Value is null) return null;
+            while (key.Value.Value.Queue.Blocked)
             {
                 await Task.Delay(50);
             }
-            ConcurrentQueue<QueueMessage>? queue = _queues!.GetValueOrDefault(_queues.Keys.FirstOrDefault(q => q.Name == queueName));
-            return queue;
+            return key;
         }
 
         private static (IMethodResult, List<QueueMessage>?) GetMessagesTimeout() => (new ResultTimeout(), null);
