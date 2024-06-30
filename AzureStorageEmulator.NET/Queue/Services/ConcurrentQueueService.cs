@@ -34,7 +34,6 @@ namespace AzureStorageEmulator.NET.Queue.Services
             if (queueObject is null) return (new ResultNotFound(), null);
             await RemoveExpired(queueName);
             if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), null);
-            queueObject.Queue.MessageCount = queueObject.Messages.Count;
             return (new ResultOk(), queueObject.Queue);
         }
 
@@ -109,7 +108,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
                 }
             }
             entry.Value.Value.Queue.Blocked = false;
-            QueueObject newQueue = new(entry.Value.Value.Queue, new ConcurrentQueue<QueueMessage>(allMessages));
+            QueueObject newQueue = new(entry.Value.Value.Queue, new ConcurrentActiveCountableQueue<QueueMessage>(allMessages));
             _queues.TryUpdate(entry.Value.Key, newQueue, entry.Value.Value);
 
             return (new ResultOk(), allMessages.Where(m => m.Visible).Take(numOfMessages.Value).ToList());
@@ -147,7 +146,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             // For the life of me, I don't understand why TryUpdate is not working here.
             lock (new object())
             {
-                _queues[entry.Value.Key] = new QueueObject(entry.Value.Value.Queue, new ConcurrentQueue<QueueMessage>(messages));
+                _queues[entry.Value.Key] = new QueueObject(entry.Value.Value.Queue, new ConcurrentActiveCountableQueue<QueueMessage>(messages));
             }
             return (new ResultOk(), message);
         }
@@ -166,7 +165,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             await RemoveExpired(queueName);
             KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
-            return entry?.Value.Messages.Count;
+            return entry?.Value.Queue.MessageCount;
         }
 
         #endregion MessageOps
@@ -182,7 +181,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             List<QueueMessage> messages = queue.ToList() ?? [];
             messages.RemoveAll(m => m.Expired);
             entry.Value.Value.Queue.Blocked = false;
-            _queues.TryUpdate(entry.Value.Key, new QueueObject(entry.Value.Value.Queue, new ConcurrentQueue<QueueMessage>(messages)), entry.Value.Value);
+            _queues.TryUpdate(entry.Value.Key, new QueueObject(entry.Value.Value.Queue, new ConcurrentActiveCountableQueue<QueueMessage>(messages)), entry.Value.Value);
         }
 
         private async Task<KeyValuePair<Guid, QueueObject>?> TryGetEntryByNameAsync(string queueName)

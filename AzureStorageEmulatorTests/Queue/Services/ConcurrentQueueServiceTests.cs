@@ -20,7 +20,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         };
 
         [Fact]
-        public async Task TestAddQueueAsync()
+        public void TestAddQueueAsync()
         {
             bool result = _service.CreateQueueAsync("testQueue");
             Assert.True(result);

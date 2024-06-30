@@ -1,6 +1,7 @@
 ﻿using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+// ReSharper disable ValueParameterNotUsed
 
 namespace AzureStorageEmulator.NET.Queue.Models
 {
@@ -14,7 +15,22 @@ namespace AzureStorageEmulator.NET.Queue.Models
 
         public int MessageCount { get; set; }
 
-        private readonly Guid _id = Guid.NewGuid();
+        public Queue()
+        {
+        }
+
+        public Queue(string name)
+        {
+            Name = name;
+        }
+
+        public Queue(QueueObject queueObject)
+        {
+            Name = queueObject.Queue.Name;
+            Metadata = queueObject.Queue.Metadata;
+            Blocked = queueObject.Queue.Blocked;
+            MessageCount = queueObject.Messages.Count;
+        }
 
         public XmlSchema? GetSchema()
         {
@@ -42,11 +58,6 @@ namespace AzureStorageEmulator.NET.Queue.Models
             {
                 writer.WriteElementString("Metadata", string.Empty);
             }
-        }
-
-        public override int GetHashCode()
-        {
-            return _id.GetHashCode();
         }
     }
 }

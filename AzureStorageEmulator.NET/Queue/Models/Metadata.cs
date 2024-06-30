@@ -8,7 +8,6 @@ namespace AzureStorageEmulator.NET.Queue.Models
     {
         public string Key { get; set; } = string.Empty;
         public string Value { get; set; } = string.Empty;
-        private readonly Guid _id = Guid.NewGuid();
 
         public XmlSchema? GetSchema()
         {
@@ -22,11 +21,6 @@ namespace AzureStorageEmulator.NET.Queue.Models
         public void WriteXml(XmlWriter writer)
         {
             writer.WriteElementString(Key, Value);
-        }
-
-        public override int GetHashCode()
-        {
-            return _id.GetHashCode();
         }
     }
 }
