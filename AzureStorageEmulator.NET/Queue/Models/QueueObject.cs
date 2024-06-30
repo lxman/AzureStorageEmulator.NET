@@ -2,25 +2,25 @@
 {
     public class QueueObject
     {
-        public Queue Queue { get; set; }
+        public QueueMetadata QueueMetadata { get; set; }
 
         public ConcurrentActiveCountableQueue<QueueMessage> Messages { get; set; } = [];
 
         public QueueObject(string name)
         {
-            Queue = new Queue(name);
+            QueueMetadata = new QueueMetadata(name);
         }
 
-        public QueueObject(Queue queue, ConcurrentActiveCountableQueue<QueueMessage> messages)
+        public QueueObject(QueueMetadata queueMetadata, ConcurrentActiveCountableQueue<QueueMessage> messages)
         {
             lock (new object())
             {
                 Messages.Clear();
                 messages.ToList().ForEach(Messages.Enqueue);
             }
-            Queue = queue;
+            QueueMetadata = queueMetadata;
             Messages = messages;
-            Messages.CountChanged += (sender, args) => Queue.MessageCount = Messages.Count;
+            Messages.CountChanged += (sender, args) => QueueMetadata.MessageCount = Messages.Count;
         }
     }
 }

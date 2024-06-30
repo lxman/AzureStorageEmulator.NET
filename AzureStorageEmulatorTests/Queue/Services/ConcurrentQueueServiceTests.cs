@@ -127,7 +127,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _service.CreateQueueAsync(queueName);
             await _service.PutMessageAsync(queueName, new QueueMessage { MessageText = "Test", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(1).TotalSeconds) }, _cancellationToken);
 
-            (IMethodResult result, AzureStorageEmulator.NET.Queue.Models.Queue? queueMetadata) = await _service.GetQueueMetadataAsync(queueName, _cancellationToken);
+            (IMethodResult result, QueueMetadata? queueMetadata) = await _service.GetQueueMetadataAsync(queueName, _cancellationToken);
 
             Assert.IsType<ResultOk>(result);
             Assert.NotNull(queueMetadata);
@@ -138,7 +138,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetQueueMetadataAsync_WithNonExistingQueue_ReturnsNull()
         {
-            (IMethodResult result, AzureStorageEmulator.NET.Queue.Models.Queue? queueMetadata) = await _service.GetQueueMetadataAsync("nonExistingQueue", _cancellationToken);
+            (IMethodResult result, QueueMetadata? queueMetadata) = await _service.GetQueueMetadataAsync("nonExistingQueue", _cancellationToken);
             Assert.IsType<ResultNotFound>(result);
             Assert.Null(queueMetadata);
         }
@@ -146,7 +146,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetQueuesAsync_WithNoQueues_ReturnsEmptyList()
         {
-            (IMethodResult result, List<AzureStorageEmulator.NET.Queue.Models.Queue> queues) = await _service.ListQueuesAsync(_cancellationToken);
+            (IMethodResult result, List<QueueMetadata> queues) = await _service.ListQueuesAsync(_cancellationToken);
             Assert.IsType<ResultOk>(result);
             Assert.Empty(queues);
         }
@@ -157,7 +157,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _service.CreateQueueAsync("queue1");
             _service.CreateQueueAsync("queue2");
 
-            (IMethodResult result, List<AzureStorageEmulator.NET.Queue.Models.Queue> queues) = await _service.ListQueuesAsync(_cancellationToken);
+            (IMethodResult result, List<QueueMetadata> queues) = await _service.ListQueuesAsync(_cancellationToken);
 
             Assert.IsType<ResultOk>(result);
             Assert.Equal(2, queues.Count);
@@ -173,7 +173,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
             _service.CreateQueueAsync("queueWithValidMessage");
             await _service.PutMessageAsync("queueWithValidMessage", new QueueMessage { MessageText = "Valid", TimeToLive = Convert.ToInt32(TimeSpan.FromDays(1).TotalSeconds) }, _cancellationToken);
 
-            (IMethodResult result, List<AzureStorageEmulator.NET.Queue.Models.Queue> queues) = await _service.ListQueuesAsync(_cancellationToken);
+            (IMethodResult result, List<QueueMetadata> queues) = await _service.ListQueuesAsync(_cancellationToken);
 
             Assert.IsType<ResultOk>(result);
             Assert.Equal(2, queues.Count);

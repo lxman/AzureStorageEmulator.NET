@@ -10,7 +10,7 @@
                 return new BlobSharedKeyAuthorizer().Authorize(context.Request);
             }
 
-            throw new NotImplementedException($"We do not have an authorizer for {authType} for Queue yet");
+            throw new NotImplementedException($"We do not have an authorizer for {authType} for Blob yet");
         }
     }
 }

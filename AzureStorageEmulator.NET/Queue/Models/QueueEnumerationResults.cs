@@ -12,7 +12,9 @@ namespace AzureStorageEmulator.NET.Queue.Models
 
         public int MaxResults { get; set; }
 
-        public List<Queue> Queues { get; set; } = [];
+        [XmlArray("Queues")]
+        [XmlArrayItem("Queue")]
+        public List<QueueMetadata> Queues { get; set; } = [];
 
         public string NextMarker { get; set; } = string.Empty;
     }

@@ -12,36 +12,36 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public bool CreateQueueAsync(string queueName)
         {
-            return _queues.All(q => q.Value.Queue.Name != queueName)
+            return _queues.All(q => q.Value.QueueMetadata.Name != queueName)
                    && _queues.TryAdd(Guid.NewGuid(), new QueueObject(queueName));
         }
 
-        public async Task<(IMethodResult, List<Models.Queue>)> ListQueuesAsync(CancellationToken? cancellationToken)
+        public async Task<(IMethodResult, List<QueueMetadata>)> ListQueuesAsync(CancellationToken? cancellationToken)
         {
             List<QueueObject> keys = [.. _queues.Values];
             foreach (QueueObject queue in keys)
             {
-                await RemoveExpired(queue.Queue.Name);
+                await RemoveExpired(queue.QueueMetadata.Name);
             }
             if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), []);
-            return (new ResultOk(), [.. _queues.Values.Select(q => q.Queue)]);
+            return (new ResultOk(), [.. _queues.Values.Select(q => q.QueueMetadata)]);
         }
 
-        public async Task<(IMethodResult, Models.Queue?)> GetQueueMetadataAsync(string queueName,
+        public async Task<(IMethodResult, QueueMetadata?)> GetQueueMetadataAsync(string queueName,
             CancellationToken? cancellationToken)
         {
-            QueueObject? queueObject = _queues.Values.FirstOrDefault(q => q.Queue.Name == queueName);
+            QueueObject? queueObject = _queues.Values.FirstOrDefault(q => q.QueueMetadata.Name == queueName);
             if (queueObject is null) return (new ResultNotFound(), null);
             await RemoveExpired(queueName);
             if (cancellationToken is { IsCancellationRequested: true }) return (new ResultTimeout(), null);
-            return (new ResultOk(), queueObject.Queue);
+            return (new ResultOk(), queueObject.QueueMetadata);
         }
 
         public async Task<IMethodResult> DeleteQueueAsync(string queueName, CancellationToken? cancellationToken)
         {
             KeyValuePair<Guid, QueueObject>? key = await TryGetEntryByNameAsync(queueName);
             if (key is null) return new ResultNotFound();
-            while (key.Value.Value.Queue.Blocked)
+            while (key.Value.Value.QueueMetadata.Blocked)
             {
                 if (cancellationToken is { IsCancellationRequested: true }) return new ResultTimeout();
                 await Task.Delay(50);
@@ -84,18 +84,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 return GetMessagesTimeout();
             }
-            entry.Value.Value.Queue.Blocked = true;
+            entry.Value.Value.QueueMetadata.Blocked = true;
             List<QueueMessage> allMessages = [.. entry.Value.Value.Messages];
             allMessages.RemoveAll(m => m.Expired);
             if (cancellationToken is { IsCancellationRequested: true })
             {
-                entry.Value.Value.Queue.Blocked = false;
+                entry.Value.Value.QueueMetadata.Blocked = false;
                 return GetMessagesTimeout();
             }
 
             if (cancellationToken is { IsCancellationRequested: true })
             {
-                entry.Value.Value.Queue.Blocked = false;
+                entry.Value.Value.QueueMetadata.Blocked = false;
                 return GetMessagesTimeout();
             }
             if (!peekOnly)
@@ -107,8 +107,8 @@ namespace AzureStorageEmulator.NET.Queue.Services
                     m.InsertionTime = DateTime.UtcNow;
                 }
             }
-            entry.Value.Value.Queue.Blocked = false;
-            QueueObject newQueue = new(entry.Value.Value.Queue, new ConcurrentActiveCountableQueue<QueueMessage>(allMessages));
+            entry.Value.Value.QueueMetadata.Blocked = false;
+            QueueObject newQueue = new(entry.Value.Value.QueueMetadata, new ConcurrentActiveCountableQueue<QueueMessage>(allMessages));
             _queues.TryUpdate(entry.Value.Key, newQueue, entry.Value.Value);
 
             return (new ResultOk(), allMessages.Where(m => m.Visible).Take(numOfMessages.Value).ToList());
@@ -133,20 +133,20 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 return DeleteMessageTimeout();
             }
-            entry.Value.Value.Queue.Blocked = true;
+            entry.Value.Value.QueueMetadata.Blocked = true;
             List<QueueMessage> messages = [.. entry.Value.Value.Messages];
             QueueMessage? message = messages.FirstOrDefault(m => m.MessageId == messageId && m.PopReceipt == popReceipt);
             if (message is null)
             {
-                entry.Value.Value.Queue.Blocked = false;
+                entry.Value.Value.QueueMetadata.Blocked = false;
                 return DeleteMessageNotFound();
             }
             bool result = messages.Remove(message);
-            entry.Value.Value.Queue.Blocked = false;
+            entry.Value.Value.QueueMetadata.Blocked = false;
             // For the life of me, I don't understand why TryUpdate is not working here.
             lock (new object())
             {
-                _queues[entry.Value.Key] = new QueueObject(entry.Value.Value.Queue, new ConcurrentActiveCountableQueue<QueueMessage>(messages));
+                _queues[entry.Value.Key] = new QueueObject(entry.Value.Value.QueueMetadata, new ConcurrentActiveCountableQueue<QueueMessage>(messages));
             }
             return (new ResultOk(), message);
         }
@@ -154,7 +154,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         public async Task<int> ClearMessagesAsync(string queueName, CancellationToken? cancellationToken)
         {
             KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
-            Guid? key = _queues.FirstOrDefault(q => q.Value.Queue.Name == queueName).Key;
+            Guid? key = _queues.FirstOrDefault(q => q.Value.QueueMetadata.Name == queueName).Key;
             if (entry is null) return 404;
             if (cancellationToken is { IsCancellationRequested: true }) return 504;
 
@@ -165,7 +165,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
         {
             await RemoveExpired(queueName);
             KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
-            return entry?.Value.Queue.MessageCount;
+            return entry?.Value.QueueMetadata.MessageCount;
         }
 
         #endregion MessageOps
@@ -177,18 +177,18 @@ namespace AzureStorageEmulator.NET.Queue.Services
             KeyValuePair<Guid, QueueObject>? entry = await TryGetEntryByNameAsync(queueName);
             if (entry is null) return;
             ConcurrentQueue<QueueMessage> queue = entry.Value.Value.Messages;
-            entry.Value.Value.Queue.Blocked = true;
+            entry.Value.Value.QueueMetadata.Blocked = true;
             List<QueueMessage> messages = queue.ToList() ?? [];
             messages.RemoveAll(m => m.Expired);
-            entry.Value.Value.Queue.Blocked = false;
-            _queues.TryUpdate(entry.Value.Key, new QueueObject(entry.Value.Value.Queue, new ConcurrentActiveCountableQueue<QueueMessage>(messages)), entry.Value.Value);
+            entry.Value.Value.QueueMetadata.Blocked = false;
+            _queues.TryUpdate(entry.Value.Key, new QueueObject(entry.Value.Value.QueueMetadata, new ConcurrentActiveCountableQueue<QueueMessage>(messages)), entry.Value.Value);
         }
 
         private async Task<KeyValuePair<Guid, QueueObject>?> TryGetEntryByNameAsync(string queueName)
         {
-            KeyValuePair<Guid, QueueObject>? key = _queues.FirstOrDefault(q => q.Value.Queue.Name == queueName);
+            KeyValuePair<Guid, QueueObject>? key = _queues.FirstOrDefault(q => q.Value.QueueMetadata.Name == queueName);
             if (key.Value.Value is null) return null;
-            while (key.Value.Value.Queue.Blocked)
+            while (key.Value.Value.QueueMetadata.Blocked)
             {
                 await Task.Delay(50);
             }

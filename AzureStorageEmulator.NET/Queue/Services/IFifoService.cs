@@ -9,9 +9,9 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         bool CreateQueueAsync(string queueName);
 
-        Task<(IMethodResult, List<Models.Queue>)> ListQueuesAsync(CancellationToken? cancellationToken);
+        Task<(IMethodResult, List<QueueMetadata>)> ListQueuesAsync(CancellationToken? cancellationToken);
 
-        Task<(IMethodResult, Models.Queue?)> GetQueueMetadataAsync(string queueName,
+        Task<(IMethodResult, QueueMetadata?)> GetQueueMetadataAsync(string queueName,
             CancellationToken? cancellationToken);
 
         Task<IMethodResult> DeleteQueueAsync(string queueName, CancellationToken? cancellationToken);

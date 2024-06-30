@@ -26,7 +26,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         private readonly Mock<HttpContext> _httpContextMock = new();
         private readonly QueueService _queueService;
         private const string QueueName = "testQueue";
-        private readonly AzureStorageEmulator.NET.Queue.Models.Queue _queue = new(QueueName) { MessageCount = 5 };
+        private readonly QueueMetadata _queueMetadata = new(QueueName) { MessageCount = 5 };
 
         public QueueServiceTests()
         {
@@ -62,7 +62,7 @@ namespace AzureStorageEmulatorTests.Queue.Services
         {
             _fifoServiceMock.Setup(f =>
                 f.ListQueuesAsync(It.IsAny<CancellationToken?>()))
-                .ReturnsAsync((new ResultOk(), [new AzureStorageEmulator.NET.Queue.Models.Queue(new QueueObject(QueueName)) { Name = "TestQueue" }]));
+                .ReturnsAsync((new ResultOk(), [new QueueMetadata(new QueueObject(QueueName)) { Name = "TestQueue" }]));
             _queueEnumerationResultsSerializerMock.Setup(s => s.Serialize(It.IsAny<QueueEnumerationResults>())).ReturnsAsync("<Queues></Queues>");
             Dictionary<string, StringValues> myQueryString = new([new KeyValuePair<string, StringValues>("comp", "list")]);
             QueryCollection queries = new(myQueryString);
@@ -199,8 +199,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         public async Task GetQueueMetadataAsync_QueueExistsWithMetadata_Returns200AndMetadata()
         {
             List<Metadata> metadata = [new Metadata { Key = "key1", Value = "value1" }];
-            _queue.Metadata = metadata;
-            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName, null)).ReturnsAsync((new ResultOk(), _queue));
+            _queueMetadata.Metadata = metadata;
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName, null)).ReturnsAsync((new ResultOk(), _queue: _queueMetadata));
             const string expectedMessageCount = "5";
             const string expectedMetadataValue = "value1";
             _headerDictionaryMock.Setup(d => d.Keys).Returns(["x-ms-approximate-messages-count", "x-ms-meta-key1"]);
@@ -220,8 +220,8 @@ namespace AzureStorageEmulatorTests.Queue.Services
         [Fact]
         public async Task GetQueueMetadataAsync_QueueExistsNoMetadata_Returns200()
         {
-            _queue.Metadata = null;
-            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName, null)).ReturnsAsync((new ResultOk(), _queue));
+            _queueMetadata.Metadata = null;
+            _fifoServiceMock.Setup(f => f.GetQueueMetadataAsync(QueueName, null)).ReturnsAsync((new ResultOk(), _queue: _queueMetadata));
             _headerDictionaryMock.Setup(d => d["x-ms-approximate-messages-count"]).Returns("5");
 
             IActionResult result = await _queueService.GetQueueMetadataAsync(QueueName, 0, _httpContextMock.Object);

@@ -74,7 +74,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             }
             QueueEnumerationResults results = new() { ServiceEndpoint = GetBaseUrl(context) };
             if (cancellationSource?.IsCancellationRequested ?? false) return new StatusCodeResult(504);
-            (IMethodResult methodResult, List<Models.Queue> queues) = await fifoService.ListQueuesAsync(cancellationSource?.Token);
+            (IMethodResult methodResult, List<QueueMetadata> queues) = await fifoService.ListQueuesAsync(cancellationSource?.Token);
             if (methodResult is ResultTimeout) return new StatusCodeResult(504);
             results.Queues.AddRange(queues);
             if (cancellationSource?.IsCancellationRequested ?? false) return new StatusCodeResult(504);
@@ -93,7 +93,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
             CancellationTokenSource cancellationSource = SetupTimeout(timeout);
             Dictionary<string, StringValues> queries = QueryProcessor(context.Request);
-            (IMethodResult methodResult, Models.Queue? result) = await fifoService.GetQueueMetadataAsync(queueName, cancellationSource?.Token);
+            (IMethodResult methodResult, QueueMetadata? result) = await fifoService.GetQueueMetadataAsync(queueName, cancellationSource?.Token);
             if (methodResult is ResultTimeout) return new StatusCodeResult(504);
             if (cancellationSource?.IsCancellationRequested ?? false) return new StatusCodeResult(504);
             if (methodResult is ResultNotFound) return new NotFoundResult();

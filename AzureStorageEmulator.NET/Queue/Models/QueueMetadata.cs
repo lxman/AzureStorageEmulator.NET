@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace AzureStorageEmulator.NET.Queue.Models
 {
-    public class Queue : IXmlSerializable
+    public class QueueMetadata : IXmlSerializable
     {
         public string Name { get; set; } = string.Empty;
 
@@ -15,20 +15,20 @@ namespace AzureStorageEmulator.NET.Queue.Models
 
         public int MessageCount { get; set; }
 
-        public Queue()
+        public QueueMetadata()
         {
         }
 
-        public Queue(string name)
+        public QueueMetadata(string name)
         {
             Name = name;
         }
 
-        public Queue(QueueObject queueObject)
+        public QueueMetadata(QueueObject queueObject)
         {
-            Name = queueObject.Queue.Name;
-            Metadata = queueObject.Queue.Metadata;
-            Blocked = queueObject.Queue.Blocked;
+            Name = queueObject.QueueMetadata.Name;
+            Metadata = queueObject.QueueMetadata.Metadata;
+            Blocked = queueObject.QueueMetadata.Blocked;
             MessageCount = queueObject.Messages.Count;
         }
 
