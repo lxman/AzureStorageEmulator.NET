@@ -1,13 +1,17 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AzureStorageEmulator.NET.Table.Models
+namespace JsonSerializationTest.Table
 {
-    public class ListEntriesResponse
+    public class ListEntriesResponse : IJsonOnSerializing
     {
         [JsonPropertyName("odata.metadata")]
         public string Metadata { get; set; }
 
         [JsonPropertyName("value")]
         public List<Dictionary<string, object>> Objects { get; set; }
+
+        public void OnSerializing()
+        {
+        }
     }
 }

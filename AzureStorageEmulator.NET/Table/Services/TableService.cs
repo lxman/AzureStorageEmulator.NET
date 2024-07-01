@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using AzureStorageEmulator.NET.JsonSerialization;
 using AzureStorageEmulator.NET.Table.Models;
 using DynamicODataToSQL;
 using LiteDB;
@@ -91,7 +92,7 @@ namespace AzureStorageEmulator.NET.Table.Services
                     _ => new BsonValue(property.Value.GetString())
                 };
             }
-            bsonDocument["Timestamp"] = new BsonValue(DateTime.UtcNow);//.ToString("yyyy-MM-ddTHH:MM:ss.fffffffZ");
+            bsonDocument["Timestamp"] = new BsonValue(DateTime.UtcNow);
             _ = storage.InsertEntity(tableName, bsonDocument);
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             return new NoContentResult();
@@ -99,6 +100,8 @@ namespace AzureStorageEmulator.NET.Table.Services
 
         public async Task<MemoryStream> QueryEntities(string tableName, HttpContext context)
         {
+            JsonSerializerOptions options = new() { Converters = { new DictionaryStringObjectJsonConverter() } };
+
             ListEntriesResponse response = new()
             {
                 Metadata = $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables/@Element",
@@ -130,14 +133,14 @@ namespace AzureStorageEmulator.NET.Table.Services
             }
             newList.ForEach(item =>
             {
-                Dictionary<string, string> dictionary = [];
+                Dictionary<string, object> dictionary = [];
                 response.Objects.Add(dictionary);
                 item.Keys.ToList().ForEach(k =>
                 {
                     switch (k)
                     {
                         case "PartitionKey" or "RowKey":
-                            dictionary.Add(k, item[k]);
+                            dictionary.Add(k, item[k].AsString);
                             return;
                         case "Timestamp":
                             {
@@ -147,7 +150,37 @@ namespace AzureStorageEmulator.NET.Table.Services
                                 return;
                             }
                         default:
-                            dictionary.Add(k, item[k].ToString());
+                            switch (item[k].Type)
+                            {
+                                case BsonType.Int32:
+                                    dictionary.Add(k, item[k].AsInt32);
+                                    break;
+                                case BsonType.Int64:
+                                    dictionary.Add(k, item[k].AsInt64);
+                                    break;
+                                case BsonType.Double:
+                                    dictionary.Add(k, item[k].AsDouble);
+                                    break;
+                                case BsonType.Decimal:
+                                    dictionary.Add(k, item[k].AsDecimal);
+                                    break;
+                                case BsonType.String:
+                                    dictionary.Add(k, item[k].AsString);
+                                    break;
+                                case BsonType.Binary:
+                                    break;
+                                case BsonType.Guid:
+                                    dictionary.Add(k, item[k].AsGuid);
+                                    break;
+                                case BsonType.Boolean:
+                                    dictionary.Add(k, item[k].AsBoolean);
+                                    break;
+                                case BsonType.DateTime:
+                                    dictionary.Add(k, item[k].AsDateTime);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException($"{k}: {item[k].Type}");
+                            }
                             break;
                     }
                 });
@@ -155,7 +188,7 @@ namespace AzureStorageEmulator.NET.Table.Services
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             context.Response.Headers.Connection = "keep-alive";
             context.Response.Headers.KeepAlive = "timeout=5";
-            MemoryStream ms = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response)));
+            MemoryStream ms = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, options)));
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
         }
