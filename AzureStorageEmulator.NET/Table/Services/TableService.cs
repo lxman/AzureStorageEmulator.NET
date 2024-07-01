@@ -71,9 +71,27 @@ namespace AzureStorageEmulator.NET.Table.Services
             BsonDocument bsonDocument = [];
             foreach (JsonProperty property in document.EnumerateObject())
             {
-                bsonDocument[property.Name] = property.Value.ToString();
+                if (property.Name is "PartitionKey" or "RowKey")
+                {
+                    bsonDocument[property.Name] = property.Value.ToString();
+                    continue;
+                }
+
+                if (property.Name.EndsWith("@odata.type")) continue;
+                string propName = property.Name;
+                JsonElement propType = document.GetProperty($"{propName}@odata.type");
+                bsonDocument[propName] = propType.ToString() switch
+                {
+                    "Edm.Int32" => new BsonValue(Convert.ToInt32(property.Value.ToString())),
+                    "Edm.Int64" => new BsonValue(Convert.ToInt64(property.Value.ToString())),
+                    "Edm.Double" => new BsonValue(Convert.ToDouble(property.Value.ToString())),
+                    "Edm.Boolean" => new BsonValue(Convert.ToBoolean(property.Value.ToString())),
+                    "Edm.DateTime" => new BsonValue(Convert.ToDateTime(property.Value.ToString())),
+                    "Edm.String" => new BsonValue(property.Value.GetString()),
+                    _ => new BsonValue(property.Value.GetString())
+                };
             }
-            bsonDocument["Timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:MM:ss.fffffffZ");
+            bsonDocument["Timestamp"] = new BsonValue(DateTime.UtcNow);//.ToString("yyyy-MM-ddTHH:MM:ss.fffffffZ");
             _ = storage.InsertEntity(tableName, bsonDocument);
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             return new NoContentResult();
@@ -112,25 +130,34 @@ namespace AzureStorageEmulator.NET.Table.Services
             }
             newList.ForEach(item =>
             {
-                response.Objects.Add(BsonDocToDictionary(item));
+                Dictionary<string, string> dictionary = [];
+                response.Objects.Add(dictionary);
+                item.Keys.ToList().ForEach(k =>
+                {
+                    switch (k)
+                    {
+                        case "PartitionKey" or "RowKey":
+                            dictionary.Add(k, item[k]);
+                            return;
+                        case "Timestamp":
+                            {
+                                string timeString = item[k].AsDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
+                                dictionary.Add("odata.etag", $"W/\"datetime'{timeString}'\"");
+                                dictionary.Add(k, timeString);
+                                return;
+                            }
+                        default:
+                            dictionary.Add(k, item[k].ToString());
+                            break;
+                    }
+                });
             });
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             context.Response.Headers.Connection = "keep-alive";
             context.Response.Headers.KeepAlive = "timeout=5";
-            MemoryStream ms = new(Encoding.UTF8.GetBytes($"{JsonSerializer.Serialize(response)}"));
+            MemoryStream ms = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response)));
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
-        }
-
-        private static Dictionary<string, string> BsonDocToDictionary(BsonDocument doc)
-        {
-            Dictionary<string, string> dict = [];
-            foreach (KeyValuePair<string, BsonValue> keyValuePair in doc)
-            {
-                dict.Add(keyValuePair.Key, keyValuePair.Value.AsString);
-            }
-
-            return dict;
         }
 
         private static Dictionary<string, string> ParseQuery(IQueryCollection query)
@@ -138,7 +165,7 @@ namespace AzureStorageEmulator.NET.Table.Services
             Dictionary<string, string> filters = [];
             foreach (KeyValuePair<string, StringValues> keyValuePair in query)
             {
-                filters.Add(keyValuePair.Key[1..], keyValuePair.Value.ToString());
+                filters.Add(keyValuePair.Key[1..], keyValuePair.Value.ToString().Replace("datetime", string.Empty));
             }
 
             return filters;

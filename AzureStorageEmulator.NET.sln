@@ -40,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "Utilities\Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrontEnd", "FrontEnd\FrontEnd.csproj", "{EDB21C51-ACF4-4965-9AEC-AD2DFCD19AA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleApiSink", "SimpleApiSink\SimpleApiSink.csproj", "{75CA652B-DEF1-42C3-B66D-CBE748189D5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApiSink", "SimpleApiSink\SimpleApiSink.csproj", "{75CA652B-DEF1-42C3-B66D-CBE748189D5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

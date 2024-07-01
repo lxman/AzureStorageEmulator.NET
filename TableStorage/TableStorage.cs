@@ -64,8 +64,16 @@ namespace TableStorage
         public async IAsyncEnumerable<BsonDocument> QueryFromQueryString(string tableName, string actualQuery, IDictionary<string, object> parameters)
         {
             string query = actualQuery.Replace("[", string.Empty).Replace("]", string.Empty).Replace('*', '$');
-            parameters.Keys.ToList().ForEach(k => query = query.Replace(k, $"'{parameters[k]}'"));
-            IBsonDataReader reader = _db.Execute(query, ToBsonDocument(parameters));
+            parameters.Keys.ToList().ForEach(k =>
+            {
+                if (parameters[k] is DateTime dt)
+                {
+                    query = query.Replace(k, $"DATETIME('{dt:yyyy-MM-ddTHH:mm:ss.fffffffZ}')");
+                    return;
+                }
+                query = query.Replace(k, $"'{parameters[k]}'");
+            });
+            IBsonDataReader reader = _db.Execute(query);
             while (reader.Read())
             {
                 BsonDocument? cast = reader.Current.AsDocument;
