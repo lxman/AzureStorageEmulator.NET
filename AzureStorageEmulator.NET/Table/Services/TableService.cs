@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.JsonSerialization;
 using AzureStorageEmulator.NET.Table.Models;
 using DynamicODataToSQL;
@@ -13,7 +14,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AzureStorageEmulator.NET.Table.Services
 {
-    public interface ITableService
+    public interface ITableService : IStorageProvider
     {
         IActionResult QueryTables(HttpContext context);
 
@@ -29,6 +30,8 @@ namespace AzureStorageEmulator.NET.Table.Services
     public class TableService(
         ITableStorage storage) : ITableService
     {
+        private static JsonSerializerOptions options = new() { Converters = { new DictionaryStringObjectJsonConverter() } };
+
         public IActionResult QueryTables(HttpContext context)
         {
             List<string> tables = storage.QueryTables();
@@ -100,8 +103,6 @@ namespace AzureStorageEmulator.NET.Table.Services
 
         public async Task<MemoryStream> QueryEntities(string tableName, HttpContext context)
         {
-            JsonSerializerOptions options = new() { Converters = { new DictionaryStringObjectJsonConverter() } };
-
             ListEntriesResponse response = new()
             {
                 Metadata = $"{context.Request.Scheme}://{context.Request.Host}/{context.Request.Path.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries)[0]}/$metadata#Tables/@Element",
@@ -168,6 +169,7 @@ namespace AzureStorageEmulator.NET.Table.Services
                                     dictionary.Add(k, item[k].AsString);
                                     break;
                                 case BsonType.Binary:
+                                    dictionary.Add(k, item[k].AsBinary);
                                     break;
                                 case BsonType.Guid:
                                     dictionary.Add(k, item[k].AsGuid);
@@ -191,6 +193,16 @@ namespace AzureStorageEmulator.NET.Table.Services
             MemoryStream ms = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, options)));
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
+        }
+
+        public async Task Persist(string location)
+        {
+            await storage.Persist(location);
+        }
+
+        public async Task Restore(string location)
+        {
+            await storage.Restore(location);
         }
 
         private static Dictionary<string, string> ParseQuery(IQueryCollection query)

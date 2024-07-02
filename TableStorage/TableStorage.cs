@@ -17,6 +17,10 @@ namespace TableStorage
         IEnumerable<BsonDocument> GetAll(string tableName);
 
         IAsyncEnumerable<BsonDocument> QueryFromQueryString(string tableName, string actualQuery, IDictionary<string, object> parameters);
+
+        Task Persist(string location);
+
+        Task Restore(string location);
     }
 
     public class TableStorage : ITableStorage
@@ -82,10 +86,33 @@ namespace TableStorage
             }
         }
 
-        private static BsonDocument ToBsonDocument(IDictionary<string, object> parameters)
+        public async Task Persist(string location)
         {
-            Dictionary<string, BsonValue> converted = parameters.ToDictionary(kv => kv.Key, kv => new BsonValue(kv.Value));
-            return new BsonDocument(converted);
+            throw new NotImplementedException("Table persistence is not yet implemented.");
+            Directory.CreateDirectory(Path.Combine(location, "Queue"));
+            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
+            _db.GetCollectionNames().ToList().ForEach(n =>
+            {
+                var collection = _db.GetCollection(n);
+                var reader = _db.Execute($"SELECT $ FROM {n}");
+                while (reader.Read())
+                {
+
+                }
+            });
+        }
+
+        public async Task Restore(string location)
+        {
+            throw new NotImplementedException("Table restoration is not yet implemented.");
+            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
+            if (!File.Exists(saveFilePath)) return;
+            string json = await File.ReadAllTextAsync(saveFilePath);
+            //BsonDocument[] documents = JsonSerializer.Deserialize<BsonDocument[]>(json);
+            //documents.ToList().ForEach(d =>
+            //{
+            //    _db.GetCollection(d["TableName"].AsString).Insert(d["Document"]);
+            //});
         }
     }
 }

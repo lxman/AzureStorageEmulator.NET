@@ -2,13 +2,14 @@
 using System.Text;
 using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Xml;
+using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.XmlSerialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
 namespace AzureStorageEmulator.NET.Blob.Services
 {
-    public interface IBlobService
+    public interface IBlobService : IStorageProvider
     {
         IActionResult GetInfo(HttpContext context);
 
@@ -122,6 +123,20 @@ namespace AzureStorageEmulator.NET.Blob.Services
         public string GetBlobs()
         {
             return "Blobs";
+        }
+
+        public async Task Persist(string location)
+        {
+            throw new NotImplementedException("Blob persistence");
+            Directory.CreateDirectory(Path.Combine(location, "Blob"));
+            await File.WriteAllTextAsync(Path.Combine(location, "Blob", "Blobs.xml"), GetBlobs());
+        }
+
+        public async Task Restore(string location)
+        {
+            throw new NotImplementedException("Blob restore");
+            Directory.CreateDirectory(Path.Combine(location, "Blob"));
+            await File.WriteAllTextAsync(Path.Combine(location, "Blob", "Blobs.xml"), GetBlobs());
         }
 
         private string GetContainersMetadata()

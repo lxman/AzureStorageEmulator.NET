@@ -27,11 +27,15 @@ namespace AzureStorageEmulator.NET
         private const int BatchSeconds = 2;
         private const bool LogGetMessages = false;
         private const bool CreateAppliedQueues = true;
+        private const bool PersistTables = false;
+        private const bool PersistQueues = false;
+        private const bool PersistBlobs = false;
 
         public static async Task<int> Main(string[] args)
         {
             Settings settings = new()
             {
+                PersistenceSettings = { Table = PersistTables, Queue = PersistQueues, Blob = PersistBlobs },
                 LogSettings = { BatchSeconds = BatchSeconds, DetailedLogging = DetailedLogging },
                 QueueSettings = { LogGetMessages = LogGetMessages },
                 TableSettings = { LogGetMessages = LogGetMessages },
@@ -86,6 +90,42 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
                 WebApplication app = builder.Build();
+                app.Lifetime.ApplicationStarted.Register(() =>
+                {
+                    if (settings.PersistenceSettings.Queue)
+                    {
+                        QueueService queueService = app.Services.GetRequiredService<QueueService>();
+                        Task.Run(() => queueService.Restore(settings.PersistenceSettings.RootPath.ToString())).Wait();
+                    }
+                    if (settings.PersistenceSettings.Table)
+                    {
+                        TableService tableService = app.Services.GetRequiredService<TableService>();
+                        Task.Run(() => tableService.Restore(settings.PersistenceSettings.RootPath.ToString())).Wait();
+                    }
+                    if (settings.PersistenceSettings.Blob)
+                    {
+                        BlobService blobService = app.Services.GetRequiredService<BlobService>();
+                        Task.Run(() => blobService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
+                    }
+                });
+                app.Lifetime.ApplicationStopping.Register(() =>
+                {
+                    if (settings.PersistenceSettings.Queue)
+                    {
+                        QueueService queueService = app.Services.GetRequiredService<QueueService>();
+                        Task.Run(() => queueService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
+                    }
+                    if (settings.PersistenceSettings.Table)
+                    {
+                        TableService tableService = app.Services.GetRequiredService<TableService>();
+                        Task.Run(() => tableService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
+                    }
+                    if (settings.PersistenceSettings.Blob)
+                    {
+                        BlobService blobService = app.Services.GetRequiredService<BlobService>();
+                        Task.Run(() => blobService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
+                    }
+                });
 
                 app.Urls.Add("http://localhost:10000");
                 app.Urls.Add("http://localhost:10001");

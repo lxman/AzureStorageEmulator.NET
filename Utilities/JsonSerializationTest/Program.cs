@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using JsonSerializationTest.Converters;
-using JsonSerializationTest.Table;
+using LiteDB;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace JsonSerializationTest
 {
@@ -8,33 +8,17 @@ namespace JsonSerializationTest
     {
         private static void Main(string[] args)
         {
-            JsonSerializerOptions options = new()
+            JsonSerializerOptions options = new() { WriteIndented = true };
+
+            BsonDocument doc = new()
             {
-                WriteIndented = true,
-                Converters = { new DictionaryListObjectJsonConverter() }
+                ["key"] = "value",
+                ["key2"] = 32,
+                ["key3"] = true,
+                ["key4"] = new BsonDocument { ["nestedKey"] = "nestedValue" },
+                ["key5"] = DateTime.UtcNow
             };
-            ListEntriesResponse response = new()
-            {
-                Metadata = "http://localhost:10000/$metadata#Tables",
-                Objects =
-                [
-                    new Dictionary<string, object>
-                    {
-                        { "PartitionKey", "part1" },
-                        { "RowKey", "row1" },
-                        { "Timestamp", DateTime.UtcNow },
-                        { "Age", 32 },
-                        {
-                            "Properties",
-                            new List<KeyValuePair<string, object>>
-                            {
-                                new("key1", "value1")
-                            }
-                        }
-                    }
-                ]
-            };
-            string json = JsonSerializer.Serialize(response, options);
+            string json = JsonSerializer.Serialize(doc, options);
         }
     }
 }

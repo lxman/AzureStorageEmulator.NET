@@ -13,7 +13,7 @@ using Serilog;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
-    public interface IQueueService
+    public interface IQueueService : IStorageProvider
     {
         #region QueueOps
 
@@ -250,6 +250,20 @@ namespace AzureStorageEmulator.NET.Queue.Services
         }
 
         #endregion MessageOps
+
+        #region Persistence
+
+        public async Task Persist(string location)
+        {
+            await fifoService.Persist(location);
+        }
+
+        public async Task Restore(string location)
+        {
+            await fifoService.Restore(location);
+        }
+
+        #endregion
 
         #region Private Helpers
 

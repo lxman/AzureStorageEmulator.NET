@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Results;
 
@@ -169,6 +170,29 @@ namespace AzureStorageEmulator.NET.Queue.Services
         }
 
         #endregion MessageOps
+
+        #region Persistence
+
+        public async Task Persist(string location)
+        {
+            Directory.CreateDirectory(Path.Combine(location, "Queue"));
+            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
+            await File.WriteAllTextAsync(saveFilePath, JsonSerializer.Serialize(_queues));
+        }
+
+        public async Task Restore(string location)
+        {
+            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
+            if (!File.Exists(saveFilePath)) return;
+            string json = await File.ReadAllTextAsync(saveFilePath);
+            ConcurrentDictionary<Guid, QueueObject>? queues = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, QueueObject>>(json) ?? [];
+            foreach (KeyValuePair<Guid, QueueObject> queue in queues)
+            {
+                _queues.TryAdd(queue.Key, queue.Value);
+            }
+        }
+
+        #endregion
 
         #region Private Helpers
 

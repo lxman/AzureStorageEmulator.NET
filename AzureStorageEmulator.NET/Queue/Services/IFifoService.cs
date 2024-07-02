@@ -1,9 +1,10 @@
-﻿using AzureStorageEmulator.NET.Queue.Models;
+﻿using AzureStorageEmulator.NET.Common;
+using AzureStorageEmulator.NET.Queue.Models;
 using AzureStorageEmulator.NET.Results;
 
 namespace AzureStorageEmulator.NET.Queue.Services
 {
-    public interface IFifoService
+    public interface IFifoService : IStorageProvider
     {
         #region QueueOps
 

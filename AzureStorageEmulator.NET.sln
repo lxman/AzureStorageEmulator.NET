@@ -42,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrontEnd", "FrontEnd\FrontE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApiSink", "SimpleApiSink\SimpleApiSink.csproj", "{75CA652B-DEF1-42C3-B66D-CBE748189D5C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsonSerialization", "BsonSerialization\BsonSerialization.csproj", "{2B44943A-1942-4E26-8065-B9FC9939A1BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -162,6 +164,14 @@ Global
 		{75CA652B-DEF1-42C3-B66D-CBE748189D5C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75CA652B-DEF1-42C3-B66D-CBE748189D5C}.Release|x64.ActiveCfg = Release|Any CPU
 		{75CA652B-DEF1-42C3-B66D-CBE748189D5C}.Release|x64.Build.0 = Release|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Debug|x64.Build.0 = Debug|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|x64.ActiveCfg = Release|Any CPU
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -174,6 +184,7 @@ Global
 		{023EBBD6-1A97-4CBF-AE80-33A366373C54} = {CD400DBF-A960-4337-88E6-CBB481A6037D}
 		{22E92FD0-266C-4243-831A-4FDE42F92514} = {4D6BD722-BF6B-4FCA-B12D-7144575EB666}
 		{EDB21C51-ACF4-4965-9AEC-AD2DFCD19AA4} = {4D6BD722-BF6B-4FCA-B12D-7144575EB666}
+		{2B44943A-1942-4E26-8065-B9FC9939A1BD} = {CD400DBF-A960-4337-88E6-CBB481A6037D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0132F3EC-FA34-4EF8-92EA-C3FDF8904D3A}
