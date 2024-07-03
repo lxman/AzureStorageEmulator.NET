@@ -26,7 +26,7 @@ namespace FrontEnd
         private readonly HttpServer.HttpServer _httpServer = new();
         private readonly BlockingCollection<string> _logSink = [];
         private readonly int _port;
-        private ListBox? _resultDisplay = null;
+        private ListBox? _resultDisplay;
 
         public MainWindow()
         {
@@ -48,6 +48,7 @@ namespace FrontEnd
                         LogView.ScrollIntoView(LogView.Items[^1]);
                     }
                 };
+            ManageStateButton.IsEnabled = false;
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -88,6 +89,7 @@ namespace FrontEnd
                     Console.WriteLine(exception);
                     throw;
                 }
+                ManageStateButton.IsEnabled = true;
             }
         }
 
@@ -95,25 +97,41 @@ namespace FrontEnd
         {
             ManageStateWindow window = new();
             window.ShowDialog();
+            if (!window.Execute)
+            {
+                return;
+            }
+
             PatchCommandSettings settings = window.Settings;
-            Task.Run(() => SendPersistRequest(settings));
+            Dispatcher.Invoke(() => SendPersistRequest(settings));
         }
 
         private async Task SendPersistRequest(PatchCommandSettings settings)
         {
             HttpClient client = new();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Patch, "http://127.0.0.1:10010/api/status/snapshot")
+            HttpResponseMessage response;
+            HttpRequestMessage request = new(HttpMethod.Patch, "http://127.0.0.1:10010/api/status/snapshot")
             {
                 Content = new StringContent(JsonSerializer.Serialize(settings), Encoding.UTF8, "application/json")
             };
-            HttpResponseMessage response = await client.SendAsync(request);
-            DisplayGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            DisplayGrid.ColumnDefinitions.Last().Width = new GridLength(1, GridUnitType.Star);
-            Grid.SetColumnSpan(StartButton, 2);
-            DisplayGrid.Children.Add(_resultDisplay = new ListBox());
-            _resultDisplay.ItemsSource = new ObservableCollection<string>(new[] { response.StatusCode.ToString() });
+            try
+            {
+                response = await client.SendAsync(request);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                client.Dispose();
+            }
+            _resultDisplay = new ListBox { ItemsSource = new ObservableCollection<string>(new[] { response.StatusCode.ToString() }) };
             Grid.SetColumn(_resultDisplay, 1);
             Grid.SetRow(_resultDisplay, 2);
+            DisplayGrid.Children.Add(_resultDisplay);
+            Grid.SetColumnSpan(ManageStateButton, 1);
         }
     }
 }

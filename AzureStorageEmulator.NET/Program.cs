@@ -26,7 +26,7 @@ namespace AzureStorageEmulator.NET
         private const bool DetailedLogging = false;
         private const int BatchSeconds = 2;
         private const bool LogGetMessages = false;
-        private const bool CreateAppliedQueues = true;
+        private const bool CreateQueues = true;
 
         public static async Task<int> Main(string[] args)
         {
@@ -107,7 +107,7 @@ namespace AzureStorageEmulator.NET
 
                 Log.Information("Adding queues");
 
-                if (CreateAppliedQueues) SetupQueues(app);
+                if (CreateQueues) SetupQueues(app);
 
                 Log.Information($"{Queues.Names.Count} queues added");
 
@@ -119,7 +119,7 @@ namespace AzureStorageEmulator.NET
                     IBlobService blobService = scope.ServiceProvider.GetRequiredService<IBlobService>();
                     PersistenceSettings persistenceSettings = new();
                     Task.Run(() => Persistence.Restore(persistenceSettings.RootPath.AbsolutePath, queueService, tableService, blobService)).Wait(CancellationToken.None);
-                    Log.Information("Persistence handled");
+                    Log.Information("Persistence restored");
                 });
 
                 await app.RunAsync();

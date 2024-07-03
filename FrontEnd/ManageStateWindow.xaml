@@ -12,19 +12,22 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height=".2*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height=".3*" />
         </Grid.RowDefinitions>
         <Label Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">Action</Label>
         <Label Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">Resource</Label>
         <StackPanel Grid.Column="0" Grid.Row="1">
-            <RadioButton Name="ActionBackup">Backup</RadioButton>
-            <RadioButton Name="ActionClear">Clear</RadioButton>
+            <RadioButton Name="ActionBackup" Click="ActionClicked">Backup</RadioButton>
+            <RadioButton Name="ActionClear" Click="ActionClicked">Clear</RadioButton>
         </StackPanel>
         <StackPanel Grid.Column="1" Grid.Row="1">
-            <CheckBox Name="SelectQueue">Queue</CheckBox>
-            <CheckBox Name="SelectTable">Table</CheckBox>
-            <CheckBox Name="SelectBlob">Blob</CheckBox>
+            <CheckBox Name="SelectQueue" Click="ResourceClicked">Queue</CheckBox>
+            <CheckBox Name="SelectTable" Click="ResourceClicked">Table</CheckBox>
+            <CheckBox Name="SelectBlob" Click="ResourceClicked">Blob</CheckBox>
         </StackPanel>
+        <Button Grid.Column="0" Grid.Row="2" Name="ExecuteButton" Content="Execute" Click="ClickExecuteButton" />
+        <Button Grid.Column="1" Grid.Row="2" Name="CancelButton" Content="Cancel" Click="ClickCancelButton" />
     </Grid>
 </Window>

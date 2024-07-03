@@ -2,6 +2,7 @@
 {
     public enum Action
     {
+        None,
         Backup,
         Clear
     }

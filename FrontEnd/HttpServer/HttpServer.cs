@@ -32,14 +32,21 @@ namespace FrontEnd.HttpServer
         {
             if (!_listener.IsListening) return;
 
-            HttpListenerContext context = _listener.EndGetContext(result);
-            HttpListenerRequest request = context.Request;
-            _ = _logSink?.TryAdd($"{request.HttpMethod} {request.Url}");
+            try
+            {
+                HttpListenerContext context = _listener.EndGetContext(result);
+                HttpListenerRequest request = context.Request;
+                _ = _logSink?.TryAdd($"{request.HttpMethod} {request.Url}");
 
-            string body = ProcessPost(context);
-            _ = _logSink?.TryAdd($"Body: {body}");
+                string body = ProcessPost(context);
+                _ = _logSink?.TryAdd($"Body: {body}");
 
-            Receive();
+                Receive();
+            }
+            catch (HttpListenerException e)
+            {
+                _ = _logSink?.TryAdd(e.Message);
+            }
         }
 
         private static string ProcessPost(HttpListenerContext context)
