@@ -127,16 +127,28 @@ namespace AzureStorageEmulator.NET.Blob.Services
 
         public async Task Persist(string location)
         {
+            return;
             throw new NotImplementedException("Blob persistence");
             Directory.CreateDirectory(Path.Combine(location, "Blob"));
-            await File.WriteAllTextAsync(Path.Combine(location, "Blob", "Blobs.xml"), GetBlobs());
+            string saveFilePath = GetSavePath(location);
+            await File.WriteAllTextAsync(saveFilePath, GetBlobs());
         }
 
         public async Task Restore(string location)
         {
+            return;
             throw new NotImplementedException("Blob restore");
-            Directory.CreateDirectory(Path.Combine(location, "Blob"));
+            string saveFilePath = GetSavePath(location);
+            if (!File.Exists(saveFilePath)) return;
             await File.WriteAllTextAsync(Path.Combine(location, "Blob", "Blobs.xml"), GetBlobs());
+        }
+
+        public void Delete(string location)
+        {
+            return;
+            throw new NotImplementedException("Blob delete");
+            string saveFilePath = GetSavePath(location);
+            if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
         }
 
         private string GetContainersMetadata()
@@ -148,5 +160,7 @@ namespace AzureStorageEmulator.NET.Blob.Services
             });
             return metadata;
         }
+
+        private static string GetSavePath(string location) => Path.Combine(location, "AzureStorageEmulator.NET", "Blob", "Blobs.json");
     }
 }

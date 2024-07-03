@@ -30,7 +30,7 @@ namespace AzureStorageEmulator.NET.Table.Services
     public class TableService(
         ITableStorage storage) : ITableService
     {
-        private static JsonSerializerOptions options = new() { Converters = { new DictionaryStringObjectJsonConverter() } };
+        private static readonly JsonSerializerOptions Options = new() { Converters = { new DictionaryStringObjectJsonConverter() } };
 
         public IActionResult QueryTables(HttpContext context)
         {
@@ -190,7 +190,7 @@ namespace AzureStorageEmulator.NET.Table.Services
             context.Response.Headers.ContentType = "application/json;odata=minimalmetadata";
             context.Response.Headers.Connection = "keep-alive";
             context.Response.Headers.KeepAlive = "timeout=5";
-            MemoryStream ms = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, options)));
+            MemoryStream ms = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, Options)));
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
         }
@@ -203,6 +203,11 @@ namespace AzureStorageEmulator.NET.Table.Services
         public async Task Restore(string location)
         {
             await storage.Restore(location);
+        }
+
+        public void Delete(string location)
+        {
+            storage.Delete(location);
         }
 
         private static Dictionary<string, string> ParseQuery(IQueryCollection query)

@@ -27,15 +27,11 @@ namespace AzureStorageEmulator.NET
         private const int BatchSeconds = 2;
         private const bool LogGetMessages = false;
         private const bool CreateAppliedQueues = true;
-        private const bool PersistTables = false;
-        private const bool PersistQueues = false;
-        private const bool PersistBlobs = false;
 
         public static async Task<int> Main(string[] args)
         {
             Settings settings = new()
             {
-                PersistenceSettings = { Table = PersistTables, Queue = PersistQueues, Blob = PersistBlobs },
                 LogSettings = { BatchSeconds = BatchSeconds, DetailedLogging = DetailedLogging },
                 QueueSettings = { LogGetMessages = LogGetMessages },
                 TableSettings = { LogGetMessages = LogGetMessages },
@@ -90,43 +86,6 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
                 WebApplication app = builder.Build();
-                app.Lifetime.ApplicationStarted.Register(() =>
-                {
-                    if (settings.PersistenceSettings.Queue)
-                    {
-                        QueueService queueService = app.Services.GetRequiredService<QueueService>();
-                        Task.Run(() => queueService.Restore(settings.PersistenceSettings.RootPath.ToString())).Wait();
-                    }
-                    if (settings.PersistenceSettings.Table)
-                    {
-                        TableService tableService = app.Services.GetRequiredService<TableService>();
-                        Task.Run(() => tableService.Restore(settings.PersistenceSettings.RootPath.ToString())).Wait();
-                    }
-                    if (settings.PersistenceSettings.Blob)
-                    {
-                        BlobService blobService = app.Services.GetRequiredService<BlobService>();
-                        Task.Run(() => blobService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
-                    }
-                });
-                app.Lifetime.ApplicationStopping.Register(() =>
-                {
-                    if (settings.PersistenceSettings.Queue)
-                    {
-                        QueueService queueService = app.Services.GetRequiredService<QueueService>();
-                        Task.Run(() => queueService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
-                    }
-                    if (settings.PersistenceSettings.Table)
-                    {
-                        TableService tableService = app.Services.GetRequiredService<TableService>();
-                        Task.Run(() => tableService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
-                    }
-                    if (settings.PersistenceSettings.Blob)
-                    {
-                        BlobService blobService = app.Services.GetRequiredService<BlobService>();
-                        Task.Run(() => blobService.Persist(settings.PersistenceSettings.RootPath.ToString())).Wait();
-                    }
-                });
-
                 app.Urls.Add("http://localhost:10000");
                 app.Urls.Add("http://localhost:10001");
                 app.Urls.Add("http://localhost:10002");
@@ -151,6 +110,17 @@ namespace AzureStorageEmulator.NET
                 if (CreateAppliedQueues) SetupQueues(app);
 
                 Log.Information($"{Queues.Names.Count} queues added");
+
+                app.Lifetime.ApplicationStarted.Register(() =>
+                {
+                    using IServiceScope scope = app.Services.CreateScope();
+                    IQueueService queueService = scope.ServiceProvider.GetRequiredService<IQueueService>();
+                    ITableService tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
+                    IBlobService blobService = scope.ServiceProvider.GetRequiredService<IBlobService>();
+                    PersistenceSettings persistenceSettings = new();
+                    Task.Run(() => Persistence.Restore(persistenceSettings.RootPath.AbsolutePath, queueService, tableService, blobService)).Wait(CancellationToken.None);
+                    Log.Information("Persistence handled");
+                });
 
                 await app.RunAsync();
                 return 0;

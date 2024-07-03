@@ -17,8 +17,6 @@ namespace AzureStorageEmulator.NET.Common
 
     public class Settings : ISettings
     {
-        public PersistenceSettings PersistenceSettings { get; set; } = new();
-
         public LogSettings LogSettings { get; set; } = new();
 
         public QueueSettings QueueSettings { get; set; } = new();

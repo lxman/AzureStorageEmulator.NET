@@ -175,14 +175,22 @@ namespace AzureStorageEmulator.NET.Queue.Services
 
         public async Task Persist(string location)
         {
-            Directory.CreateDirectory(Path.Combine(location, "Queue"));
-            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
-            await File.WriteAllTextAsync(saveFilePath, JsonSerializer.Serialize(_queues));
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(location, "AzureStorageEmulator.NET", "Queue"));
+                string saveFilePath = GetSavePath(location);
+                if (!_queues.IsEmpty) await File.WriteAllTextAsync(saveFilePath, JsonSerializer.Serialize(_queues));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task Restore(string location)
         {
-            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
+            string saveFilePath = GetSavePath(location);
             if (!File.Exists(saveFilePath)) return;
             string json = await File.ReadAllTextAsync(saveFilePath);
             ConcurrentDictionary<Guid, QueueObject>? queues = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, QueueObject>>(json) ?? [];
@@ -190,6 +198,12 @@ namespace AzureStorageEmulator.NET.Queue.Services
             {
                 _queues.TryAdd(queue.Key, queue.Value);
             }
+        }
+
+        public void Delete(string location)
+        {
+            string saveFilePath = GetSavePath(location);
+            if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
         }
 
         #endregion
@@ -207,6 +221,8 @@ namespace AzureStorageEmulator.NET.Queue.Services
             entry.Value.Value.QueueMetadata.Blocked = false;
             _queues.TryUpdate(entry.Value.Key, new QueueObject(entry.Value.Value.QueueMetadata, new ConcurrentActiveCountableQueue<QueueMessage>(messages)), entry.Value.Value);
         }
+
+        private static string GetSavePath(string location) => Path.Combine(location, "AzureStorageEmulator.NET", "Queue", "Queues.json");
 
         private async Task<KeyValuePair<Guid, QueueObject>?> TryGetEntryByNameAsync(string queueName)
         {

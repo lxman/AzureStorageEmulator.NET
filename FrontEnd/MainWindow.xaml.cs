@@ -2,9 +2,15 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Text;
+using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
+using AzureStorageEmulator.NET.Common;
 using Microsoft.Win32;
 using static SimpleExec.Command;
 
@@ -15,11 +21,12 @@ namespace FrontEnd
     /// </summary>
     public partial class MainWindow : Window
     {
-        public ObservableCollection<string> Logs { get; private set; } = [];
+        public ObservableCollection<string> Logs { get; } = [];
 
         private readonly HttpServer.HttpServer _httpServer = new();
         private readonly BlockingCollection<string> _logSink = [];
         private readonly int _port;
+        private ListBox? _resultDisplay = null;
 
         public MainWindow()
         {
@@ -45,6 +52,12 @@ namespace FrontEnd
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            Process[] runningProcesses = Process.GetProcesses();
+            foreach (Process process in runningProcesses)
+            {
+                if (process.ProcessName == "AzureStorageEmulator.NET")
+                    process.Kill();
+            }
             _httpServer.Stop();
         }
 
@@ -68,7 +81,7 @@ namespace FrontEnd
             {
                 try
                 {
-                    RunAsync(dlg.FileName, ["true", $"{_port}"]);
+                    RunAsync(dlg.FileName, ["true", $"{_port}"], createNoWindow: true);
                 }
                 catch (Exception exception)
                 {
@@ -76,6 +89,31 @@ namespace FrontEnd
                     throw;
                 }
             }
+        }
+
+        private void ManageButtonClick(object sender, RoutedEventArgs e)
+        {
+            ManageStateWindow window = new();
+            window.ShowDialog();
+            PatchCommandSettings settings = window.Settings;
+            Task.Run(() => SendPersistRequest(settings));
+        }
+
+        private async Task SendPersistRequest(PatchCommandSettings settings)
+        {
+            HttpClient client = new();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Patch, "http://127.0.0.1:10010/api/status/snapshot")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(settings), Encoding.UTF8, "application/json")
+            };
+            HttpResponseMessage response = await client.SendAsync(request);
+            DisplayGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            DisplayGrid.ColumnDefinitions.Last().Width = new GridLength(1, GridUnitType.Star);
+            Grid.SetColumnSpan(StartButton, 2);
+            DisplayGrid.Children.Add(_resultDisplay = new ListBox());
+            _resultDisplay.ItemsSource = new ObservableCollection<string>(new[] { response.StatusCode.ToString() });
+            Grid.SetColumn(_resultDisplay, 1);
+            Grid.SetRow(_resultDisplay, 2);
         }
     }
 }

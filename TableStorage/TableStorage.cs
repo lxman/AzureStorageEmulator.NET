@@ -21,11 +21,14 @@ namespace TableStorage
         Task Persist(string location);
 
         Task Restore(string location);
+
+        void Delete(string location);
     }
 
     public class TableStorage : ITableStorage
     {
-        private readonly LiteDatabase _db = new("Filename=:memory:");
+        private static MemoryStream _backing = new();
+        private readonly LiteDatabase _db = new(_backing);
 
         public List<string> QueryTables()
         {
@@ -88,31 +91,24 @@ namespace TableStorage
 
         public async Task Persist(string location)
         {
-            throw new NotImplementedException("Table persistence is not yet implemented.");
-            Directory.CreateDirectory(Path.Combine(location, "Queue"));
-            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
-            _db.GetCollectionNames().ToList().ForEach(n =>
-            {
-                var collection = _db.GetCollection(n);
-                var reader = _db.Execute($"SELECT $ FROM {n}");
-                while (reader.Read())
-                {
-
-                }
-            });
+            Directory.CreateDirectory(Path.Combine(location, "AzureStorageEmulator.NET", "Table"));
+            string saveFilePath = GetSavePath(location);
+            await File.WriteAllBytesAsync(saveFilePath, _backing.ToArray());
         }
 
         public async Task Restore(string location)
         {
-            throw new NotImplementedException("Table restoration is not yet implemented.");
-            string saveFilePath = Path.Combine(location, "Queue", "Queues.json");
+            string saveFilePath = GetSavePath(location);
             if (!File.Exists(saveFilePath)) return;
-            string json = await File.ReadAllTextAsync(saveFilePath);
-            //BsonDocument[] documents = JsonSerializer.Deserialize<BsonDocument[]>(json);
-            //documents.ToList().ForEach(d =>
-            //{
-            //    _db.GetCollection(d["TableName"].AsString).Insert(d["Document"]);
-            //});
+            _backing = new MemoryStream(await File.ReadAllBytesAsync(saveFilePath));
         }
+
+        public void Delete(string location)
+        {
+            string saveFilePath = GetSavePath(location);
+            if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
+        }
+
+        private static string GetSavePath(string location) => Path.Combine(location, "AzureStorageEmulator.NET", "Table", "Tables.json");
     }
 }
