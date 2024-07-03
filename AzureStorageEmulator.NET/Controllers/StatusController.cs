@@ -27,20 +27,31 @@ namespace AzureStorageEmulator.NET.Controllers
         [NoAuth]
         public async Task<IActionResult> Patch([FromBody] PatchCommandSettings patchSettings)
         {
-            PersistenceSettings settings = new()
-            {
-                Table = patchSettings.Table,
-                Queue = patchSettings.Queue,
-                Blob = patchSettings.Blob
-            };
             switch (patchSettings.Action)
             {
                 case Action.Backup:
-                    await Persistence.Persist(settings, queueService, tableService, blobService);
+                    PersistenceSettings persistenceSettings = new()
+                    {
+                        Table = patchSettings.Table,
+                        Queue = patchSettings.Queue,
+                        Blob = patchSettings.Blob
+                    };
+                    await Persistence.Persist(persistenceSettings, queueService, tableService, blobService);
                     break;
+
                 case Action.Clear:
-                    Persistence.Delete(settings, queueService, tableService, blobService);
+                    PersistenceSettings clearSettings = new()
+                    {
+                        ClearTable = patchSettings.Table,
+                        ClearQueue = patchSettings.Queue,
+                        ClearBlob = patchSettings.Blob
+                    };
+                    Persistence.Delete(clearSettings, queueService, tableService, blobService);
                     break;
+
+                case Action.None:
+                    break;
+
                 default:
                     throw new ArgumentOutOfRangeException($"{nameof(patchSettings.Action)} = {patchSettings.Action}");
             }

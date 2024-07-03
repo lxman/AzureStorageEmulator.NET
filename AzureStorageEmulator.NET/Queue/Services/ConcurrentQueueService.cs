@@ -193,7 +193,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             string saveFilePath = GetSavePath(location);
             if (!File.Exists(saveFilePath)) return;
             string json = await File.ReadAllTextAsync(saveFilePath);
-            ConcurrentDictionary<Guid, QueueObject>? queues = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, QueueObject>>(json) ?? [];
+            ConcurrentDictionary<Guid, QueueObject> queues = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, QueueObject>>(json) ?? [];
             foreach (KeyValuePair<Guid, QueueObject> queue in queues)
             {
                 _queues.TryAdd(queue.Key, queue.Value);
@@ -206,7 +206,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
         }
 
-        #endregion
+        #endregion Persistence
 
         #region Private Helpers
 

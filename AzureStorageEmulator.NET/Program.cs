@@ -12,7 +12,6 @@ using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.Table.Services;
 using AzureStorageEmulator.NET.XmlSerialization;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
-using QueueList;
 using Serilog;
 using TableStorage;
 using Metadata = AzureStorageEmulator.NET.Blob.Models.Metadata;
@@ -26,7 +25,6 @@ namespace AzureStorageEmulator.NET
         private const bool DetailedLogging = false;
         private const int BatchSeconds = 2;
         private const bool LogGetMessages = false;
-        private const bool CreateQueues = true;
 
         public static async Task<int> Main(string[] args)
         {
@@ -105,12 +103,6 @@ namespace AzureStorageEmulator.NET
 
                 app.MapControllers();
 
-                Log.Information("Adding queues");
-
-                if (CreateQueues) SetupQueues(app);
-
-                Log.Information($"{Queues.Names.Count} queues added");
-
                 app.Lifetime.ApplicationStarted.Register(() =>
                 {
                     using IServiceScope scope = app.Services.CreateScope();
@@ -118,7 +110,7 @@ namespace AzureStorageEmulator.NET
                     ITableService tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
                     IBlobService blobService = scope.ServiceProvider.GetRequiredService<IBlobService>();
                     PersistenceSettings persistenceSettings = new();
-                    Task.Run(() => Persistence.Restore(persistenceSettings.RootPath.AbsolutePath, queueService, tableService, blobService)).Wait(CancellationToken.None);
+                    Task.Run(() => Persistence.Restore(persistenceSettings.RootPath, queueService, tableService, blobService)).Wait(CancellationToken.None);
                     Log.Information("Persistence restored");
                 });
 
@@ -133,15 +125,6 @@ namespace AzureStorageEmulator.NET
             finally
             {
                 await Log.CloseAndFlushAsync();
-            }
-        }
-
-        private static void SetupQueues(WebApplication app)
-        {
-            IFifoService fifoService = app.Services.GetRequiredService<IFifoService>();
-            foreach (string queue in Queues.Names)
-            {
-                fifoService.CreateQueueAsync(queue);
             }
         }
     }

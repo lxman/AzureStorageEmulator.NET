@@ -2,7 +2,7 @@
 using System.Xml.Schema;
 using System.Xml.Serialization;
 
-namespace XmlParsingTest.QueueEnumeration
+namespace XmlSerializationTest.QueueEnumeration
 {
     public class Metadata : IXmlSerializable
     {

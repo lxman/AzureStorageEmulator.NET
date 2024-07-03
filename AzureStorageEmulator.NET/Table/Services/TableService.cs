@@ -143,6 +143,7 @@ namespace AzureStorageEmulator.NET.Table.Services
                         case "PartitionKey" or "RowKey":
                             dictionary.Add(k, item[k].AsString);
                             return;
+
                         case "Timestamp":
                             {
                                 string timeString = item[k].AsDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
@@ -156,30 +157,39 @@ namespace AzureStorageEmulator.NET.Table.Services
                                 case BsonType.Int32:
                                     dictionary.Add(k, item[k].AsInt32);
                                     break;
+
                                 case BsonType.Int64:
                                     dictionary.Add(k, item[k].AsInt64);
                                     break;
+
                                 case BsonType.Double:
                                     dictionary.Add(k, item[k].AsDouble);
                                     break;
+
                                 case BsonType.Decimal:
                                     dictionary.Add(k, item[k].AsDecimal);
                                     break;
+
                                 case BsonType.String:
                                     dictionary.Add(k, item[k].AsString);
                                     break;
+
                                 case BsonType.Binary:
                                     dictionary.Add(k, item[k].AsBinary);
                                     break;
+
                                 case BsonType.Guid:
                                     dictionary.Add(k, item[k].AsGuid);
                                     break;
+
                                 case BsonType.Boolean:
                                     dictionary.Add(k, item[k].AsBoolean);
                                     break;
+
                                 case BsonType.DateTime:
                                     dictionary.Add(k, item[k].AsDateTime);
                                     break;
+
                                 default:
                                     throw new ArgumentOutOfRangeException($"{k}: {item[k].Type}");
                             }

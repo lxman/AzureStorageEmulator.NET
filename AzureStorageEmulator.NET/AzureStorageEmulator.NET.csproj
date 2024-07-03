@@ -25,7 +25,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\PeriodicLogger\PeriodicLogger.csproj" />
-        <ProjectReference Include="..\QueueList\QueueList.csproj" />
         <ProjectReference Include="..\SimpleApiSink\SimpleApiSink.csproj" />
         <ProjectReference Include="..\TableStorage\TableStorage.csproj" />
     </ItemGroup>

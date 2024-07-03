@@ -2,8 +2,8 @@
 {
     public class PersistenceSettings
     {
-        public Uri RootPath { get; } =
-            new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+        public string RootPath { get; } =
+            new Uri(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).AbsolutePath.Replace("/", "\\");
 
         public bool ClearTable { get; set; }
 

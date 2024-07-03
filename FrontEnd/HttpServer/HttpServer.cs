@@ -36,10 +36,10 @@ namespace FrontEnd.HttpServer
             {
                 HttpListenerContext context = _listener.EndGetContext(result);
                 HttpListenerRequest request = context.Request;
-                _ = _logSink?.TryAdd($"{request.HttpMethod} {request.Url}");
+                string requestData = $"{request.HttpMethod} {request.Url}";
 
                 string body = ProcessPost(context);
-                _ = _logSink?.TryAdd($"Body: {body}");
+                _ = _logSink?.TryAdd($"{requestData} Body: {body}");
 
                 Receive();
             }

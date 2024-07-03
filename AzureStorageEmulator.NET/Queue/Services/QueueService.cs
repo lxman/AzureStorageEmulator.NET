@@ -268,7 +268,7 @@ namespace AzureStorageEmulator.NET.Queue.Services
             fifoService.Delete(location);
         }
 
-        #endregion
+        #endregion Persistence
 
         #region Private Helpers
 

@@ -21,15 +21,19 @@ namespace AzureStorageEmulator.NET.JsonSerialization
                     case "Boolean":
                         writer.WriteBooleanValue(Convert.ToBoolean(pair.Value));
                         break;
+
                     case "String":
                         writer.WriteStringValue((string)pair.Value);
                         break;
+
                     case "DateTime":
                         writer.WriteStringValue(((DateTime)pair.Value).ToString("yyyy-MM-ddThh:mm:ss.fffffffZ"));
                         break;
+
                     case "Int32":
                         writer.WriteNumberValue((int)pair.Value);
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException($"{pair.Value}: {pair.Value.GetType().Name}");
                         break;

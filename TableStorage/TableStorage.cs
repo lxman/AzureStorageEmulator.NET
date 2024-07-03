@@ -28,7 +28,7 @@ namespace TableStorage
     public class TableStorage : ITableStorage
     {
         private static MemoryStream _backing = new();
-        private readonly LiteDatabase _db = new(_backing);
+        private LiteDatabase _db = new(_backing);
 
         public List<string> QueryTables()
         {
@@ -93,6 +93,7 @@ namespace TableStorage
         {
             Directory.CreateDirectory(Path.Combine(location, "AzureStorageEmulator.NET", "Table"));
             string saveFilePath = GetSavePath(location);
+            _db.Checkpoint();
             await File.WriteAllBytesAsync(saveFilePath, _backing.ToArray());
         }
 
@@ -100,7 +101,10 @@ namespace TableStorage
         {
             string saveFilePath = GetSavePath(location);
             if (!File.Exists(saveFilePath)) return;
+            _db.Dispose();
+            await _backing.DisposeAsync();
             _backing = new MemoryStream(await File.ReadAllBytesAsync(saveFilePath));
+            _db = new LiteDatabase(_backing);
         }
 
         public void Delete(string location)
@@ -109,6 +113,6 @@ namespace TableStorage
             if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
         }
 
-        private static string GetSavePath(string location) => Path.Combine(location, "AzureStorageEmulator.NET", "Table", "Tables.json");
+        private static string GetSavePath(string location) => Path.Combine(location, "AzureStorageEmulator.NET", "Table", "Tables.db");
     }
 }

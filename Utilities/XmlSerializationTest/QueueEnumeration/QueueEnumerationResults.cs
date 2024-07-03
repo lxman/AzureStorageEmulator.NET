@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace XmlParsingTest.QueueEnumeration
+namespace XmlSerializationTest.QueueEnumeration
 {
     [XmlRoot("EnumerationResults")]
     public class QueueEnumerationResults

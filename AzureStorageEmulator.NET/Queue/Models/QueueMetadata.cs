@@ -1,6 +1,7 @@
 ﻿using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+
 // ReSharper disable ValueParameterNotUsed
 
 namespace AzureStorageEmulator.NET.Queue.Models

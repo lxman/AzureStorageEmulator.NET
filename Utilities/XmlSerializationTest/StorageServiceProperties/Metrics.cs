@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace XmlParsingTest.StorageServiceProperties
+namespace XmlSerializationTest.StorageServiceProperties
 {
     public class Metrics
     {

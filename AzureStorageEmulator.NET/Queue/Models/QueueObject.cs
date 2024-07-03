@@ -6,6 +6,9 @@
 
         public ConcurrentActiveCountableQueue<QueueMessage> Messages { get; set; } = [];
 
+        public QueueObject()
+        { }
+
         public QueueObject(string name)
         {
             QueueMetadata = new QueueMetadata(name);

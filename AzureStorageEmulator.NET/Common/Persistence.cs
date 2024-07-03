@@ -13,7 +13,7 @@ namespace AzureStorageEmulator.NET.Common
             IBlobService blobService
             )
         {
-            string rootPath = settings.RootPath.AbsolutePath;
+            string rootPath = settings.RootPath;
             if (settings.Table)
             {
                 await tableService.Persist(rootPath);
@@ -49,7 +49,7 @@ namespace AzureStorageEmulator.NET.Common
             IBlobService blobService
             )
         {
-            string rootPath = settings.RootPath.ToString();
+            string rootPath = settings.RootPath;
             if (settings.ClearTable)
             {
                 tableService.Delete(rootPath);

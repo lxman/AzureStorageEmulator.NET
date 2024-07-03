@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace XmlParsingTest.MessageList
+namespace XmlSerializationTest.MessageList
 {
     [XmlType(TypeName = "QueueMessagesList")]
     public class MessageList

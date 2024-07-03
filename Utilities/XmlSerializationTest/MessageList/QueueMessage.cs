@@ -1,4 +1,4 @@
-﻿namespace XmlParsingTest.MessageList
+﻿namespace XmlSerializationTest.MessageList
 {
     public class QueueMessage
     {

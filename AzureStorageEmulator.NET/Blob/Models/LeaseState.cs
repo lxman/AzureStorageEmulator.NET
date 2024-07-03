@@ -1,4 +1,6 @@
-﻿public enum LeaseState
+﻿namespace AzureStorageEmulator.NET.Blob.Models;
+
+public enum LeaseState
 {
     Available,
     Breaking,

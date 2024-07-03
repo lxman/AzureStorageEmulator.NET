@@ -1,4 +1,4 @@
-﻿namespace XmlParsingTest.StorageServiceProperties
+﻿namespace XmlSerializationTest.StorageServiceProperties
 {
     public class RetentionPolicy
     {
