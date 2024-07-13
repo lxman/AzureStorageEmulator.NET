@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FrontEnd"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Name="MyWindow"
+        Title="AzureStorageEmulator.NET" Height="450" Width="800" Name="MyWindow"
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
     <Grid Name="DisplayGrid">
         <Grid.RowDefinitions>

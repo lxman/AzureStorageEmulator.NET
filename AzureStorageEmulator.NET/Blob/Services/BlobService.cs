@@ -4,6 +4,7 @@ using AzureStorageEmulator.NET.Blob.Models;
 using AzureStorageEmulator.NET.Blob.Xml;
 using AzureStorageEmulator.NET.Common;
 using AzureStorageEmulator.NET.XmlSerialization;
+using BlobStorage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
@@ -24,6 +25,7 @@ namespace AzureStorageEmulator.NET.Blob.Services
 
     public class BlobService(
         IBlobRoot root,
+        IBlobStorage blobStorage,
         IXmlSerializer<Metadata> metadataSerializer,
         IXmlSerializer<ContainerEnumerationResults> containerEnumerationSerializer) : IBlobService
     {
@@ -127,28 +129,17 @@ namespace AzureStorageEmulator.NET.Blob.Services
 
         public async Task Persist(string location)
         {
-            return;
-            throw new NotImplementedException("Blob persistence");
-            Directory.CreateDirectory(Path.Combine(location, "Blob"));
-            string saveFilePath = GetSavePath(location);
-            await File.WriteAllTextAsync(saveFilePath, GetBlobs());
+            await blobStorage.Persist(location);
         }
 
         public async Task Restore(string location)
         {
-            return;
-            throw new NotImplementedException("Blob restore");
-            string saveFilePath = GetSavePath(location);
-            if (!File.Exists(saveFilePath)) return;
-            await File.WriteAllTextAsync(Path.Combine(location, "Blob", "Blobs.xml"), GetBlobs());
+            await blobStorage.Restore(location);
         }
 
         public void Delete(string location)
         {
-            return;
-            throw new NotImplementedException("Blob delete");
-            string saveFilePath = GetSavePath(location);
-            if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
+            blobStorage.Delete(location);
         }
 
         private string GetContainersMetadata()
@@ -160,7 +151,5 @@ namespace AzureStorageEmulator.NET.Blob.Services
             });
             return metadata;
         }
-
-        private static string GetSavePath(string location) => Path.Combine(location, "AzureStorageEmulator.NET", "Blob", "Blobs.json");
     }
 }

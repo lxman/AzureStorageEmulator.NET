@@ -9,12 +9,23 @@ namespace AzureStorageEmulator.NET.Authorization
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             Endpoint? endpoint = context.GetEndpoint();
-            bool hasNoAuthAttribute = context.GetEndpoint()?.Metadata.GetMetadata<NoAuthAttribute>() is not null;
-            if (!hasNoAuthAttribute)
+            bool requireAuth = context.GetEndpoint()?.Metadata.GetMetadata<NoAuthAttribute>() is null;
+            if (requireAuth)
             {
                 int port = context.Connection.LocalPort;
-                string authorization = context.Request.Headers.Authorization.First()
-                                       ?? throw new UnauthorizedAccessException();
+                string? authorization = context.Request.Headers.Authorization.FirstOrDefault();
+                if (string.IsNullOrEmpty(authorization))
+                {
+                    switch (port)
+                    {
+                        case 10000:
+                            if (!new BlobAuthorizer().Invoke(authorization, context))
+                            {
+                                throw new UnauthorizedAccessException();
+                            }
+                            break;
+                    }
+                }
                 switch (port)
                 {
                     case 10000:

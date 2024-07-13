@@ -1,9 +1,16 @@
-﻿namespace AzureStorageEmulator.NET.Authorization.Blob
+﻿using AzureStorageEmulator.NET.Authorization.Blob.Shared_Access_Signature;
+
+namespace AzureStorageEmulator.NET.Authorization.Blob
 {
     public class BlobAuthorizer
     {
-        public bool Invoke(string authorization, HttpContext context)
+        public bool Invoke(string? authorization, HttpContext context)
         {
+            if (string.IsNullOrEmpty(authorization))
+            {
+                // If there is no authorization header, try SAS
+                return new BlobSasAuthorizer().Authorize(context.Request);
+            }
             string authType = authorization.Split(' ', StringSplitOptions.TrimEntries)[0];
             if (authType is "SharedKey" or "SharedKeyLite")
             {

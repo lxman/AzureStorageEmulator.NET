@@ -39,6 +39,8 @@ namespace TableStorage
         {
             ILiteCollection<BsonDocument> documents = _db.GetCollection(tableName) ?? throw new Exception("Failed to create table");
             documents.Insert(new BsonDocument());
+            _ = documents.EnsureIndex("PartitionKey");
+            _ = documents.EnsureIndex("RowKey");
         }
 
         public bool DeleteTable(string tableName)

@@ -12,6 +12,7 @@ using AzureStorageEmulator.NET.Queue.Services;
 using AzureStorageEmulator.NET.Table.Services;
 using AzureStorageEmulator.NET.XmlSerialization;
 using AzureStorageEmulator.NET.XmlSerialization.Queue;
+using BlobStorage;
 using Serilog;
 using TableStorage;
 using Metadata = AzureStorageEmulator.NET.Blob.Models.Metadata;
@@ -69,6 +70,7 @@ namespace AzureStorageEmulator.NET
                 builder.Services.AddSingleton<ITableStorage, TableStorage.TableStorage>();
                 builder.Services.AddTransient<HeaderManager>();
                 builder.Services.AddSingleton<IBlobRoot, BlobRoot>();
+                builder.Services.AddSingleton<IBlobStorage, BlobStorage.BlobStorage>();
 
                 // Serializers
                 builder.Services

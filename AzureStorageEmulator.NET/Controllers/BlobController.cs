@@ -25,9 +25,16 @@ namespace AzureStorageEmulator.NET.Controllers
         /// Create a container
         /// </summary>
         /// <param name="containerName"></param>
+        /// <param name="restype"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
+        [QueryStringConstraint("restype", true)]
+        [QueryStringConstraint("maxresults", false)]
+        [QueryStringConstraint("include", false)]
+        [QueryStringConstraint("delimiter", false)]
+        [QueryStringConstraint("comp", false)]
         [HttpPut("{containerName}")]
-        public IActionResult CreateContainer(string containerName)
+        public IActionResult CreateContainer(string containerName, [FromQuery] string restype, [FromQuery] string timeout = "0")
         {
             return blobService.CreateContainer(containerName, HttpContext);
         }
@@ -36,15 +43,16 @@ namespace AzureStorageEmulator.NET.Controllers
         /// Returns information about a container
         /// </summary>
         /// <param name="containerName"></param>
-        /// <param name="comp"></param>
         /// <param name="restype"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
         [QueryStringConstraint("restype", true)]
         [QueryStringConstraint("maxresults", false)]
         [QueryStringConstraint("include", false)]
         [QueryStringConstraint("delimiter", false)]
+        [QueryStringConstraint("comp", false)]
         [HttpGet("{containerName}")]
-        public Task<IActionResult> PingContainer(string containerName)
+        public Task<IActionResult> PingContainer(string containerName, [FromQuery] string restype, [FromQuery] string timeout = "0")
         {
             return blobService.PingContainer(containerName, HttpContext);
         }
@@ -59,13 +67,19 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="include"></param>
         /// <param name="delimiter"></param>
         /// <returns></returns>
-        [QueryStringConstraint("comp", true)]
-        [QueryStringConstraint("maxresults", true)]
         [QueryStringConstraint("restype", true)]
+        [QueryStringConstraint("maxresults", true)]
         [QueryStringConstraint("include", true)]
         [QueryStringConstraint("delimiter", true)]
+        [QueryStringConstraint("comp", true)]
         [HttpGet("{containerName}")]
-        public Task<MemoryStream> ListContainerContents(string containerName)
+        public Task<MemoryStream> ListContainerContents(
+            string containerName,
+            [FromQuery] string restype,
+            [FromQuery] string include,
+            [FromQuery] string delimiter,
+            [FromQuery] string comp = "list",
+            [FromQuery] string maxresults = "5000")
         {
             return blobService.ListContainerContents(containerName, HttpContext);
         }

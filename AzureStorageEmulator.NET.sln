@@ -36,7 +36,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrontEnd", "FrontEnd\FrontE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApiSink", "SimpleApiSink\SimpleApiSink.csproj", "{75CA652B-DEF1-42C3-B66D-CBE748189D5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsonSerialization", "BsonSerialization\BsonSerialization.csproj", "{2B44943A-1942-4E26-8065-B9FC9939A1BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BsonSerialization", "BsonSerialization\BsonSerialization.csproj", "{2B44943A-1942-4E26-8065-B9FC9939A1BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlobStorage", "BlobStorage\BlobStorage.csproj", "{F7C1C225-1273-4DC4-A347-3546F90B7057}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +144,14 @@ Global
 		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|x64.ActiveCfg = Release|Any CPU
 		{2B44943A-1942-4E26-8065-B9FC9939A1BD}.Release|x64.Build.0 = Release|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Debug|x64.Build.0 = Debug|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Release|x64.ActiveCfg = Release|Any CPU
+		{F7C1C225-1273-4DC4-A347-3546F90B7057}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
