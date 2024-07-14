@@ -25,7 +25,7 @@ namespace AzureStorageEmulator.NET.Authorization.Blob.Shared_Access_Signature
             stringToSign += AddPart(components.Components.FirstOrDefault(c => c.ShortName == "sp")?.Value);
             stringToSign += AddPart(components.Components.FirstOrDefault(c => c.ShortName == "st")?.Value);
             stringToSign += AddPart(components.Components.FirstOrDefault(c => c.ShortName == "se")?.Value);
-            stringToSign += $"/blob/devstoreaccount1/{request.Path.Value.Split('/', StringSplitOptions.RemoveEmptyEntries)[1]}\n";
+            stringToSign += $"/blob/devstoreaccount1/{request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries)[1]}\n";
             stringToSign += "\n";
             stringToSign += AddPart(components.Components.FirstOrDefault(c => c.ShortName == "sip")?.Value);
             stringToSign += AddPart(components.Components.FirstOrDefault(c => c.ShortName == "spr")?.Value);

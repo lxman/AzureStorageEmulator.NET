@@ -8,8 +8,6 @@ namespace AzureStorageEmulator.NET.Blob.Models
 
         string Name { get; set; }
 
-        List<Folder> Folders { get; set; }
-
         List<Blob> Blobs { get; set; }
     }
 
@@ -19,8 +17,6 @@ namespace AzureStorageEmulator.NET.Blob.Models
         public Metadata Metadata { get; set; } = new();
 
         public string Name { get; set; } = name;
-
-        public List<Folder> Folders { get; set; } = [];
 
         public List<Blob> Blobs { get; set; } = [];
     }

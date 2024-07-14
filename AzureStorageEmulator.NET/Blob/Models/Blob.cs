@@ -1,4 +1,5 @@
 ﻿using System.Xml.Serialization;
+using BlobStorage;
 
 namespace AzureStorageEmulator.NET.Blob.Models
 {
@@ -7,9 +8,29 @@ namespace AzureStorageEmulator.NET.Blob.Models
         [XmlElement(ElementName = "Properties")]
         public Metadata Metadata { get; set; } = new();
 
-        public string? Name { get; set; }
+        [XmlElement(ElementName = "Name")]
+        public string? FileSpec { get; set; }
 
         [XmlIgnore]
-        public Stream? Data { get; set; }
+        public Stream? Data
+        {
+            get => _storage?.DownloadFile(FileSpec);
+            set
+            {
+                if (value is not null)
+                {
+                    _storage?.UploadFile(FileSpec, value);
+                }
+            }
+        }
+
+        private readonly IBlobStorage? _storage;
+
+        public Blob(IBlobStorage storage)
+        {
+            _storage = storage;
+        }
+
+        public Blob() { }
     }
 }

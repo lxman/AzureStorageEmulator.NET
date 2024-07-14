@@ -109,5 +109,32 @@ namespace AzureStorageEmulator.NET.Controllers
             if (restype == "container") return NotFound();
             return Ok();
         }
+
+        /// <summary>
+        /// Put a blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="fileSpec"></param>
+        /// <param name="fileContent"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{container}/{fileSpec}")]
+        public IActionResult PutBlob(string container, string fileSpec, [FromBody] Stream fileContent)
+        {
+            return Ok();
+        }
+
+        /// <summary>
+        /// Get information about a blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="fileSpec"></param>
+        /// <returns></returns>
+        [HttpHead]
+        [Route("{container}/{filePath}")]
+        public Task<IActionResult> GetBlobProperties(string container, string fileSpec)
+        {
+            return blobService.GetBlobProperties(container, fileSpec, HttpContext);
+        }
     }
 }

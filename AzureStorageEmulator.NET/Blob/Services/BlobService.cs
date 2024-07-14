@@ -20,6 +20,8 @@ namespace AzureStorageEmulator.NET.Blob.Services
 
         Task<MemoryStream> ListContainerContents(string containerName, HttpContext context);
 
+        Task<IActionResult> GetBlobProperties(string container, string fileSpec, HttpContext context);
+
         string GetBlobs();
     }
 
@@ -120,6 +122,24 @@ namespace AzureStorageEmulator.NET.Blob.Services
             context.Response.Headers.KeepAlive = "timeout=5";
 
             return new StatusCodeResult(201);
+        }
+
+        public Task<IActionResult> GetBlobProperties(string container, string fileSpec, HttpContext context)
+        {
+            IContainer? c = root.Containers.Find(c => c.Name == container);
+            if (c is null) return Task.FromResult<IActionResult>(new NotFoundResult());
+            Models.Blob? b = c.Blobs.Find(b => b.FileSpec == fileSpec);
+            if (b is null) return Task.FromResult<IActionResult>(new NotFoundResult());
+            context.Response.Headers.Append("etag", $"0x{b.Metadata.Etag:X}");
+            context.Response.Headers.Append("last-modified", b.Metadata.LastModified.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'", CultureInfo.InvariantCulture));
+            //context.Response.Headers.Append("content-length", b.Metadata.ContentLength.ToString());
+            context.Response.Headers.Connection = "keep-alive";
+            context.Response.Headers.KeepAlive = "timeout=5";
+            context.Response.Headers.Append("x-ms-has-legal-hold", b.Metadata.HasLegalHold.ToString().ToLowerInvariant());
+            context.Response.Headers.Append("x-ms-has-immutability-policy", b.Metadata.HasImmutabilityPolicy.ToString().ToLowerInvariant());
+            context.Response.Headers.Append("x-ms-lease-state", b.Metadata.LeaseState.ToString().ToLowerInvariant());
+            context.Response.Headers.Append("x-ms-lease-status", b.Metadata.LeaseStatus.ToString().ToLowerInvariant());
+            return Task.FromResult<IActionResult>(new OkResult());
         }
 
         public string GetBlobs()
