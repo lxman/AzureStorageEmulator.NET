@@ -119,9 +119,9 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{container}/{fileSpec}")]
-        public IActionResult PutBlob(string container, string fileSpec, [FromBody] Stream fileContent)
+        public Task<IActionResult> PutBlob(string container, string fileSpec)
         {
-            return Ok();
+            return blobService.PutBlob(container, fileSpec, HttpContext);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace AzureStorageEmulator.NET.Controllers
         /// <param name="fileSpec"></param>
         /// <returns></returns>
         [HttpHead]
-        [Route("{container}/{filePath}")]
+        [Route("{container}/{fileSpec}")]
         public Task<IActionResult> GetBlobProperties(string container, string fileSpec)
         {
             return blobService.GetBlobProperties(container, fileSpec, HttpContext);

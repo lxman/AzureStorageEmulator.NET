@@ -26,7 +26,15 @@ namespace BlobStorage
         public void UploadFile(string fileId, Stream fileStream)
         {
             LiteFileInfo<string>? file = _fileStorage?.FindById(fileId);
-            if (file is null) return;
+            if (file is null)
+            {
+                LiteFileStream<string>? stream = _fileStorage?.OpenWrite(fileId, fileId.Split('/').Last());
+                if (stream is not null)
+                {
+                    fileStream.CopyTo(stream);
+                    stream.Close();
+                }
+            }
             _fileStorage?.Upload(fileId, fileId.Split('/').Last(), fileStream);
         }
 

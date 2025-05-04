@@ -22,6 +22,8 @@ namespace AzureStorageEmulator.NET.Blob.Services
 
         Task<IActionResult> GetBlobProperties(string container, string fileSpec, HttpContext context);
 
+        Task<IActionResult> PutBlob(string container, string fileSpec, HttpContext context);
+
         string GetBlobs();
     }
 
@@ -140,6 +142,20 @@ namespace AzureStorageEmulator.NET.Blob.Services
             context.Response.Headers.Append("x-ms-lease-state", b.Metadata.LeaseState.ToString().ToLowerInvariant());
             context.Response.Headers.Append("x-ms-lease-status", b.Metadata.LeaseStatus.ToString().ToLowerInvariant());
             return Task.FromResult<IActionResult>(new OkResult());
+        }
+
+        public Task<IActionResult> PutBlob(string container, string fileSpec, HttpContext context)
+        {
+            root.Containers
+                .Find(c => c.Name == container)?
+                .Blobs
+                .Add(new Models.Blob(blobStorage) { FileSpec = fileSpec, Data = context.Request.BodyReader.AsStream() });
+            //context.Response.Headers.Append("etag", $"0x{b.Metadata.Etag:X}");
+            //context.Response.Headers.Append("last-modified", b.Metadata.LastModified.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'", CultureInfo.InvariantCulture));
+            context.Response.Headers.Append("content-length", "0");
+            context.Response.Headers.Connection = "keep-alive";
+            context.Response.Headers.KeepAlive = "timeout=5";
+            return Task.FromResult<IActionResult>(new StatusCodeResult(201));
         }
 
         public string GetBlobs()
